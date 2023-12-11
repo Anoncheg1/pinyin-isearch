@@ -64,7 +64,3 @@
 
 
 (provide 'pinyin-isearch)
-;; Local Variables:
-;; indent-tabs-mode: nil
-;; End:
-;;; fuzzy.el ends here
