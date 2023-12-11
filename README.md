@@ -12,10 +12,8 @@ add to ~/.emacs
 (require 'pinyin-isearch) 
 ```
 
-activate with M-x pinyin-isearch-mode or:
-```elisp
-(pinyin-isearch-mode)
-```
+# activate 
+M-x pinyin-isearch-mode 
 
 or per file:
 ```  -*- mode: pinyin-isearch; -*- ```
