@@ -3,7 +3,7 @@ Emacs package with minor mode that allow search pinyin ignoring tones.
 
 For example, to find "Guānhuà" in text you just type: C-s guangua.
 # install
-copy file to ~/.emacs.d/contrib/
+copy file to ~/.emacs.d/contrib/pinyin-isearch.el
 
 add to ~/.emacs
 
