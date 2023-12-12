@@ -6,7 +6,7 @@
 ;; Keywords: convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Keywords: isearch
-;; Version: 0.1
+;; Version: 0.2
 ;; Package-Requires: ((emacs "29.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,10 @@
 
 
 (defun pinyin-isearch ()
+  (if isearch-regexp
+      ;; normal execution if it is regex search
+      (funcall original-isearch-search-fun-function)
+  ;; else
   (lambda (string &optional bound noerror count)
     (let* ((st (regexp-quote string))
            (st (string-replace "a" "[āáǎà]" st))
@@ -43,7 +47,8 @@
            (regexp st))
     (funcall
      (if isearch-forward #'re-search-forward #'re-search-backward)
-     regexp bound noerror count))))
+     regexp bound noerror count)))))
+
 
 (define-minor-mode pinyin-isearch-mode
   "In isearch C-s with pinyin you will be able to find pīnyīn."
@@ -51,16 +56,22 @@
     (defvar-local pinyin-isearch-message-prefix
         (concat (propertize "[pinyin]" 'face 'bold) " "))
 
-    (defvar-local pinyin-isearch nil)
-
     (defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
-      (if pinyin-isearch
+      (if (and pinyin-isearch-mode (not isearch-regexp))
           (setq ad-return-value
                 (concat pinyin-isearch-message-prefix ad-return-value))
         ad-return-value))
 
+    ;; when mode activated:
+    (when pinyin-isearch-mode
+      ;; save
+      (defvar-local original-isearch-search-fun-function isearch-search-fun-function))
+    ;; remap:
     (setq-local isearch-search-fun-function 'pinyin-isearch)
-    (setq-local pinyin-isearch t))
+    ;; disable:
+    (if (not pinyin-isearch-mode)
+        (setq-local isearch-search-fun-function original-isearch-search-fun-function))
+    )
 
-
+
 (provide 'pinyin-isearch)
