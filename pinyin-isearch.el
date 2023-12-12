@@ -6,7 +6,7 @@
 ;; Keywords: convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Keywords: isearch
-;; Version: 0.2
+;; Version: 0.3
 ;; Package-Requires: ((emacs "29.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,11 @@
   ;; else
   (lambda (string &optional bound noerror count)
     (let* ((st (regexp-quote string))
+           ;; ignore white spaces:
+           (st (concat (substring st 0 2)
+                   (mapconcat (lambda (x) (concat "\\s-*" x))
+                              (nthcdr 2 (split-string st "" t)))))
+           ;; ignore tones:
            (st (string-replace "a" "[āáǎà]" st))
            (st (string-replace "e" "[ēéěè]" st))
            (st (string-replace "o" "[ōóǒò]" st))
@@ -47,7 +52,8 @@
            (regexp st))
     (funcall
      (if isearch-forward #'re-search-forward #'re-search-backward)
-     regexp bound noerror count)))))
+     regexp bound noerror count))))
+  )
 
 
 (define-minor-mode pinyin-isearch-mode
@@ -55,7 +61,7 @@
     :lighter " p-isearch" :global nil :group 'isearch :version "29.1"
     (defvar-local pinyin-isearch-message-prefix
         (concat (propertize "[pinyin]" 'face 'bold) " "))
-
+    ;; show prefix
     (defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
       (if (and pinyin-isearch-mode (not isearch-regexp))
           (setq ad-return-value
