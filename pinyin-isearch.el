@@ -9,6 +9,8 @@
 ;; Version: 0.3
 ;; Package-Requires: ((emacs "29.1"))
 
+;; This file is not part of GNU Emacs.
+
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
@@ -32,18 +34,20 @@
 ;;; Code:
 
 
-(defun pinyin-isearch ()
+(defun pinyin--isearch ()
+  "Our Replacement for `isearch-search-fun-function'.
+It modifies search query string and call isearch with regex."
   (if isearch-regexp
       ;; normal execution if it is regex search
       (funcall original-isearch-search-fun-function)
   ;; else
   (lambda (string &optional bound noerror count)
     (let* ((st (regexp-quote string))
-           ;; ignore white spaces:
+           ;; ignore white spaces
            (st (concat (substring st 0 2)
                    (mapconcat (lambda (x) (concat "\\s-*" x))
                               (nthcdr 2 (split-string st "" t)))))
-           ;; ignore tones:
+           ;; ignore tones
            (st (string-replace "a" "[āáǎà]" st))
            (st (string-replace "e" "[ēéěè]" st))
            (st (string-replace "o" "[ōóǒò]" st))
@@ -55,9 +59,9 @@
      regexp bound noerror count))))
   )
 
-
+;;;###autoload
 (define-minor-mode pinyin-isearch-mode
-  "In isearch C-s with pinyin you will be able to find pīnyīn."
+  "'isearch-forward' with query \"pinyin\" you will be able to find \"pīnyīn\"."
     :lighter " p-isearch" :global nil :group 'isearch :version "29.1"
     (defvar-local pinyin-isearch-message-prefix
         (concat (propertize "[pinyin]" 'face 'bold) " "))
@@ -68,16 +72,17 @@
                 (concat pinyin-isearch-message-prefix ad-return-value))
         ad-return-value))
 
-    ;; when mode activated:
+    ;; when mode activated
     (when pinyin-isearch-mode
       ;; save
       (defvar-local original-isearch-search-fun-function isearch-search-fun-function))
-    ;; remap:
-    (setq-local isearch-search-fun-function 'pinyin-isearch)
-    ;; disable:
+    ;; remap
+    (setq-local isearch-search-fun-function 'pinyin--isearch)
+    ;; disable
     (if (not pinyin-isearch-mode)
         (setq-local isearch-search-fun-function original-isearch-search-fun-function))
     )
 
 
 (provide 'pinyin-isearch)
+;;; pinyin-isearch.el ends here
