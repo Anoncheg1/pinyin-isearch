@@ -3,10 +3,9 @@
 ;; Copyright (c) 2023 Anoncheg1
 
 ;; Author: Anoncheg1
-;; Keywords: convenience
+;; Keywords: convenience, isearch
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
-;; Keywords: isearch
-;; Version: 0.3
+;; Version: 0.4
 ;; Package-Requires: ((emacs "29.1"))
 
 ;; This file is not part of GNU Emacs.
@@ -31,38 +30,179 @@
 ;; To activate use:
 ;; (require 'pinyin-isearch)
 ;; (pinyin-isearch-mode t) ;; or -*- mode: pinyin-isearch; -*-
+;; From "quail/sisheng.el" used sisheng-regexp, sisheng-vowel-table
+;; and sisheng-syllable-table.
 ;;; Code:
 
+(condition-case args-out-of-range
+    (load "quail/sisheng.el")
+  (error nil))
+
+(defconst pinyin-vowel-table
+  '(("a" "[āáǎà]")
+    ("e" "[ēéěè]")
+    ("i" "[īíǐì]")
+    ("o" "[ōóǒò]")
+    ("u" "[ūúǔùǖǘǚǜ]")
+    ("v" "[ūúǔùǖǘǚǜ]")
+    ("ue" "[ūúǔùǖǘǚǜ][ēéěè]")
+    ("ve" "ü[ēéěè]")))
+
+(defconst pinyin-vowel-table-normal
+  '(("a" "[aāáǎà]")
+    ("e" "[eēéěè]")
+    ("i" "[iīíǐì]")
+    ("o" "[oōóǒò]")
+    ("u" "[uūúǔùǖǘǚǜ]")
+    ("ue" "[uü][eēéěè]")))
+
+
+(defun pinyin--make-sisheng-to-regex (syllable)
+  "Convert SYLLABLE \"zhuō\" to \"zhu[...]\".
+Used to create final regex."
+  (let ((key-value-list))
+    (string-match sisheng-regexp syllable)
+    (let* (
+           (vowel-match (downcase (match-string 0 syllable)))
+           (vowel-list
+            (cdr (assoc-string vowel-match sisheng-vowel-table)))
+           (input-vowel (car vowel-list))
+           (regex (car (cdr (assoc-string input-vowel pinyin-vowel-table))))
+           )
+    ;; replace ō with [ōóǒò]
+    (replace-match regex nil nil syllable))
+
+))
+
+
+(defun pinyin--get-position-first-syllable(string)
+  "Get position of first syllable in query STRING."
+  (let ((pos 0)
+        (first-chars)
+         (num 0)
+         (len (length string)))
+    (while (< num (1- (length string) ))
+      (setq pos (- len num))
+      ;; cut first chars
+      (setq first-chars (substring string 0 pos))
+      ;; find it in table
+      (setq syl (cdr (assoc first-chars pinyin-syllable-table)))
+      ;; break
+      (setq num (if syl 999 (1+ num)))
+      )
+    (if syl pos
+      nil) ; else nil
+    ))
+
+
+(defun pinyin-brute-replace (st &optional &key normal)
+  "Replace every vowels in 'ST' with wide range regex.
+if 'NORMAL' add normal to regex."
+  (let* (
+           ;; ignore white spaces if query is more than 2 characters
+         (st (if (length> st 1)
+                 ;; then
+                 (concat (substring st 0 2)
+                         (mapconcat (lambda (x) (concat "\\s-*" x))
+                                    (nthcdr 2 (split-string st "" t))))
+               ;; else
+               st)))
+    ;; ignore tones, based on lisp/leim/quail/sisheng.el
+    (if normal
+        (dolist ( c (split-string "aeiou" "" t))
+          (let ((vowel-list-regex
+                 (car (cdr (assoc-string c pinyin-vowel-table-normal))) ))
+            (setq st (string-replace c vowel-list-regex st)))
+          )
+      ;; else
+      (dolist ( c (split-string "aeiou" "" t))
+          (let ((vowel-list-regex
+                 (car (cdr (assoc-string c pinyin-vowel-table))) ))
+            (setq st (string-replace c vowel-list-regex st)))
+          )
+      )
+    st)
+  )
+
+(defun pinyin--prepare-query (string)
+  "Main function to convert query 'STRING' to regex for isearch."
+  (let* ((st (regexp-quote string))
+         ;; save length
+         (len (length st))
+         ;; get first longest syllable
+         (first-syllable-pos (if (length> st 1)
+                                 (pinyin--get-position-first-syllable st)
+                               ;; else
+                               nil)
+                             )
+         )
+
+    ;; accurate regex for first syllable and brute for other
+    (if first-syllable-pos
+        ;; cut first sullable
+        (let* ((first-syllable (substring string 0 first-syllable-pos))
+
+               (first-syllable
+                       (cdr (assoc first-syllable pinyin-syllable-table)))
+
+               (first-syllable (pinyin--make-sisheng-to-regex first-syllable))
+               ;; if others is not null
+               (others (if (< first-syllable-pos len)
+                           ;; others
+                       (concat "\\s-*" (pinyin-brute-replace
+                                        (substring st first-syllable-pos len)
+                                        :normal t))
+                       ;; else
+                       nil)
+                       ))
+          (concat first-syllable others))
+         st)
+    )
+  )
+
+(defun pinyin--sisheng-to-normal (syllable)
+  "Convert \"zhuō\" 'SYLLABLE' to \"zhuo\". Used to create list from original."
+  (let ((key-value-list))
+    (string-match sisheng-regexp syllable)
+    ;; fin vowel
+    (setq vowel-match (downcase (match-string 0 syllable)))
+    (setq vowel-list
+          (cdr (assoc-string vowel-match sisheng-vowel-table)))
+    (setq input-vowel (car vowel-list))
+    (setq base-key (nth 0 vowel-list))
+    ;; fix for sisheng, we don't need "v"
+    (setq base-key (if (equal base-key "v") "u"
+                     ;; else
+                     (if (equal base-key "ve") "ue" base-key)))
+    (replace-match base-key nil nil syllable)
+))
+
 
-(defun pinyin--isearch ()
-  "Our Replacement for `isearch-search-fun-function'.
+(defun pinyin-isearch-search-fun-function ()
+  "Replacement for `isearch-search-fun-function'.
 It modifies search query string and call isearch with regex."
   (if isearch-regexp
       ;; normal execution if it is regex search
       (funcall original-isearch-search-fun-function)
   ;; else
   (lambda (string &optional bound noerror count)
-    (let* ((st (regexp-quote string))
-           ;; ignore white spaces
-           (st (concat (substring st 0 2)
-                   (mapconcat (lambda (x) (concat "\\s-*" x))
-                              (nthcdr 2 (split-string st "" t)))))
-           ;; ignore tones
-           (st (string-replace "a" "[āáǎà]" st))
-           (st (string-replace "e" "[ēéěè]" st))
-           (st (string-replace "o" "[ōóǒò]" st))
-           (st (string-replace "i" "[īíǐì]" st))
-           (st (string-replace "u" "[ūúǔùǚ]" st))
-           (regexp st))
-    (funcall
-     (if isearch-forward #'re-search-forward #'re-search-backward)
-     regexp bound noerror count))))
+    (let ((regexp (pinyin--prepare-query string)))
+      (funcall
+       (if isearch-forward #'re-search-forward #'re-search-backward)
+       regexp bound noerror count))))
   )
 
 ;;;###autoload
 (define-minor-mode pinyin-isearch-mode
-  "'isearch-forward' with query \"pinyin\" you will be able to find \"pīnyīn\"."
+  "Modifies 'isearch-forward', to allow with query \"pinyin\" to find \"pīnyīn\"."
     :lighter " p-isearch" :global nil :group 'isearch :version "29.1"
+    ;; initialize syllable's table ((\"zhuo\" . \"zhuō\")...)
+    (defvar-local pinyin-syllable-table nil)
+    (dolist (syllable sisheng-syllable-table)
+      (setq pinyin-syllable-table
+            (append (list (cons (pinyin--sisheng-to-normal syllable) syllable))
+                    pinyin-syllable-table))
+      )
     (defvar-local pinyin-isearch-message-prefix
         (concat (propertize "[pinyin]" 'face 'bold) " "))
     ;; show prefix
@@ -77,7 +217,7 @@ It modifies search query string and call isearch with regex."
       ;; save
       (defvar-local original-isearch-search-fun-function isearch-search-fun-function))
     ;; remap
-    (setq-local isearch-search-fun-function 'pinyin--isearch)
+    (setq-local isearch-search-fun-function 'pinyin-isearch-search-fun-function)
     ;; disable
     (if (not pinyin-isearch-mode)
         (setq-local isearch-search-fun-function original-isearch-search-fun-function))
