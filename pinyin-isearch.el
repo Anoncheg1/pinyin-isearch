@@ -5,7 +5,7 @@
 ;; Author: Anoncheg1
 ;; Keywords: convenience, isearch
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
-;; Version: 0.5
+;; Version: 0.6
 ;; Package-Requires: ((emacs "29.1"))
 
 ;; This file is not part of GNU Emacs.
@@ -194,12 +194,13 @@ It modifies search query string and call isearch with regex."
        regexp bound noerror count))))
   )
 
-;; initialize syllable's table ((\"zhuo\" . \"zhuō\")...)
-(defvar-local pinyin-syllable-table
+
+(defconst pinyin-syllable-table
     (mapcar (lambda (arg)
               (cons (pinyin--sisheng-to-normal arg) arg)
               )
             sisheng-syllable-table) ;; sequence
+    "initialize syllable's table ((\"zhuo\" . \"zhuō\")...)"
   )
 
 ;;;###autoload
@@ -221,6 +222,7 @@ It modifies search query string and call isearch with regex."
       (setq ad-return-value
             (concat pinyin-isearch-message-prefix ad-return-value))
     ad-return-value))
+
 
 
 (defvar-local pinyin--original-isearch-search-fun-function nil
