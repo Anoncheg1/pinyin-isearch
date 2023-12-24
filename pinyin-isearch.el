@@ -3,10 +3,10 @@
 ;; Copyright (c) 2023 Anoncheg1
 
 ;; Author: Anoncheg1
-;; Keywords: convenience, isearch
+;; Keywords: convenience, pinyin, search
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 0.7
-;; Package-Requires: ((emacs "26.2"))
+;; Package-Requires: ; ((emacs "26.2"))
 
 ;; This file is not part of GNU Emacs.
 
