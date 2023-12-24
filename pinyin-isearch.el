@@ -191,7 +191,8 @@ It modifies search query string and call isearch with regex."
 
 ;;;###autoload
 (define-minor-mode pinyin-isearch-mode
-  "Modifies function `isearch-forward', to allow with query {pinyin} to find {pīnyīn}."
+  "Modifies function `isearch-forward'.
+Allow with query {pinyin} to find {pīnyīn}."
   :lighter " p-isearch" :global nil :group 'isearch :version "29.1"
   ;; save
   (if pinyin-isearch-mode
