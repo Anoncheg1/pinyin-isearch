@@ -6,7 +6,7 @@
 ;; Keywords: convenience, isearch
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 0.7
-;; Package-Requires: ((emacs "28.1"))
+;; Package-Requires: ((emacs "26.2"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -99,7 +99,7 @@ Used to create final regex."
 if 'NORMAL' add normal to regex."
   (let* (
            ;; ignore white spaces if query is more than 2 characters
-         (st (if (length> st 1)
+         (st (if (> (length st) 1)
                  ;; then
                  (concat (substring st 0 2)
                          (mapconcat (lambda (x) (concat "\\s-*" x))
@@ -125,7 +125,7 @@ if 'NORMAL' add normal to regex."
          ;; save length
          (len (length st))
          ;; get first longest syllable
-         (first-syllable-pos (if (length> st 1)
+         (first-syllable-pos (if (> (length st) 1)
                                  (pinyin-isearch--get-position-first-syllable st)
                                ;; else
                                nil)))
@@ -191,8 +191,7 @@ It modifies search query string and call isearch with regex."
 
 ;;;###autoload
 (define-minor-mode pinyin-isearch-mode
-  "Modifies `isearch-forward', to allow with query {pinyin} to
-find {pīnyīn}."
+  "Modifies function `isearch-forward', to allow with query {pinyin} to find {pīnyīn}."
   :lighter " p-isearch" :global nil :group 'isearch :version "29.1"
   ;; save
   (if pinyin-isearch-mode
@@ -220,17 +219,18 @@ find {pīnyīn}."
   (setq-local isearch-search-fun-function pinyin-isearch--original-isearch-search-fun-function))
 
 (defun pinyin-isearch-forward (&rest arg) ;; (&optional regexp-p no-recursive-edit)
-  "Pinyin veriant of `isearch-forward', just like in `pinyin-isearch-mode'.
-Optional argument ARG arguments of variable `isearch-forward'."
+  "Veriant of function `isearch-forward' to search with pinyin.
+Just like in `pinyin-isearch-mode'.  Optional argument ARG
+arguments for function `isearch-forward'."
   (interactive "P\np")
   ;; make isearch our's
   (setq-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
   (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
   ;
   (if (called-interactively-p "any")
-      (call-interactively 'isearch-forward)
+      (call-interactively #'isearch-forward)
     ;; else
-    (apply 'isearch-forward arg))
+    (apply #'isearch-forward arg))
   (add-hook 'isearch-mode-end-hook #'pinyin-isearch--isearch-restore))
 
 
@@ -243,9 +243,9 @@ Optional argument ARG arguments of `isearch-backward'."
   (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
 
   (if (called-interactively-p "any")
-      (call-interactively 'isearch-backward)
+      (call-interactively #'isearch-backward)
     ;; else
-    (apply 'isearch-backward arg))
+    (apply #'isearch-backward arg))
 
   (add-hook 'isearch-mode-end-hook #'pinyin-isearch--isearch-restore))
 
