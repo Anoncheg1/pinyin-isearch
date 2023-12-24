@@ -16,9 +16,6 @@ add to ~/.emacs
 ```
 
 # activate
-M-x pinyin-isearch-mode
+``` M-x pinyin-isearch-mode ``` To activate per file: ```  -*- mode: pinyin-isearch; -*- ```
 
-or per file:
-```  -*- mode: pinyin-isearch; -*- ```
-
-or ``` M-x pinyin-isearch-forward ``` and ``` M-x pinyin-isearch-backward ```
+Or just use command: ``` M-x pinyin-isearch-forward ``` and ``` M-x pinyin-isearch-backward ```
