@@ -5,7 +5,7 @@
 ;; Author: Anoncheg1
 ;; Keywords: convenience, isearch
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
-;; Version: 0.4
+;; Version: 0.5
 ;; Package-Requires: ((emacs "29.1"))
 
 ;; This file is not part of GNU Emacs.
@@ -56,6 +56,9 @@
     ("u" "[uūúǔùǖǘǚǜ]")
     ("ue" "[uü][eēéěè]")))
 
+(defconst pinyin-isearch-message-prefix
+        (concat (propertize "[pinyin]" 'face 'bold) " ")
+"used when pinyin-isearch-mode is activated only")
 
 (defun pinyin--make-sisheng-to-regex (syllable)
   "Convert SYLLABLE \"zhuō\" to \"zhu[...]\".
@@ -71,7 +74,6 @@ Used to create final regex."
            )
     ;; replace ō with [ōóǒò]
     (replace-match regex nil nil syllable))
-
 ))
 
 
@@ -178,7 +180,7 @@ if 'NORMAL' add normal to regex."
 ))
 
 
-(defun pinyin-isearch-search-fun-function ()
+(defun pinyin--isearch-search-fun-function ()
   "Replacement for `isearch-search-fun-function'.
 It modifies search query string and call isearch with regex."
   (if isearch-regexp
@@ -192,36 +194,75 @@ It modifies search query string and call isearch with regex."
        regexp bound noerror count))))
   )
 
+;; initialize syllable's table ((\"zhuo\" . \"zhuō\")...)
+(defvar-local pinyin-syllable-table
+    (mapcar (lambda (arg)
+              (cons (pinyin--sisheng-to-normal arg) arg)
+              )
+            sisheng-syllable-table) ;; sequence
+  )
+
 ;;;###autoload
 (define-minor-mode pinyin-isearch-mode
   "Modifies 'isearch-forward', to allow with query \"pinyin\" to find \"pīnyīn\"."
     :lighter " p-isearch" :global nil :group 'isearch :version "29.1"
-    ;; initialize syllable's table ((\"zhuo\" . \"zhuō\")...)
-    (defvar-local pinyin-syllable-table nil)
-    (dolist (syllable sisheng-syllable-table)
-      (setq pinyin-syllable-table
-            (append (list (cons (pinyin--sisheng-to-normal syllable) syllable))
-                    pinyin-syllable-table))
-      )
-    (defvar-local pinyin-isearch-message-prefix
-        (concat (propertize "[pinyin]" 'face 'bold) " "))
-    ;; show prefix
-    (defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
-      (if (and pinyin-isearch-mode (not isearch-regexp))
-          (setq ad-return-value
-                (concat pinyin-isearch-message-prefix ad-return-value))
-        ad-return-value))
-
-    ;; when mode activated
-    (when pinyin-isearch-mode
-      ;; save
-      (defvar-local original-isearch-search-fun-function isearch-search-fun-function))
+    (defvar-local original-isearch-search-fun-function isearch-search-fun-function)
     ;; remap
-    (setq-local isearch-search-fun-function 'pinyin-isearch-search-fun-function)
+    (setq-local isearch-search-fun-function 'pinyin--isearch-search-fun-function)
     ;; disable
     (if (not pinyin-isearch-mode)
         (setq-local isearch-search-fun-function original-isearch-search-fun-function))
     )
+
+
+;; It Adds prefix to isearch prompt.
+(defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
+  (if (and pinyin-isearch-mode (not isearch-regexp))
+      (setq ad-return-value
+            (concat pinyin-isearch-message-prefix ad-return-value))
+    ad-return-value))
+
+
+(defvar-local pinyin--original-isearch-search-fun-function nil
+  "place to save 'isearch-search-fun-function'")
+
+(defun pinyin--isearch-restore ()
+  "Used for hook: 'isearch-mode-end-hook'"
+  (setq-local isearch-search-fun-function original-isearch-search-fun-function))
+
+(defun pinyin-isearch-forward (&rest arg) ;; (&optional regexp-p no-recursive-edit)
+  "Pinyin veriant of 'isearch-forward', just like in 'pinyin-isearch-mode'."
+  (interactive "P\np")
+  ;; make isearch our's
+  (setq-local pinyin--original-isearch-search-fun-function isearch-search-fun-function)
+  (setq-local isearch-search-fun-function 'pinyin--isearch-search-fun-function)
+
+
+  (if (interactive-p)
+      (call-interactively 'isearch-forward)
+    ;; else
+    (apply 'isearch-forward arg)
+    )
+  (add-hook 'isearch-mode-end-hook #'pinyin--isearch-restore)
+)
+
+
+(defun pinyin-isearch-backward (&rest arg)
+  "Pinyin veriant of 'isearch-backward', just like in 'pinyin-isearch-mode'."
+  (interactive "P\np")
+  ;; make isearch our's
+  (setq-local pinyin--original-isearch-search-fun-function isearch-search-fun-function)
+  (setq-local isearch-search-fun-function 'pinyin--isearch-search-fun-function)
+
+  (if (interactive-p)
+      (call-interactively 'isearch-backward)
+    ;; else
+    (apply 'isearch-backward arg)
+    )
+
+  (add-hook 'isearch-mode-end-hook #'pinyin--isearch-restore)
+)
+
 
 
 (provide 'pinyin-isearch)

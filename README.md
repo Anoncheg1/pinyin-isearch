@@ -20,3 +20,5 @@ M-x pinyin-isearch-mode
 
 or per file:
 ```  -*- mode: pinyin-isearch; -*- ```
+
+or ``` M-x pinyin-isearch-forward ``` and ``` M-x pinyin-isearch-backward ```
