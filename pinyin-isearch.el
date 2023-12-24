@@ -6,7 +6,7 @@
 ;; Keywords: convenience, isearch
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 0.6
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -38,7 +38,7 @@
     (load "quail/sisheng.el")
   (error nil))
 
-(defconst pinyin-vowel-table
+(defconst pinyin-isearch-vowel-table
   '(("a" "[āáǎà]")
     ("e" "[ēéěè]")
     ("i" "[īíǐì]")
@@ -48,7 +48,7 @@
     ("ue" "[ūúǔùǖǘǚǜ][ēéěè]")
     ("ve" "ü[ēéěè]")))
 
-(defconst pinyin-vowel-table-normal
+(defconst pinyin-isearch-vowel-table-normal
   '(("a" "[aāáǎà]")
     ("e" "[eēéěè]")
     ("i" "[iīíǐì]")
@@ -58,9 +58,9 @@
 
 (defconst pinyin-isearch-message-prefix
         (concat (propertize "[pinyin]" 'face 'bold) " ")
-"used when pinyin-isearch-mode is activated only")
+"Used when `pinyin-isearch-mode' is activated only.")
 
-(defun pinyin--make-sisheng-to-regex (syllable)
+(defun pinyin-isearch--make-sisheng-to-regex (syllable)
   "Convert SYLLABLE \"zhuō\" to \"zhu[...]\".
 Used to create final regex."
   (let ((key-value-list))
@@ -70,14 +70,12 @@ Used to create final regex."
            (vowel-list
             (cdr (assoc-string vowel-match sisheng-vowel-table)))
            (input-vowel (car vowel-list))
-           (regex (car (cdr (assoc-string input-vowel pinyin-vowel-table))))
-           )
-    ;; replace ō with [ōóǒò]
-    (replace-match regex nil nil syllable))
-))
+           (regex (car (cdr (assoc-string input-vowel pinyin-isearch-vowel-table)))))
+      ;; replace ō with [ōóǒò]
+      (replace-match regex nil nil syllable))))
 
 
-(defun pinyin--get-position-first-syllable(string)
+(defun pinyin-isearch--get-position-first-syllable(string)
   "Get position of first syllable in query STRING."
   (let ((pos 0)
         (first-chars)
@@ -88,16 +86,15 @@ Used to create final regex."
       ;; cut first chars
       (setq first-chars (substring string 0 pos))
       ;; find it in table
-      (setq syl (cdr (assoc first-chars pinyin-syllable-table)))
+      (setq syl (cdr (assoc first-chars pinyin-isearch-syllable-table)))
       ;; break
-      (setq num (if syl 999 (1+ num)))
-      )
+      (setq num (if syl 999 (1+ num))))
     (if syl pos
       nil) ; else nil
     ))
 
 
-(defun pinyin-brute-replace (st &optional &key normal)
+(defun pinyin-isearch--brute-replace (st &optional &key normal)
   "Replace every vowels in 'ST' with wide range regex.
 if 'NORMAL' add normal to regex."
   (let* (
@@ -113,31 +110,25 @@ if 'NORMAL' add normal to regex."
     (if normal
         (dolist ( c (split-string "aeiou" "" t))
           (let ((vowel-list-regex
-                 (car (cdr (assoc-string c pinyin-vowel-table-normal))) ))
-            (setq st (string-replace c vowel-list-regex st)))
-          )
+                 (car (cdr (assoc-string c pinyin-isearch-vowel-table-normal))) ))
+            (setq st (string-replace c vowel-list-regex st))))
       ;; else
       (dolist ( c (split-string "aeiou" "" t))
           (let ((vowel-list-regex
-                 (car (cdr (assoc-string c pinyin-vowel-table))) ))
-            (setq st (string-replace c vowel-list-regex st)))
-          )
-      )
-    st)
-  )
+                 (car (cdr (assoc-string c pinyin-isearch-vowel-table))) ))
+            (setq st (string-replace c vowel-list-regex st)))))
+    st))
 
-(defun pinyin--prepare-query (string)
+(defun pinyin-isearch--prepare-query (string)
   "Main function to convert query 'STRING' to regex for isearch."
   (let* ((st (regexp-quote string))
          ;; save length
          (len (length st))
          ;; get first longest syllable
          (first-syllable-pos (if (length> st 1)
-                                 (pinyin--get-position-first-syllable st)
+                                 (pinyin-isearch--get-position-first-syllable st)
                                ;; else
-                               nil)
-                             )
-         )
+                               nil)))
 
     ;; accurate regex for first syllable and brute for other
     (if first-syllable-pos
@@ -145,24 +136,21 @@ if 'NORMAL' add normal to regex."
         (let* ((first-syllable (substring string 0 first-syllable-pos))
 
                (first-syllable
-                       (cdr (assoc first-syllable pinyin-syllable-table)))
+                       (cdr (assoc first-syllable pinyin-isearch-syllable-table)))
 
-               (first-syllable (pinyin--make-sisheng-to-regex first-syllable))
+               (first-syllable (pinyin-isearch--make-sisheng-to-regex first-syllable))
                ;; if others is not null
                (others (if (< first-syllable-pos len)
                            ;; others
-                       (concat "\\s-*" (pinyin-brute-replace
+                       (concat "\\s-*" (pinyin-isearch--brute-replace
                                         (substring st first-syllable-pos len)
                                         :normal t))
                        ;; else
-                       nil)
-                       ))
+                       nil)))
           (concat first-syllable others))
-         st)
-    )
-  )
+         st)))
 
-(defun pinyin--sisheng-to-normal (syllable)
+(defun pinyin-isearch--sisheng-to-normal (syllable)
   "Convert \"zhuō\" 'SYLLABLE' to \"zhuo\". Used to create list from original."
   (let ((key-value-list))
     (string-match sisheng-regexp syllable)
@@ -176,48 +164,43 @@ if 'NORMAL' add normal to regex."
     (setq base-key (if (equal base-key "v") "u"
                      ;; else
                      (if (equal base-key "ve") "ue" base-key)))
-    (replace-match base-key nil nil syllable)
-))
+    (replace-match base-key nil nil syllable)))
 
 
-(defun pinyin--isearch-search-fun-function ()
+(defun pinyin-isearch--isearch-search-fun-function ()
   "Replacement for `isearch-search-fun-function'.
 It modifies search query string and call isearch with regex."
   (if isearch-regexp
       ;; normal execution if it is regex search
-      (funcall original-isearch-search-fun-function)
+      (funcall pinyin-isearch--original-isearch-search-fun-function)
   ;; else
   (lambda (string &optional bound noerror count)
-    (let ((regexp (pinyin--prepare-query string)))
+    (let ((regexp (pinyin-isearch--prepare-query string)))
       (funcall
        (if isearch-forward #'re-search-forward #'re-search-backward)
-       regexp bound noerror count))))
-  )
+       regexp bound noerror count)))))
 
 
-(defconst pinyin-syllable-table
+(defconst pinyin-isearch-syllable-table
     (mapcar (lambda (arg)
-              (cons (pinyin--sisheng-to-normal arg) arg)
-              )
+              (cons (pinyin-isearch--sisheng-to-normal arg) arg))
             sisheng-syllable-table) ;; sequence
-    "initialize syllable's table ((\"zhuo\" . \"zhuō\")...)"
-  )
+    "Initialize syllable's table ((\"zhuo\" . \"zhuō\")...).")
 
 ;;;###autoload
 (define-minor-mode pinyin-isearch-mode
   "Modifies 'isearch-forward', to allow with query \"pinyin\" to find \"pīnyīn\"."
     :lighter " p-isearch" :global nil :group 'isearch :version "29.1"
-    (defvar-local original-isearch-search-fun-function isearch-search-fun-function)
+    (defvar-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
     ;; remap
-    (setq-local isearch-search-fun-function 'pinyin--isearch-search-fun-function)
+    (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
     ;; disable
     (if (not pinyin-isearch-mode)
-        (setq-local isearch-search-fun-function original-isearch-search-fun-function))
-    )
+        (setq-local isearch-search-fun-function pinyin-isearch--original-isearch-search-fun-function)))
 
 
-;; It Adds prefix to isearch prompt.
 (defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
+  "Add prefix to isearch prompt."
   (if (and pinyin-isearch-mode (not isearch-regexp))
       (setq ad-return-value
             (concat pinyin-isearch-message-prefix ad-return-value))
@@ -225,45 +208,42 @@ It modifies search query string and call isearch with regex."
 
 
 
-(defvar-local pinyin--original-isearch-search-fun-function nil
-  "place to save 'isearch-search-fun-function'")
+(defvar-local pinyin-isearch--original-isearch-search-fun-function nil
+  "Place to save 'isearch-search-fun-function'.")
 
-(defun pinyin--isearch-restore ()
-  "Used for hook: 'isearch-mode-end-hook'"
-  (setq-local isearch-search-fun-function original-isearch-search-fun-function))
+(defun pinyin-isearch--isearch-restore ()
+  "Used for hook: 'isearch-mode-end-hook'."
+  (setq-local isearch-search-fun-function pinyin-isearch--original-isearch-search-fun-function))
 
 (defun pinyin-isearch-forward (&rest arg) ;; (&optional regexp-p no-recursive-edit)
-  "Pinyin veriant of 'isearch-forward', just like in 'pinyin-isearch-mode'."
+  "Pinyin veriant of 'isearch-forward', just like in 'pinyin-isearch-mode'.
+Optional argument ARG arguments of variable `isearch-forward'."
   (interactive "P\np")
   ;; make isearch our's
-  (setq-local pinyin--original-isearch-search-fun-function isearch-search-fun-function)
-  (setq-local isearch-search-fun-function 'pinyin--isearch-search-fun-function)
-
-
+  (setq-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
+  (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
+  ;
   (if (interactive-p)
       (call-interactively 'isearch-forward)
     ;; else
-    (apply 'isearch-forward arg)
-    )
-  (add-hook 'isearch-mode-end-hook #'pinyin--isearch-restore)
-)
+    (apply 'isearch-forward arg))
+  (add-hook 'isearch-mode-end-hook #'pinyin-isearch--isearch-restore))
 
 
 (defun pinyin-isearch-backward (&rest arg)
-  "Pinyin veriant of 'isearch-backward', just like in 'pinyin-isearch-mode'."
+  "Pinyin veriant of 'isearch-backward', just like in 'pinyin-isearch-mode'.
+Optional argument ARG arguments of `isearch-backward'."
   (interactive "P\np")
   ;; make isearch our's
-  (setq-local pinyin--original-isearch-search-fun-function isearch-search-fun-function)
-  (setq-local isearch-search-fun-function 'pinyin--isearch-search-fun-function)
+  (setq-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
+  (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
 
   (if (interactive-p)
       (call-interactively 'isearch-backward)
     ;; else
-    (apply 'isearch-backward arg)
-    )
+    (apply 'isearch-backward arg))
 
-  (add-hook 'isearch-mode-end-hook #'pinyin--isearch-restore)
-)
+  (add-hook 'isearch-mode-end-hook #'pinyin-isearch--isearch-restore))
 
 
 
