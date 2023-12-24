@@ -5,7 +5,7 @@
 ;; Author: Anoncheg1
 ;; Keywords: convenience, isearch
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
-;; Version: 0.6
+;; Version: 0.7
 ;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is not part of GNU Emacs.
