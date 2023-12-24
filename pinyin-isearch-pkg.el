@@ -1,1 +1,4 @@
-(pinyin-isearch :fetcher github :repo "Anoncheg1/pinyin-isearch")
+(define-package
+    "pinyin-isearch"
+    "0.7"
+  "Allow to search Chinese pinyin without tones")
