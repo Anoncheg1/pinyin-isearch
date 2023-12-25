@@ -6,7 +6,7 @@
 ;; Keywords: chinese, pinyin, search
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 0.7
-;; Package-Requires: ((emacs "26.2"))
+;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -39,6 +39,7 @@
 (condition-case nil
     (load "quail/sisheng") ; (quail-use-package "chinese-sisheng" "quail/sisheng")
   (args-out-of-range nil))
+(quail-use-package "chinese-sisheng" "quail/sisheng")
 
 (defconst pinyin-isearch-vowel-table
   '(("a" "[āáǎà]")
