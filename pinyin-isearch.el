@@ -3,7 +3,7 @@
 ;; Copyright (c) 2023 Anoncheg1
 
 ;; Author: Anoncheg1
-;; Keywords: convenience, pinyin, search
+;; Keywords: chinese, pinyin, search
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 0.7
 ;; Package-Requires: ((emacs "26.2"))
@@ -34,8 +34,10 @@
 ;; and sisheng-syllable-table.
 ;;; Code:
 
+;; I was unable to determinate reason for this error
+;; It occure only during loading and use case sensitivity in search.
 (condition-case nil
-    (load "quail/sisheng.el")
+    (load "quail/sisheng") ; (quail-use-package "chinese-sisheng" "quail/sisheng")
   (args-out-of-range nil))
 
 (defconst pinyin-isearch-vowel-table
@@ -219,6 +221,7 @@ Allow with query {pinyin} to find {pīnyīn}."
   "Used for hook: `isearch-mode-end-hook'."
   (setq-local isearch-search-fun-function pinyin-isearch--original-isearch-search-fun-function))
 
+;;;###autoload
 (defun pinyin-isearch-forward (&rest arg) ;; (&optional regexp-p no-recursive-edit)
   "Veriant of function `isearch-forward' to search with pinyin.
 Just like in `pinyin-isearch-mode'.  Optional argument ARG
@@ -235,6 +238,7 @@ arguments for function `isearch-forward'."
   (add-hook 'isearch-mode-end-hook #'pinyin-isearch--isearch-restore))
 
 
+;;;###autoload
 (defun pinyin-isearch-backward (&rest arg)
   "Pinyin veriant of `isearch-backward', just like in `pinyin-isearch-mode'.
 Optional argument ARG arguments of `isearch-backward'."
