@@ -5,7 +5,7 @@
 ;; Author: Anoncheg1
 ;; Keywords: chinese, pinyin, search
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
-;; Version: 0.7
+;; Version: 0.8
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is not part of GNU Emacs.

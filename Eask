@@ -1,5 +1,5 @@
 (package "pinyin-isearch"
-         "0.7"
+         "0.8"
          "isearch mode for Chinese pinyin search.")
 
 (website-url "https://github.com/Anoncheg1/pinyin-isearch")
