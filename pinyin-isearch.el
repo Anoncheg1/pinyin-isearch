@@ -39,7 +39,7 @@
 (condition-case nil
     (load "quail/sisheng") ; (quail-use-package "chinese-sisheng" "quail/sisheng")
   (args-out-of-range nil))
-(quail-use-package "chinese-sisheng" "quail/sisheng")
+
 
 (defconst pinyin-isearch-vowel-table
   '(("a" "[āáǎà]")
