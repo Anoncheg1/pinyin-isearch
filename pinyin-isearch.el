@@ -28,7 +28,7 @@
 ;; This package modifies isearch mode to allow search pīnyīn with
 ;; pinyin (without tones).
 ;; Features:
-;; - white spaces are ignored
+;; - white spaces are ignored between syllables
 ;; - tone required only in first syllable in text: Zhēn de ma
 ;; To activate use:
 ;; (require 'pinyin-isearch)

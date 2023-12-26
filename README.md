@@ -9,7 +9,7 @@ It replaces isearch-search-fun-function with our function that replace
 For example, to find "Sh¨¤ngh¨£i" in text you just type: C-s shanghai.
 
 Features:
-- white spaces are ignored
+- white spaces are ignored between syllables
 - tone required only in first syllable in text: Zh¨¥n de ma
 
 # install
