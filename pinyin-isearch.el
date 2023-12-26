@@ -27,15 +27,18 @@
 
 ;; This package modifies isearch mode to allow search pīnyīn with
 ;; pinyin (without tones).
+;; Features:
+;; - white spaces are ignored
+;; - tone required only in first syllable in text: Zhēn de ma
 ;; To activate use:
 ;; (require 'pinyin-isearch)
-;; (pinyin-isearch-mode t) ;; or -*- mode: pinyin-isearch; -*-
-;; From "quail/sisheng.el" used sisheng-regexp, sisheng-vowel-table
-;; and sisheng-syllable-table.
+;; M-x pinyin-isearch
+
 ;;; Code:
 
 ;; I was unable to determinate reason for this error
 ;; It occure only during loading and use case sensitivity in search.
+;; used sisheng-regexp, sisheng-vowel-table and sisheng-syllable-table.
 (condition-case nil
     (load "quail/sisheng") ; (quail-use-package "chinese-sisheng" "quail/sisheng")
   (args-out-of-range nil))

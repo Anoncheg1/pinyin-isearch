@@ -6,7 +6,12 @@ Again, allow to search with pinyin in pinyin but ignore tone marks for speed.
 It replaces isearch-search-fun-function with our function that replace
  search string with regex that ignore tones.
 
-For example, to find "GuƒÅnhu√†" in text you just type: C-s guangua.
+For example, to find "Sh®§ngh®£i" in text you just type: C-s shanghai.
+
+Features:
+- white spaces are ignored
+- tone required only in first syllable in text: Zh®•n de ma
+
 # install
 copy file to ~/.emacs.d/contrib/pinyin-isearch.el
 
