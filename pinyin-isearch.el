@@ -236,7 +236,7 @@ arguments for function `isearch-forward'."
   (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
   ;
   (if (called-interactively-p "any")
-      (call-interactively #'isearch-forward)
+      (apply 'funcall-interactively #'isearch-forward arg)
     ;; else
     (apply #'isearch-forward arg))
   (add-hook 'isearch-mode-end-hook #'pinyin-isearch--isearch-restore))
@@ -252,7 +252,7 @@ Optional argument ARG arguments of `isearch-backward'."
   (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
 
   (if (called-interactively-p "any")
-      (call-interactively #'isearch-backward)
+      (apply 'funcall-interactively #'isearch-forward arg)
     ;; else
     (apply #'isearch-backward arg))
 
