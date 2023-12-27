@@ -233,12 +233,9 @@ normal search."
 
 (defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
   "Add prefix to isearch prompt."
-  (if (and pinyin-isearch-mode (not isearch-regexp))
-      (setq ad-return-value (if (equal isearch-search-fun-function #'pinyin-isearch--isearch-search-fun-function)
-                                (concat pinyin-isearch-message-prefix ad-return-value)
-                              ;; else
-                              ad-return-value
-                              ))
+  (if (and (equal isearch-search-fun-function #'pinyin-isearch--isearch-search-fun-function) (not isearch-regexp))
+      (setq ad-return-value (concat pinyin-isearch-message-prefix ad-return-value))
+    ;; else
     ad-return-value))
 
 
