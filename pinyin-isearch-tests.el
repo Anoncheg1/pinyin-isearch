@@ -79,6 +79,7 @@
     (should (equal (pinyin-isearch--prepare-query "zuomezuome") "zu[ōóǒò]\\s-*m[eēéěè]\\s-*z\\s-*[uūúǔùǖǘǚǜ]\\s-*[oōóǒò]\\s-*m\\s-*[eēéěè]"))
     (should (equal (pinyin-isearch--prepare-query "nuan") "nu[āáǎà]n"))
     (should (equal (pinyin-isearch--prepare-query "nue") "nü[ēéěè]"))
+    (should (equal (pinyin-isearch--prepare-query "zuozuo") "zu[ōóǒò]\\s-*z[uūúǔùǖǘǚǜ]\\s-*[oōóǒò]"))
     )
 )
 

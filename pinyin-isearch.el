@@ -5,7 +5,7 @@
 ;; Author: Anoncheg1
 ;; Keywords: chinese, pinyin, search
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
-;; Version: 0.8
+;; Version: 0.9
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is not part of GNU Emacs.
@@ -32,9 +32,18 @@
 ;; - tone required only in first syllable in text: Zhēn de ma
 ;; To activate use:
 ;; (require 'pinyin-isearch)
-;; M-x pinyin-isearch
+;; M-x pinyin-isearch-mode
+;; or
+;; M-x pinyin-isearch-forward / pinyin-isearch-backward
+;; C-u C-s for normal search
 
 ;;; Code:
+
+;; How it works:
+;; 1) we create list of ((\"zhuo\" . \"zhuō\")...) : pinyin-isearch-syllable-table
+;; 2) we replace C-s function with our own: isearch-search-fun-function
+;; 3) we find first longest syllable we use accurate regex for it
+;;   and fore rest of the string we apply regex for every vowel
 
 ;; I was unable to determinate reason for this error
 ;; It occure only during loading and use case sensitivity in search.
@@ -196,7 +205,7 @@ It modifies search query string and call isearch with regex."
 (defvar-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
 
 ;;;###autoload
-(define-minor-mode pinyin-isearch-mode
+(define-minor-mode pinyin-isearch-simple-mode
   "Modifies function `isearch-forward'.
 Allow with query {pinyin} to find {pīnyīn}."
   :lighter " p-isearch" :global nil :group 'isearch :version "29.1"
@@ -210,11 +219,26 @@ Allow with query {pinyin} to find {pīnyīn}."
       (setq-local isearch-search-fun-function pinyin-isearch--original-isearch-search-fun-function)))
 
 
+;;;###autoload
+(define-minor-mode pinyin-isearch-mode
+  "Replace key bindings for functions `isearch-forward' and `isearch-backward'.
+Allow with query {pinyin} to find {pīnyīn}.  \\C-\\u \\C-\\s used for
+normal search."
+  :lighter " p-isearch" :global nil :group 'isearch :version "29.1"
+  :keymap (let ((map (make-sparse-keymap)))
+            (define-key map (kbd "C-s") #'pinyin-isearch-forward)
+            (define-key map (kbd "C-r") #'pinyin-isearch-backward)
+            map))
+
+
 (defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
   "Add prefix to isearch prompt."
   (if (and pinyin-isearch-mode (not isearch-regexp))
-      (setq ad-return-value
-            (concat pinyin-isearch-message-prefix ad-return-value))
+      (setq ad-return-value (if (equal isearch-search-fun-function #'pinyin-isearch--isearch-search-fun-function)
+                                (concat pinyin-isearch-message-prefix ad-return-value)
+                              ;; else
+                              ad-return-value
+                              ))
     ad-return-value))
 
 
@@ -225,38 +249,53 @@ Allow with query {pinyin} to find {pīnyīn}."
   "Used for hook: `isearch-mode-end-hook'."
   (setq-local isearch-search-fun-function pinyin-isearch--original-isearch-search-fun-function))
 
+
 ;;;###autoload
-(defun pinyin-isearch-forward (&rest arg) ;; (&optional regexp-p no-recursive-edit)
+(defun pinyin-isearch-forward (&optional regexp-p no-recursive-edit)
   "Veriant of function `isearch-forward' to search with pinyin.
 Just like in `pinyin-isearch-mode'.  Optional argument ARG
-arguments for function `isearch-forward'."
+arguments for function `isearch-forward'.  \\C-\\u \\C-\\s used for
+normal search.
+Optional argument REGEXP-P isearch.
+Optional argument NO-RECURSIVE-EDIT isearch."
   (interactive "P\np")
-  ;; make isearch our's
-  (setq-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
-  (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
-  ;
-  (if (called-interactively-p "any")
-      (apply 'funcall-interactively #'isearch-forward arg)
+  (if (eq no-recursive-edit 4) ;; C-u M-x
+      (funcall-interactively #'isearch-forward nil 1)
     ;; else
-    (apply #'isearch-forward arg))
-  (add-hook 'isearch-mode-end-hook #'pinyin-isearch--isearch-restore))
+    (progn
+      ;; make isearch our's
+      (setq-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
+      (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
+      ;
+      (if (called-interactively-p "any")
+          (funcall-interactively #'isearch-forward regexp-p no-recursive-edit)
+        ;; else
+        (apply #'isearch-forward '(regexp-p no-recursive-edit)))
+      (add-hook 'isearch-mode-end-hook #'pinyin-isearch--isearch-restore))))
 
 
 ;;;###autoload
-(defun pinyin-isearch-backward (&rest arg)
+(defun pinyin-isearch-backward (&optional regexp-p no-recursive-edit)
   "Pinyin veriant of `isearch-backward', just like in `pinyin-isearch-mode'.
-Optional argument ARG arguments of `isearch-backward'."
+Optional argument ARG arguments of `isearch-backward'.  \\C-\\u
+\\C-\\s used for normal search.
+Optional argument REGEXP-P isearch.
+Optional argument NO-RECURSIVE-EDIT isearch."
   (interactive "P\np")
-  ;; make isearch our's
-  (setq-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
-  (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
-
-  (if (called-interactively-p "any")
-      (apply 'funcall-interactively #'isearch-forward arg)
+  (if (eq no-recursive-edit 4) ;; C-u M-x
+      (funcall-interactively #'isearch-backward nil 1)
     ;; else
-    (apply #'isearch-backward arg))
+    (progn
+      ;; make isearch our's
+      (setq-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
+      (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
 
-  (add-hook 'isearch-mode-end-hook #'pinyin-isearch--isearch-restore))
+      (if (called-interactively-p "any")
+          (funcall-interactively #'isearch-forward regexp-p no-recursive-edit)
+        ;; else
+        (apply #'isearch-backward '(regexp-p no-recursive-edit)))
+
+      (add-hook 'isearch-mode-end-hook #'pinyin-isearch--isearch-restore))))
 
 
 
