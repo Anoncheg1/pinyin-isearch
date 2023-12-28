@@ -35,7 +35,7 @@
   (with-temp-buffer
     (pinyin-isearch-mode)
     (should (equal (pinyin-isearch--make-sisheng-to-regex "zhuō") "zhu[ōóǒò]"))
-    (should (equal (pinyin-isearch--make-sisheng-to-regex "nüē") "nü[ēéěè]"))
+    (should (equal (pinyin-isearch--make-sisheng-to-regex "nüē") "nü[ēéěè]")) ; todo
     )
 )
 
@@ -91,8 +91,10 @@
 ;;     )
 ;; )
 ;; test
-;;  ; TODO replace v with u
-
+(print (pinyin-isearch--get-position-first-syllable "bian")) ; bi or an or bian? "bī" "ān" "biān" ;; "b\\([īíǐì][āáǎà]\\|i[āáǎà]\\|[īíǐì]a\\)n"
+(print (pinyin-isearch--get-position-first-syllable "bian")) ; bi or bian? "bī" "biān" ;; "b\\(i[āáǎà]\\|[īíǐì]a\\)n"
+;; "b([īíǐì][āáǎà]|i[āáǎà]|[īíǐì]a)n"
+;; "b\\([īíǐì][āáǎà]\\|i[āáǎà]\\|[īíǐì]a\\)n"
 ;; (ert-run-tests-interactively "pinyin--prepare-query")
 ;; (ert-run-tests-interactively "pinyin--sisheng-to-normal")
 ;; (ert-run-tests-interactively "pinyin--prepare-query2")

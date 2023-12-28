@@ -1,7 +1,7 @@
 # pinyin-isearch
 Emacs package with minor mode that allow search pinyin ignoring tones.
 
-Again, allow to search with pinyin in pinyin but ignore tone marks for speed.
+Again, allow to search with pinyin in pinyin but ignore tone diacritical marks for speed.
 
 It replaces isearch-search-fun-function with our function that replace
  search string with regex that ignore tones.

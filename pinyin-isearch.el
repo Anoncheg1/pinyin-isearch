@@ -42,8 +42,8 @@
 ;; How it works:
 ;; 1) we create list of ((\"zhuo\" . \"zhuō\")...) : pinyin-isearch-syllable-table
 ;; 2) we replace C-s function with our own: isearch-search-fun-function
-;; 3) we find first longest syllable we use accurate regex for it
-;;   and fore rest of the string we apply regex for every vowel
+;; 3) we find first longest syllable and very accurate do regex with tones "n\\([ūúǔùǖǘǚǜ]e\\|ü[ēéěè]\\)"
+;;   for the rest of the line we apply rough regex for every vowel [eēéěè]
 
 ;; I was unable to determinate reason for this error
 ;; It occure only during loading and use case sensitivity in search.
@@ -60,7 +60,7 @@
     ("o" "[ōóǒò]")
     ("u" "[ūúǔùǖǘǚǜ]")
     ("v" "[ūúǔùǖǘǚǜ]")
-    ("ue" "[ūúǔùǖǘǚǜ][ēéěè]")
+    ("ue" "ü[ēéěè]")
     ("ve" "ü[ēéěè]")))
 
 (defconst pinyin-isearch-vowel-table-normal
@@ -69,7 +69,8 @@
     ("i" "[iīíǐì]")
     ("o" "[oōóǒò]")
     ("u" "[uūúǔùǖǘǚǜ]")
-    ("ue" "[uü][eēéěè]")))
+    ("ue" "[uü][eēéěè]")
+    ("ve" "[uü][eēéěè]")))
 
 (defconst pinyin-isearch-message-prefix
         (concat (propertize "[pinyin]" 'face 'bold) " ")
@@ -233,7 +234,8 @@ normal search."
 
 (defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
   "Add prefix to isearch prompt."
-  (if (and (equal isearch-search-fun-function #'pinyin-isearch--isearch-search-fun-function) (not isearch-regexp))
+  (if (and (equal isearch-search-fun-function #'pinyin-isearch--isearch-search-fun-function)
+           (not isearch-regexp))
       (setq ad-return-value (concat pinyin-isearch-message-prefix ad-return-value))
     ;; else
     ad-return-value))
