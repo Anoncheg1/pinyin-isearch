@@ -25,11 +25,12 @@
 
 ;;; Commentary:
 
-;; This package modifies isearch mode to allow search pīnyīn with
-;; pinyin (without tones).
+;; Allow to search with Chinese pinyin in pinyin text and ignore
+;; diacritical tone marks for speed.
 ;; Features:
-;; - white spaces are ignored between syllables
-;; - tone required only in first syllable in text: Zhēn de ma
+;; - white spaces are ignored between syllables,
+;;   but not ignored if in query
+;; - tone required in text only for first syllable: Zhēn de ma
 ;; To activate use:
 ;; (require 'pinyin-isearch)
 ;; M-x pinyin-isearch-mode
