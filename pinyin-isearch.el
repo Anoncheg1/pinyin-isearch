@@ -61,7 +61,8 @@
     ("u" "[ūúǔùǖǘǚǜ]")
     ("v" "[ūúǔùǖǘǚǜ]")
     ("ue" "ü[ēéěè]")
-    ("ve" "ü[ēéěè]")))
+    ;; ("ve" "ü[ēéěè]")
+))
 
 (defconst pinyin-isearch-vowel-table-normal
   '(("a" "[aāáǎà]")
@@ -70,7 +71,8 @@
     ("o" "[oōóǒò]")
     ("u" "[uūúǔùǖǘǚǜ]")
     ("ue" "[uü][eēéěè]")
-    ("ve" "[uü][eēéěè]")))
+    ;; ("ve" "[uü][eēéěè]")
+))
 
 (defconst pinyin-isearch-vowels
   '(("ā" "a")
@@ -97,19 +99,6 @@ Argument STRING sisheng syllable."
          (vowel-list
           (cdr (assoc-string vowel-match pinyin-isearch-vowels))))
     (car vowel-list)))
-
-;; (defun pinyin-isearch--make-sisheng-to-regex (syllable)
-;;   "Convert SYLLABLE \"zhuō\" to \"zhu[...]\".
-;; Used to create final regex."
-;;   (string-match sisheng-regexp syllable)
-;;   (let* (
-;;          (vowel-match (downcase (match-string 0 syllable)))
-;;          (vowel-list
-;;           (cdr (assoc-string vowel-match sisheng-vowel-table)))
-;;          (input-vowel (car vowel-list))
-;;          (regex (car (cdr (assoc-string input-vowel pinyin-isearch-vowel-table)))))
-;;     ;; replace ō with [ōóǒò]
-;;     (replace-match regex nil nil syllable)))
 
 
 (defun pinyin-isearch--get-position-first-syllable(string)
