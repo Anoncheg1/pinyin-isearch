@@ -1,6 +1,6 @@
 (define-package
     "pinyin-isearch"
-    "0.9"
+    "1.0"
     "Allow to search Chinese pinyin without tones"
     '((emacs "27.2"))
     :url "https://github.com/Anoncheg1/pinyin-isearch"

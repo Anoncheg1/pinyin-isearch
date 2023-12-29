@@ -22,44 +22,66 @@
 
 ;; to run: emacs -batch -l ert -l pinyin-isearch.el -l pinyin-isearch-tests.el -f ert-run-tests-batch-and-exit 2> out.log
 ;; eval-buffer
-;; M-x ert
+;; M-x ert RET t RET
 
 ;;; Code:
 
 (require 'ert)
 (require 'pinyin-isearch)
 
-;; (with-my-fixture)
-;; pinyin-isearch-mode
-(ert-deftest pinyin--make-sisheng-to-regex ()
+
+(ert-deftest pinyin-isearch--get_vowel_from_sisheng ()
   (with-temp-buffer
-    (pinyin-isearch-mode)
-    (should (equal (pinyin-isearch--make-sisheng-to-regex "zhuō") "zhu[ōóǒò]"))
-    (should (equal (pinyin-isearch--make-sisheng-to-regex "nüē") "nü[ēéěè]")) ; todo
+    (should (equal (pinyin-isearch--get_vowel_from_sisheng "zuō") "o"))
+    (should (equal (pinyin-isearch--get_vowel_from_sisheng "nüē") "ue"))
     )
 )
+
+
+(ert-deftest pinyin-isearch--vowels-to-regex ()
+  (with-temp-buffer
+    (should (equal (pinyin-isearch--vowels-to-regex '("u" "o")) "\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)"))
+    (should (equal (pinyin-isearch--vowels-to-regex '("u")) "[ūúǔùǖǘǚǜ]"))
+    (should (equal (pinyin-isearch--vowels-to-regex '("u" "ue")) "\\([ūúǔùǖǘǚǜ]\\s-*e\\|ü[ēéěè]\\)"))
+    )
+)
+
 
 (ert-deftest pinyin--get-position-first-syllable ()
   (with-temp-buffer
-    (pinyin-isearch-mode)
-    (should (eq (pinyin-isearch--get-position-first-syllable "zuom") 3))
-    (should (eq (pinyin-isearch--get-position-first-syllable "svssvv") nil))
-    (should (eq (pinyin-isearch--get-position-first-syllable "zu") 2))
+    (should (equal (pinyin-isearch--get-position-first-syllable "zuom") '(3 "u" "o")))
+    (should (equal (pinyin-isearch--get-position-first-syllable "svssvv") '(nil)))
+    (should (equal (pinyin-isearch--get-position-first-syllable "zux") '(2 "u")))
+    (should (equal (pinyin-isearch--get-position-first-syllable "zu") '(2 "u")))
+    (should (equal (pinyin-isearch--get-position-first-syllable "nue") '(3 "u" "ue")))
+    (should (equal (pinyin-isearch--get-position-first-syllable "pin") '(2 "i")))
+    (should (equal (pinyin-isearch--get-position-first-syllable "jiaoshenme") '(3 "i" "a")))
     )
 )
 
+(ert-deftest pinyin-isearch--make-syllable-to-regex ()
+  (with-temp-buffer
+    (should (equal (pinyin-isearch--make-syllable-to-regex "zuo" '(3 "u" "o")) "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)"))
+    (should (equal (pinyin-isearch--make-syllable-to-regex "zu" '(2 "u")) "z[ūúǔùǖǘǚǜ]"))
+    (should (equal (pinyin-isearch--make-syllable-to-regex "nue" '(3 "u" "ue")) "n\\([ūúǔùǖǘǚǜ]\\s-*e\\|ü[ēéěè]\\)"))
+    (should (equal (pinyin-isearch--make-syllable-to-regex "nue" '(nil)) "nue"))
+    )
+)
+
+
 (ert-deftest pinyin-brute-replace ()
   (with-temp-buffer
-    (pinyin-isearch-mode)
-    (should (equal (pinyin-isearch--brute-replace "zuss") "z[ūúǔùǖǘǚǜ]\\s-*s\\s-*s"))
-    (should (equal (pinyin-isearch--brute-replace "zenme") "z[ēéěè]\\s-*n\\s-*m\\s-*[ēéěè]"))
-    ;; not required now: (should (equal (pinyin-brute-replace "zenme" t) "z[eēéěè]\\s-*n\\s-*m\\s-*[eēéěè]"))
+    (should (equal (pinyin-isearch--brute-replace "zuss") "z\\s-*[ūúǔùǖǘǚǜ]\\s-*s\\s-*s"))
+    (should (equal (pinyin-isearch--brute-replace "zuss" :normal t) "z\\s-*[uūúǔùǖǘǚǜ]\\s-*s\\s-*s"))
+    (should (equal (pinyin-isearch--brute-replace "zenme") "z\\s-*[ēéěè]\\s-*n\\s-*m\\s-*[ēéěè]"))
+    (should (equal (pinyin-isearch--brute-replace "zenme" :normal t) "z\\s-*[eēéěè]\\s-*n\\s-*m\\s-*[eēéěè]"))
+    (should (equal (pinyin-isearch--brute-replace "oshenme" :normal t) "[oōóǒò]\\s-*s\\s-*h\\s-*[eēéěè]\\s-*n\\s-*m\\s-*[eēéěè]"))
+
     )
 )
 
 (ert-deftest pinyin--prepare-query1 ()
   (with-temp-buffer
-    (pinyin-isearch-mode)
     (should (equal (pinyin-isearch--prepare-query "") ""))
     (should (equal (pinyin-isearch--prepare-query "n") "n"))
     (should (equal (pinyin-isearch--prepare-query "nu") "n[ūúǔùǖǘǚǜ]"))
@@ -68,18 +90,19 @@
 
 (ert-deftest pinyin--prepare-query2 ()
   (with-temp-buffer
-    (pinyin-isearch-mode)
+    ;; (pinyin-isearch-mode)
     (should (equal (pinyin-isearch--prepare-query "ssd") "ssd"))
-    (should (equal (pinyin-isearch--prepare-query "zuo") "zu[ōóǒò]"))
+    (should (equal (pinyin-isearch--prepare-query "zuo") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)"))
     (should (equal (pinyin-isearch--prepare-query "me") "m[ēéěè]"))
-    (should (equal (pinyin-isearch--prepare-query "zuozuo") "zu[ōóǒò]\\s-*z[uūúǔùǖǘǚǜ]\\s-*[oōóǒò]"))
-    (should (equal (pinyin-isearch--prepare-query "zuo me") "zu[ōóǒò]\\s-* m\\s-*[eēéěè]"))
-    (should (equal (pinyin-isearch--prepare-query "zuome") "zu[ōóǒò]\\s-*m[eēéěè]"))
-    (should (equal (pinyin-isearch--prepare-query "zuom") "zu[ōóǒò]\\s-*m"))
-    (should (equal (pinyin-isearch--prepare-query "zuomezuome") "zu[ōóǒò]\\s-*m[eēéěè]\\s-*z\\s-*[uūúǔùǖǘǚǜ]\\s-*[oōóǒò]\\s-*m\\s-*[eēéěè]"))
-    (should (equal (pinyin-isearch--prepare-query "nuan") "nu[āáǎà]n"))
-    (should (equal (pinyin-isearch--prepare-query "nue") "nü[ēéěè]"))
-    (should (equal (pinyin-isearch--prepare-query "zuozuo") "zu[ōóǒò]\\s-*z[uūúǔùǖǘǚǜ]\\s-*[oōóǒò]"))
+    (should (equal (pinyin-isearch--prepare-query "zuozuo") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)\\s-*z\\s-*[uūúǔùǖǘǚǜ]\\s-*[oōóǒò]"))
+    (should (equal (pinyin-isearch--prepare-query "zuo me") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)\\s-* \\s-*m\\s-*[eēéěè]"))
+    (should (equal (pinyin-isearch--prepare-query "zuome") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)\\s-*m\\s-*[eēéěè]"))
+    (should (equal (pinyin-isearch--prepare-query "zuom") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)\\s-*m"))
+    (should (equal (pinyin-isearch--prepare-query "zuomezuome") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)\\s-*m\\s-*[eēéěè]\\s-*z\\s-*[uūúǔùǖǘǚǜ]\\s-*[oōóǒò]\\s-*m\\s-*[eēéěè]"))
+    (should (equal (pinyin-isearch--prepare-query "nuan") "n\\([ūúǔùǖǘǚǜ]\\s-*a\\|u[āáǎà]\\)n"))
+    (should (equal (pinyin-isearch--prepare-query "nue") "n\\([ūúǔùǖǘǚǜ]\\s-*e\\|ü[ēéěè]\\)"))
+    (should (equal (pinyin-isearch--prepare-query "pin") "p[īíǐì]\\s-*n"))
+    (should (equal (pinyin-isearch--prepare-query "jiaoshenme") "j\\([īíǐì]\\s-*a\\|i[āáǎà]\\)\\s-*[oōóǒò]\\s-*s\\s-*h\\s-*[eēéěè]\\s-*n\\s-*m\\s-*[eēéěè]"))
     )
 )
 
@@ -91,8 +114,8 @@
 ;;     )
 ;; )
 ;; test
-(print (pinyin-isearch--get-position-first-syllable "bian")) ; bi or an or bian? "bī" "ān" "biān" ;; "b\\([īíǐì][āáǎà]\\|i[āáǎà]\\|[īíǐì]a\\)n"
-(print (pinyin-isearch--get-position-first-syllable "bian")) ; bi or bian? "bī" "biān" ;; "b\\(i[āáǎà]\\|[īíǐì]a\\)n"
+;; (print (pinyin-isearch--get-position-first-syllable "bian")) ; bi or an or bian? "bī" "ān" "biān" ;; "b\\([īíǐì][āáǎà]\\|i[āáǎà]\\|[īíǐì]a\\)n"
+;; (print (pinyin-isearch--get-position-first-syllable "bian")) ; bi or bian? "bī" "biān" ;; "b\\(i[āáǎà]\\|[īíǐì]a\\)n"
 ;; "b([īíǐì][āáǎà]|i[āáǎà]|[īíǐì]a)n"
 ;; "b\\([īíǐì][āáǎà]\\|i[āáǎà]\\|[īíǐì]a\\)n"
 ;; (ert-run-tests-interactively "pinyin--prepare-query")
