@@ -12,6 +12,10 @@ Features:
 - white spaces are ignored between syllables
 - tone required only in first syllable in text: Zhēn de ma
 
+# Known issues
+it jumps from original position when you enter characters. (TODO will
+be fixed soon.)
+
 # install
 copy file to ~/.emacs.d/contrib/pinyin-isearch.el
 
