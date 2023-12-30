@@ -11,8 +11,8 @@ For example, to find "Shànghǎi" in text you just type: C-s shanghai.
 - white spaces are ignored between syllables
 - tone required only in first syllable in text: Zhēn de ma
 - should not conflict with other isearch modes
-- fix isearch behavior when new search begins from last successed occurance
-- fir isearch behavior after exiting from edit mode of query string.
+- fix isearch behavior when new search begins from last successed occurance and jump down
+
 
 # Installation
 copy file to ~/.emacs.d/contrib/pinyin-isearch.el
