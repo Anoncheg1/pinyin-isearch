@@ -39,8 +39,6 @@
 ;; M-x pinyin-isearch-forward / pinyin-isearch-backward
 ;; C-u C-s for normal search
 
-;;; Code:
-
 ;; How it works:
 ;; 1) we create list of ((\"zhuo\" . \"zhuō\")...) : pinyin-isearch-syllable-table
 ;; 2) we replace C-s function with our own: isearch-search-fun-function
@@ -50,10 +48,27 @@
 ;; I was unable to determinate reason for this error
 ;; It occure only during loading and use case sensitivity in search.
 ;; used sisheng-regexp, sisheng-vowel-table and sisheng-syllable-table.
+
+;;; Code:
+
 (condition-case nil
     (load "quail/sisheng") ; (quail-use-package "chinese-sisheng" "quail/sisheng")
   (args-out-of-range nil))
 
+
+(defgroup pinyin-isearch nil
+  "Fuzzy Matching."
+  :group 'pinyin-isearch
+  :prefix "pinyin-isearch-")
+
+(defcustom pinyin-isearch-fix-jumping t
+  "Fix isearch behavior.
+When you type new character then new search begins from last
+success found occurance, not from when you begin whole search.
+This fix force isearch to begin from the starting point.
+Disable for native isearch behavior."
+  :type 'boolean
+  :group 'pinyin-isearch)
 
 (defconst pinyin-isearch-vowel-table
   '(("a" "[āáǎà]")
@@ -61,7 +76,7 @@
     ("i" "[īíǐì]")
     ("o" "[ōóǒò]")
     ("u" "[ūúǔùǖǘǚǜ]")
-    ("v" "[ūúǔùǖǘǚǜ]")
+    ;; ("v" "[ūúǔùǖǘǚǜ]")
     ("ue" "ü[ēéěè]")
     ;; ("ve" "ü[ēéěè]")
 ))
@@ -284,19 +299,37 @@ It modifies search query string and call isearch with regex."
 
 (defvar-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
 
+
+(defun pinyin-isearch--fix-jumping-advice ()
+  "Advice to fix isearch behavior.  Force search from a starting point."
+  (let ((key (this-single-command-keys)))
+    (when (and isearch-success
+               (not (commandp
+                     (lookup-key pinyin-isearch-mode-map key nil))))
+        (goto-char isearch-opoint)
+        (setq isearch-adjusted t)
+    ))
+)
+
+
 ;;;###autoload
 (define-minor-mode pinyin-isearch-simple-mode
   "Modifies function `isearch-forward'.
 Allow with query {pinyin} to find {pīnyīn}."
   :lighter " p-isearch" :global nil :group 'isearch :version "29.1"
-  ;; save
-  (if pinyin-isearch-mode
-      (setq-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function))
-  ;; remap
-  (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
-  ;; disable
-  (if (not pinyin-isearch-mode)
-      (setq-local isearch-search-fun-function pinyin-isearch--original-isearch-search-fun-function)))
+
+  (if pinyin-isearch-mode ; if activated
+      (progn
+        ;; save original isearch function
+        (setq-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
+        ;; remap
+        (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
+        ;; fix jumping
+        (advice-add 'isearch-pre-command-hook :before #'pinyin-isearch--fix-jumping-advice))
+    ;; else (if (not pinyin-isearch-mode) - disable our isearch
+    (progn
+      (setq-local isearch-search-fun-function pinyin-isearch--original-isearch-search-fun-function)
+      (advice-remove 'isearch-pre-command-hook #'pinyin-isearch--fix-jumping-advice))))
 
 
 ;;;###autoload
