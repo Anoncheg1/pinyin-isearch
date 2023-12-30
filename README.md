@@ -11,6 +11,7 @@ For example, to find "Shànghǎi" in text you just type: C-s shanghai.
 Features:
 - white spaces are ignored between syllables
 - tone required only in first syllable in text: Zhēn de ma
+- should not conflict with other isearch modes
 
 # Known issues
 it jumps from original position when you enter characters. (TODO will

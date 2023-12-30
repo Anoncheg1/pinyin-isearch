@@ -31,6 +31,7 @@
 ;; - white spaces are ignored between syllables,
 ;;   but not ignored if in query
 ;; - tone required in text only for first syllable: Zhēn de ma
+;; - should not conflict with other isearch modes
 ;; To activate use:
 ;; (require 'pinyin-isearch)
 ;; M-x pinyin-isearch-mode
