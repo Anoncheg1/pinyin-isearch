@@ -163,10 +163,12 @@ and global variable `pinyin-isearch-syllable-table'."
 
 (defun pinyin-isearch--vowels-to-regex (vowels)
   "Used for accurate apply regex to first syllable of toneless pinyin.
-Convert (u o) to \"\\([ūúǔùǖǘǚǜ][oōóǒò]\\|[uūúǔùǖǘǚǜ][ōóǒò]\\)\"
-and (u) to \"[ūúǔùǖǘǚǜ]\".
-Uses tables: `pinyin-isearch-vowel-table', `pinyin-isearch-vowel-table-normal'.
-Argument VOWELS list of normal vowels."
+Convert (u o) to
+\"\\([ūúǔùǖǘǚǜ][oōóǒò]\\|[uūúǔùǖǘǚǜ][ōóǒò]\\)\"
+and (u) to \"[ūúǔùǖǘǚǜ]\".  Uses tables:
+`pinyin-isearch-vowel-table',
+`pinyin-isearch-vowel-table-normal'.  Argument VOWELS list of
+normal vowels."
   (if (eq (length vowels) 2)
       (if  (not (member "ue" vowels))
           (let* ((pin-vowels (mapcar (lambda (x) (assoc-string x pinyin-isearch-vowel-table)) vowels))
@@ -234,7 +236,8 @@ if 'NORMAL' add normal to regex."
   "Main function to convert query 'STRING' to regex for isearch.
 Uses functions: `pinyin-isearch--get-position-first-syllable',
 `pinyin-isearch--make-syllable-to-regex',
-`pinyin-isearch--brute-replace'."
+`pinyin-isearch--brute-replace'.
+Optional argument LAX not used."
   (let* ((st (regexp-quote string))
          ;; save length
          (len (length st))
@@ -283,20 +286,6 @@ sisheng."
     (replace-match base-key nil nil syllable)))
 
 
-(defun pinyin-isearch--isearch-search-fun-function ()
-  "Replacement for `isearch-search-fun-function'.
-It modifies search query string and call isearch with regex."
-  (if isearch-regexp
-      ;; normal execution if it is regex search
-      (funcall pinyin-isearch--original-isearch-search-fun-function)
-  ;; else
-  (lambda (string &optional bound noerror count)
-    (let ((regexp (pinyin-isearch--prepare-query string)))
-      ;; (print regexp)
-      (funcall
-       (if isearch-forward #'re-search-forward #'re-search-backward)
-       regexp bound noerror count)))))
-
 
 ;; ---------------------- part ---------------------
 
@@ -320,28 +309,20 @@ It modifies search query string and call isearch with regex."
           (setq isearch-adjusted t))
 )))
 
-;; (defun pinyin-isearch--fix-prefix-for-default-mode(&rest arg)
-;;   "Fix prefix for pinyin-isearch.
-;; When variable `search-default-mode' set prefix is not appropriate."
-;; (if (eq search-default-mode 'pinyin-isearch-regexp-function)
-;;     (eval (concat "(isearch-toggle-" pinyin-search-message-prefix ")"))
-;; ))
-
-;; (advice-add 'isearch-update :before #'pinyin-isearch--fix-jumping-advice)
 
 (defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
+"Add prefix when `search-default-mode' is used to make mode as default."
   (if (and (eq search-default-mode 'pinyin-isearch-regexp-function)
            (eq isearch-regexp-function 'pinyin-isearch-regexp-function)
-           ;; (not isearch-regexp)
            )
       (setq ad-return-value (concat pinyin-isearch-message-prefix ad-return-value))
     ad-return-value))
 
+
 (isearch-define-mode-toggle "Pinyin" "n" pinyin-isearch-regexp-function "\
 Turning on pinyin search turns off normal mode."
   ;; fix isearch jumping
-  (advice-add 'isearch-pre-command-hook :before #'pinyin-isearch--fix-jumping-advice)
-)
+  (advice-add 'isearch-pre-command-hook :before #'pinyin-isearch--fix-jumping-advice))
 
 
 (provide 'pinyin-isearch)
