@@ -12,9 +12,7 @@ For example, to find "Shànghǎi" in text you just type: C-s shanghai.
 - tone required only in first syllable in text: Zhēn de ma
 - should not conflict with other isearch modes
 - fix isearch behavior when new search begins from last successed occurance
-
-# Known issues
-"Isearch edit mode" breaks pinyin-isearch-mode.
+- fir isearch behavior after exiting from edit mode of query string.
 
 # Installation
 copy file to ~/.emacs.d/contrib/pinyin-isearch.el
