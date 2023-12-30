@@ -1,9 +1,9 @@
 # pinyin-isearch
-Emacs package with minor mode that allow search pinyin, ignoring tones.
+Emacs package that allow search pinyin, ignoring tones.
 
 Allow to search with pinyin in pinyin text and ignore tone diacritical marks for speed.
 
-It replaces isearch-search-fun-function with our function that replace search string with regex that ignore tones.
+Isearch "submode" that replace isearch-regexp-function to generate regex.
 
 For example, to find "Shànghǎi" in text you just type: C-s shanghai.
 
@@ -25,11 +25,7 @@ add to ~/.emacs
 ```
 
 # Usage
-``` M-x pinyin-isearch-mode ``` To activate per file: ```  -*- mode: pinyin-isearch; -*- ```
-
-Or just use command: ``` M-x pinyin-isearch-forward ``` and ``` M-x pinyin-isearch-backward ```
-
-C-u C-s for normal isearch
+After ```C-s/r``` in isearch mode: ```M-s n``` to activate isearch submode.
 
 # Configuration
 M-x customize-group pinyin-isearch
