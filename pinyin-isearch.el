@@ -61,12 +61,21 @@
   :group 'pinyin-isearch
   :prefix "pinyin-isearch-")
 
-(defcustom pinyin-isearch-fix-jumping t
-  "Fix isearch behavior.
-When you type new character then new search begins from last
+(defcustom pinyin-isearch-fix-jumping-flag t
+  "Non-nil means fix isearch behavior.
+When typing new character the new search begins from last
 success found occurance, not from when you begin whole search.
 This fix force isearch to begin from the starting point.
 Disable for native isearch behavior."
+  :type 'boolean
+  :group 'pinyin-isearch)
+
+(defcustom pinyin-isearch-fix-edit-flag t
+  "Non-nil means fix isearch behavior.
+After exiting isearch edit string, finction
+`isearch-edit-string', isearch restart itself and forgot about
+any modifications, such as this package.
+Disable if you faced any issues."
   :type 'boolean
   :group 'pinyin-isearch)
 
@@ -311,6 +320,15 @@ It modifies search query string and call isearch with regex."
     ))
 )
 
+(defun pinyin-isearch--fix-edit-advice ()
+  "Advice to fix isearch behavior.
+After edit the search string in the minibuffer we resume search."
+  (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
+  ;; (isearch-update)
+  (goto-char isearch-opoint)
+  (let ((current-direction (if isearch-forward 'forward 'backward)))
+    (isearch-repeat current-direction))
+)
 
 ;;;###autoload
 (define-minor-mode pinyin-isearch-simple-mode
@@ -324,12 +342,20 @@ Allow with query {pinyin} to find {pīnyīn}."
         (setq-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
         ;; remap
         (setq-local isearch-search-fun-function 'pinyin-isearch--isearch-search-fun-function)
-        ;; fix jumping
-        (advice-add 'isearch-pre-command-hook :before #'pinyin-isearch--fix-jumping-advice))
+        ;; fix isearch jumping
+        (if pinyin-isearch-fix-jumping-flag
+            (advice-add 'isearch-pre-command-hook :before #'pinyin-isearch--fix-jumping-advice))
+        ;; fix isearch edit mode
+        (if pinyin-isearch-fix-edit-flag
+            (advice-add 'isearch-edit-string :after #'pinyin-isearch--fix-edit-advice))
+        )
     ;; else (if (not pinyin-isearch-mode) - disable our isearch
     (progn
       (setq-local isearch-search-fun-function pinyin-isearch--original-isearch-search-fun-function)
-      (advice-remove 'isearch-pre-command-hook #'pinyin-isearch--fix-jumping-advice))))
+      (if pinyin-isearch-fix-jumping-flag
+          (advice-remove 'isearch-pre-command-hook #'pinyin-isearch--fix-jumping-advice))
+      (if pinyin-isearch-fix-edit-flag
+          (advice-remove 'isearch-pre-command-hook #'pinyin-isearch--fix-edit-advice)))))
 
 
 ;;;###autoload
@@ -341,7 +367,19 @@ normal search."
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-s") #'pinyin-isearch-forward)
             (define-key map (kbd "C-r") #'pinyin-isearch-backward)
-            map))
+            map)
+  (if pinyin-isearch-mode ; if activated
+      (progn ; fix isearch jumping and isearch edit mode
+        (if pinyin-isearch-fix-jumping-flag
+            (advice-add 'isearch-pre-command-hook :before #'pinyin-isearch--fix-jumping-advice))
+        (if pinyin-isearch-fix-edit-flag
+            (advice-add 'isearch-edit-string :after #'pinyin-isearch--fix-edit-advice)))
+    ;; else
+    (progn
+      (if pinyin-isearch-fix-jumping-flag
+          (advice-remove 'isearch-pre-command-hook #'pinyin-isearch--fix-jumping-advice))
+      (if pinyin-isearch-fix-edit-flag
+          (advice-remove 'isearch-pre-command-hook #'pinyin-isearch--fix-edit-advice)))))
 
 
 (defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
