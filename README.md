@@ -29,7 +29,7 @@ After ```C-s/r``` in isearch mode: ```M-s n``` to activate isearch submode.
 
 To eliminate ```M-s n``` you can set this mode by default per file with:
 
-```-*- search-default-mode: pinyin-isearch--prepare-query; -*-```
+```;-*- search-default-mode: pinyin-isearch--prepare-query; -*-```
 
 # Configuration
 M-x customize-group pinyin-isearch

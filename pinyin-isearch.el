@@ -111,9 +111,8 @@ Disable if you faced any issues."
     ("üē" "ue"))
     "Used to convert sisheng pinyin to toneless pinyin.")
 
-(defconst pinyin-isearch-message-prefix
-        (concat (propertize "[pinyin]" 'face 'bold) " ")
-"Used when `pinyin-isearch-mode' is activated only.")
+(defconst pinyin-isearch-message-prefix "pinyin "
+  "Prepended to the isearch prompt when Pinyin searching is activated.")
 
 
 (defun pinyin-isearch--get_vowel_from_sisheng (string)
@@ -312,23 +311,37 @@ It modifies search query string and call isearch with regex."
 
 (defun pinyin-isearch--fix-jumping-advice ()
   "Advice to fix isearch behavior.  Force search from a starting point."
-  (when (eq isearch-regexp-function #'pinyin-isearch--prepare-query)
-  (if (eq isearch-regexp-function #'pinyin-isearch--prepare-query)
-  (let ((key (this-single-command-keys)))
-    (print (lookup-key isearch-mode-map key nil) )
-    (when (and isearch-success
-               (eq 'isearch-printing-char (lookup-key isearch-mode-map key nil)))
-      (goto-char isearch-opoint)
-      (setq isearch-adjusted t))
-))))
+  (if (eq isearch-regexp-function #'pinyin-isearch-regexp-function)
+      (let ((key (this-single-command-keys)))
+        (print (lookup-key isearch-mode-map key nil) )
+        (when (and isearch-success
+                   (eq 'isearch-printing-char (lookup-key isearch-mode-map key nil)))
+          (goto-char isearch-opoint)
+          (setq isearch-adjusted t))
+)))
 
+;; (defun pinyin-isearch--fix-prefix-for-default-mode(&rest arg)
+;;   "Fix prefix for pinyin-isearch.
+;; When variable `search-default-mode' set prefix is not appropriate."
+;; (if (eq search-default-mode 'pinyin-isearch-regexp-function)
+;;     (eval (concat "(isearch-toggle-" pinyin-search-message-prefix ")"))
+;; ))
 
-(isearch-define-mode-toggle "[pinyin]" "n" pinyin-isearch-regexp-function "\
+;; (advice-add 'isearch-update :before #'pinyin-isearch--fix-jumping-advice)
+
+(defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
+  (if (and (eq search-default-mode 'pinyin-isearch-regexp-function)
+           (eq isearch-regexp-function 'pinyin-isearch-regexp-function)
+           ;; (not isearch-regexp)
+           )
+      (setq ad-return-value (concat pinyin-isearch-message-prefix ad-return-value))
+    ad-return-value))
+
+(isearch-define-mode-toggle "Pinyin" "n" pinyin-isearch-regexp-function "\
 Turning on pinyin search turns off normal mode."
   ;; fix isearch jumping
   (advice-add 'isearch-pre-command-hook :before #'pinyin-isearch--fix-jumping-advice)
 )
-
 
 
 (provide 'pinyin-isearch)
