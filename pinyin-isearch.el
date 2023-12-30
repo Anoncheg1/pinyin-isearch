@@ -268,7 +268,7 @@ It modifies search query string and call isearch with regex."
   ;; else
   (lambda (string &optional bound noerror count)
     (let ((regexp (pinyin-isearch--prepare-query string)))
-      (print regexp)
+      ;; (print regexp)
       (funcall
        (if isearch-forward #'re-search-forward #'re-search-backward)
        regexp bound noerror count)))))
