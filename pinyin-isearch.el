@@ -205,14 +205,13 @@ and (u) to \"[ūúǔùǖǘǚǜ]\".  Uses tables:
 normal vowels."
   (if (eq (length vowels) 2)
       (if  (not (member "ue" vowels))
-          (let* ((pin-vowels (mapcar (lambda (x) (assoc-string x pinyin-isearch-vowel-table)) vowels))
-                 ;; (norm-vowels (mapcar (lambda (x) (assoc-string x pinyin-isearch-vowel-table-normal)) vowels))
+          (let* ((pin-vowels (mapcar (lambda (x)
+                                       (assoc-string x pinyin-isearch-vowel-table)) vowels))
                  (pin-vowels1 (car (cdr (car pin-vowels))))
                  (pin-vowels2 (car (cdr (car (cdr pin-vowels)))))
-                 ;; (norm-vowels1 (car (cdr (car norm-vowels))))
-                 ;; (norm-vowels2 (car (cdr (car (cdr norm-vowels)))))
                  )
-            (concat "\\(" pin-vowels1 "\\s-*" (car (cdr vowels)) "\\|" (car vowels) pin-vowels2 "\\)"))
+            (concat "\\(" pin-vowels1 "\\s-*" (car (cdr vowels))
+                    "\\|" (car vowels) pin-vowels2 "\\)"))
         ;; ("u" "ue") case
         ;; (print (cdr (assoc-string "ue" pinyin-isearch-vowel-table)))
         (let ((p1  (concat (car (cdr (assoc-string "u" pinyin-isearch-vowel-table))) "\\s-*e")) ; [ūúǔùǖǘǚǜ]e
@@ -286,7 +285,8 @@ Optional argument LAX not used."
         (let* (;; cut first sullable
                (first-syllable (substring string 0 first-syllable-pos))
                ;; replace sub-syllable vowels with accurate regex
-               (first-syllable (pinyin-isearch--make-syllable-to-regex first-syllable first-syllable-stat))
+               (first-syllable (pinyin-isearch--make-syllable-to-regex
+                                first-syllable first-syllable-stat))
                ;; if others is not null apply rough regex
                (others (if (< first-syllable-pos len)
                            ;; process others
