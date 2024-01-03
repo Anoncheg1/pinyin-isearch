@@ -186,8 +186,7 @@ and global variable `pinyin-isearch-syllable-table'."
             (if (not (member new-vow vowels))
                 (setq vowels (cons (pinyin-isearch--get_vowel_from_sisheng syl) vowels))
               ;; else ignore previous long syllable with same vowel
-              (setq ret nil)))
-        )
+              (setq ret nil))))
       ;; save position of the first longest syllable
       (if (and (null ret) syl)
           (setq ret pos))
@@ -281,8 +280,7 @@ Optional argument LAX not used."
                                   (pinyin-isearch--get-position-first-syllable st)
                                 ;; else
                                 '(nil)))
-         (first-syllable-pos (car first-syllable-stat))
-         )
+         (first-syllable-pos (car first-syllable-stat)))
     ;; accurate regex for first syllable and brute for other left part of string
     (if first-syllable-pos
         (let* (;; cut first sullable
@@ -317,15 +315,13 @@ Optional argument LAX not used."
         (when (and isearch-success
                    (eq 'isearch-printing-char (lookup-key isearch-mode-map key nil)))
           (goto-char isearch-opoint)
-          (setq isearch-adjusted t))
-)))
+          (setq isearch-adjusted t)))))
 
 
 (defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
 "Add prefix when `search-default-mode' is used to make mode as default."
   (if (and (eq search-default-mode 'pinyin-isearch-regexp-function)
-           (eq isearch-regexp-function 'pinyin-isearch-regexp-function)
-           )
+           (eq isearch-regexp-function 'pinyin-isearch-regexp-function))
       (setq ad-return-value (concat pinyin-isearch-message-prefix ad-return-value))
     ad-return-value))
 
