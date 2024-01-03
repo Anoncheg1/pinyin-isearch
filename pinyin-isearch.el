@@ -60,11 +60,11 @@
     (load "quail/sisheng") ; (quail-use-package "chinese-sisheng" "quail/sisheng")
   (args-out-of-range nil))
 
-(defvar sisheng-regexp :docstring "located in quail/sisheng")
+(defvar sisheng-regexp :docstring "Located in quail/sisheng.")
 
-(defvar sisheng-vowel-table :docstring "located in quail/sisheng")
+(defvar sisheng-vowel-table :docstring "Located in quail/sisheng.")
 
-(defvar sisheng-syllable-table :docstring "located in quail/sisheng")
+(defvar sisheng-syllable-table :docstring "Located in quail/sisheng.")
 
 ;; -------------- after sisheng loading ----------
 
@@ -221,7 +221,7 @@ normal vowels."
           (concat "\\(" p1 "\\|" p2 "\\)") ; "\\([ūúǔùǖǘǚǜ]e\\|ü[ēéěè]\\)"
           ))
     ;; else if one vowel
-    (car (cdr (assoc-string (car vowels) pinyin-isearch-vowel-table)))))
+    (car (cdr (assoc-string (car vowels) pyinyin-isearch-vowel-table)))))
 
 
 (defun pinyin-isearch--make-syllable-to-regex (syllable d-vowels)
