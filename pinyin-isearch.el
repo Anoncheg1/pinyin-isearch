@@ -3,9 +3,9 @@
 ;; Copyright (c) 2023 Anoncheg1
 
 ;; Author: Anoncheg1
-;; Keywords: chinese, pinyin, search
+;; Keywords: chinese, pinyin, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
-;; Version: 1.0
+;; Version: 1.2
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is not part of GNU Emacs.
@@ -41,10 +41,14 @@
 ;; C-u C-s for normal search
 
 ;; How it works:
-;; 1) we create list of ((\"zhuo\" . \"zhuō\")...) : pinyin-isearch-syllable-table
-;; 2) we define isearch-toggle-[pinyin] with isearch-define-mode-toggle macros
-;; 3) we find first longest syllable and very accurate do regex with tones "n\\([ūúǔùǖǘǚǜ]e\\|ü[ēéěè]\\)"
-;;   for the rest of the line we apply rough regex for every vowel [eēéěè]
+;; 1) we create list of ((\"zhuo\" . \"zhuō\")...) :
+;;      pinyin-isearch-syllable-table
+;; 2) we define isearch-toggle-[pinyin] with
+;;      isearch-define-mode-toggle macros
+;; 3) we find first longest syllable and very accurate do regex
+;;      with tones "n\\([ūúǔùǖǘǚǜ]e\\|ü[ēéěè]\\)" for the rest of
+;;      the line we apply rough regex for every vowel [eēéěè]
+
 ;;; Code:
 
 
@@ -56,6 +60,13 @@
     (load "quail/sisheng") ; (quail-use-package "chinese-sisheng" "quail/sisheng")
   (args-out-of-range nil))
 
+(defvar sisheng-regexp :docstring "located in quail/sisheng")
+
+(defvar sisheng-vowel-table :docstring "located in quail/sisheng")
+
+(defvar sisheng-syllable-table :docstring "located in quail/sisheng")
+
+;; -------------- after sisheng loading ----------
 
 (defgroup pinyin-isearch nil
   "Fuzzy Matching."
@@ -113,6 +124,30 @@ Disable if you faced any issues."
 
 (defconst pinyin-isearch-message-prefix "pinyin "
   "Prepended to the isearch prompt when Pinyin searching is activated.")
+
+
+(defun pinyin-isearch--sisheng-to-normal (syllable)
+  "Convert \"zhuō\" 'SYLLABLE' to \"zhuo\".
+Used to create list pinyin-isearch-syllable-table from original
+sisheng."
+  (string-match sisheng-regexp syllable)
+  (let* (;; fin vowel
+        (vowel-match (downcase (match-string 0 syllable)))
+        (vowel-list (cdr (assoc-string vowel-match sisheng-vowel-table)))
+        (base-key (nth 0 vowel-list))
+        (base-key (if (equal base-key "v") "u"
+                     ;; else
+                     (if (equal base-key "ve") "ue" base-key)))
+        )
+    ;; fix for sisheng, we don't need "v"
+    (replace-match base-key nil nil syllable)))
+
+
+(defconst pinyin-isearch-syllable-table
+    (mapcar (lambda (arg)
+              (cons (pinyin-isearch--sisheng-to-normal arg) arg))
+            sisheng-syllable-table) ;; sequence
+    "Initialize syllable's table ((\"zhuo\" . \"zhuō\")...).")
 
 
 (defun pinyin-isearch--get_vowel_from_sisheng (string)
@@ -201,7 +236,7 @@ Argument D-VOWELS result of function
     ;; else
     (let ((vowels-conc (if (member "ue" d-vowels) "ue"
                          ;; else
-                         (apply 'concat (cdr d-vowels)))) ; "uo"
+                         (apply #'concat (cdr d-vowels)))) ; "uo"
           (replacement (pinyin-isearch--vowels-to-regex (cdr d-vowels))))
       (string-replace vowels-conc replacement syllable))))
 
@@ -266,34 +301,10 @@ Optional argument LAX not used."
       ;; else
       st)))
 
-
-(defun pinyin-isearch--sisheng-to-normal (syllable)
-  "Convert \"zhuō\" 'SYLLABLE' to \"zhuo\".
-Used to create list pinyin-isearch-syllable-table from original
-sisheng."
-  (let ((vowel-match) (vowel-list) (base-key))
-    (string-match sisheng-regexp syllable)
-    ;; fin vowel
-    (setq vowel-match (downcase (match-string 0 syllable)))
-    (setq vowel-list
-          (cdr (assoc-string vowel-match sisheng-vowel-table)))
-    (setq input-vowel (car vowel-list))
-    (setq base-key (nth 0 vowel-list))
-    ;; fix for sisheng, we don't need "v"
-    (setq base-key (if (equal base-key "v") "u"
-                     ;; else
-                     (if (equal base-key "ve") "ue" base-key)))
-    (replace-match base-key nil nil syllable)))
-
-
 
 ;; ---------------------- part ---------------------
 
-(defconst pinyin-isearch-syllable-table
-    (mapcar (lambda (arg)
-              (cons (pinyin-isearch--sisheng-to-normal arg) arg))
-            sisheng-syllable-table) ;; sequence
-    "Initialize syllable's table ((\"zhuo\" . \"zhuō\")...).")
+
 
 (defvar-local pinyin-isearch--original-isearch-search-fun-function isearch-search-fun-function)
 

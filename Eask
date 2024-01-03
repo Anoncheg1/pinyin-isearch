@@ -3,7 +3,7 @@
          "Allow to search Chinese pinyin without tones.")
 
 (website-url "https://github.com/Anoncheg1/pinyin-isearch")
-(keywords "chinese" "pinyin" "search")
+(keywords "chinese" "pinyin" "matching" "convenience")
 
 (package-file "pinyin-isearch.el")
 
