@@ -220,7 +220,7 @@ normal vowels."
           (concat "\\(" p1 "\\|" p2 "\\)") ; "\\([ūúǔùǖǘǚǜ]e\\|ü[ēéěè]\\)"
           ))
     ;; else if one vowel
-    (car (cdr (assoc-string (car vowels) pyinyin-isearch-vowel-table)))))
+    (car (cdr (assoc-string (car vowels) pinyin-isearch-vowel-table)))))
 
 
 (defun pinyin-isearch--make-syllable-to-regex (syllable d-vowels)
@@ -271,6 +271,7 @@ Uses functions: `pinyin-isearch--get-position-first-syllable',
 `pinyin-isearch--make-syllable-to-regex',
 `pinyin-isearch--brute-replace'.
 Optional argument LAX not used."
+  (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
   (let* ((st (regexp-quote string))
          ;; save length
          (len (length st))
