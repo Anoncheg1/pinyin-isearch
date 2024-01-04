@@ -1,5 +1,5 @@
 (package "pinyin-isearch"
-         "1.0"
+         "1.3"
          "Allow to search Chinese pinyin without tones.")
 
 (website-url "https://github.com/Anoncheg1/pinyin-isearch")

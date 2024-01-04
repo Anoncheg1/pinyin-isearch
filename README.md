@@ -27,9 +27,11 @@ add to ~/.emacs
 # Usage
 After ```C-s/r``` in isearch mode: ```M-s n``` to activate isearch submode.
 
-To eliminate ```M-s n``` you can set this mode by default per file with:
+or with M-x ```pinyin-isearch-forward/backward```
 
-```;-*- search-default-mode: pinyin-isearch--prepare-query; -*-```
+You can set this mode by default per file with:
+
+```;-*- mode: pinyin-isearch; -*-```
 
 # Configuration
 M-x customize-group pinyin-isearch
