@@ -163,7 +163,7 @@ Argument STRING sisheng syllable."
 
 
 (defun pinyin-isearch--get-position-first-syllable(string)
-  "Get position of first syllable in query STRING.
+  "Get position of the first syllable in query STRING.
 It also return all vowels for all possible sub-syllables.
 For \"zuom\" return (3 \"u\" \"o\").
 Syllables with same tone vowel is ignored and used shortest.
@@ -196,7 +196,7 @@ and global variable `pinyin-isearch-syllable-table'."
 
 
 (defun pinyin-isearch--vowels-to-regex (vowels)
-  "Used for accurate apply regex to first syllable of toneless pinyin.
+  "Used for accurate apply regex to the first syllable of toneless pinyin.
 Convert (u o) to
 \"\\([ūúǔùǖǘǚǜ][oōóǒò]\\|[uūúǔùǖǘǚǜ][ōóǒò]\\)\"
 and (u) to \"[ūúǔùǖǘǚǜ]\".  Uses tables:
@@ -225,7 +225,7 @@ normal vowels."
 
 (defun pinyin-isearch--make-syllable-to-regex (syllable d-vowels)
   "Convert SYLLABLE \"zhuo\" to \"zh([]\|[])\".
-Applyed to first syllable to create accurate regex.
+Applyed to the first syllable to create accurate regex.
 Uses function `pinyin-isearch--vowels-to-regex'.
 Argument D-VOWELS result of function
  `pinyin-isearch--get-position-first-syllable'."
@@ -275,15 +275,15 @@ Optional argument LAX not used."
   (let* ((st (regexp-quote string))
          ;; save length
          (len (length st))
-         ;; get first longest syllable
+         ;; get the first longest syllable
          (first-syllable-stat (if (> (length st) 1)
                                   (pinyin-isearch--get-position-first-syllable st)
                                 ;; else
                                 '(nil)))
          (first-syllable-pos (car first-syllable-stat)))
-    ;; accurate regex for first syllable and brute for other left part of string
+    ;; accurate regex for the first syllable and brute for other left part of string
     (if first-syllable-pos
-        (let* (;; cut first sullable
+        (let* (;; cut the first sullable
                (first-syllable (substring string 0 first-syllable-pos))
                ;; replace sub-syllable vowels with accurate regex
                (first-syllable (pinyin-isearch--make-syllable-to-regex
