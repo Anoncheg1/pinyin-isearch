@@ -73,21 +73,28 @@
   :group 'pinyin-isearch
   :prefix "pinyin-isearch-")
 
-(defcustom pinyin-isearch-fix-jumping-flag t
-  "Non-nil means fix isearch behavior.
-When typing new character the new search begins from last
-success found occurance, not from when you begin whole search.
-This fix force isearch to begin from the starting point.
-Disable for native isearch behavior."
-  :type 'boolean
-  :group 'pinyin-isearch)
+;; (defcustom pinyin-isearch-fix-jumping-flag t
+;;   "Non-nil means fix isearch behavior.
+;; When typing new character the new search begins from last
+;; success found occurance, not from when you begin whole search.
+;; This fix force isearch to begin from the starting point.
+;; Disable for native isearch behavior."
+;;   :type 'boolean
+;;   :group 'pinyin-isearch)
 
-(defcustom pinyin-isearch-fix-edit-flag t
-  "Non-nil means fix isearch behavior.
-After exiting isearch edit string, finction
-`isearch-edit-string', isearch restart itself and forgot about
-any modifications, such as this package.
-Disable if you faced any issues."
+;; (defcustom pinyin-isearch-fix-edit-flag t
+;;   "Non-nil means fix isearch behavior.
+;; After exiting isearch edit string, finction
+;; `isearch-edit-string', isearch restart itself and forgot about
+;; any modifications, such as this package.
+;; Disable if you faced any issues."
+;;   :type 'boolean
+;;   :group 'pinyin-isearch)
+
+(defcustom pinyin-isearch-strict nil
+  "Non-nil means Enforce to search only pinyin.
+isearch will not fallback to find normal latin text if pinyin is
+not found.  Not this apply to for the first syllable only."
   :type 'boolean
   :group 'pinyin-isearch)
 
@@ -122,8 +129,8 @@ Disable if you faced any issues."
     ("üē" "ue"))
     "Used to convert sisheng pinyin to toneless pinyin.")
 
-(defconst pinyin-isearch-message-prefix "[Pinyin] "
-  "Prepended to the isearch prompt when Pinyin searching is activated.")
+;; (defconst pinyin-isearch-message-prefix "[Pinyin] "
+;;   "Prepended to the isearch prompt when Pinyin searching is activated.")
 
 
 (defun pinyin-isearch--sisheng-to-normal (syllable)
@@ -297,12 +304,12 @@ Optional argument LAX not used."
                          ;; else
                          nil)))
           (concat first-syllable others))
-      ;; else
-      st)))
+      ;; else - no syllable found
+      (if (not pinyin-isearch-strict) st) ; if not strict search for original text
+)))
 
 
 ;; ---------------------- part ---------------------
-
 
 
 (defvar-local pinyin-isearch--original-search-default-mode search-default-mode)

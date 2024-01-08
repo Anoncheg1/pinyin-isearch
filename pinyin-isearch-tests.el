@@ -98,7 +98,10 @@
     (should (equal (pinyin-isearch-regexp-function "nue") "n\\([ūúǔùǖǘǚǜ]\\s-*e\\|ü[ēéěè]\\)"))
     (should (equal (pinyin-isearch-regexp-function "pin") "p[īíǐì]\\s-*n"))
     (should (equal (pinyin-isearch-regexp-function "jiaoshenme") "j\\([īíǐì]\\s-*a\\|i[āáǎà]\\)\\s-*[oōóǒò]\\s-*s\\s-*h\\s-*[eēéěè]\\s-*n\\s-*m\\s-*[eēéěè]"))
+    (setq pinyin-isearch-strict nil) ; default
     (should (equal (pinyin-isearch-regexp-function "hi") "hi"))
+    (setq pinyin-isearch-strict t)
+    (should (equal (pinyin-isearch-regexp-function "hi") nil))
     )
 )
 
