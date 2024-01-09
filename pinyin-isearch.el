@@ -358,8 +358,7 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-forward'."
         ;; else
         (apply #'isearch-forward '(regexp-p no-recursive-edit)))
   ;; restore
-  (setq search-default-mode pinyin-isearch--original-search-default-mode)
-  )
+  (setq search-default-mode pinyin-isearch--original-search-default-mode))
 
 
 ;;;###autoload
