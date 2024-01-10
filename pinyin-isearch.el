@@ -63,24 +63,6 @@
   :group 'pinyin-isearch
   :prefix "pinyin-isearch-")
 
-;; (defcustom pinyin-isearch-fix-jumping-flag t
-;;   "Non-nil means fix isearch behavior.
-;; When typing new character the new search begins from last
-;; success found occurance, not from when you begin whole search.
-;; This fix force isearch to begin from the starting point.
-;; Disable for native isearch behavior."
-;;   :type 'boolean
-;;   :group 'pinyin-isearch)
-
-;; (defcustom pinyin-isearch-fix-edit-flag t
-;;   "Non-nil means fix isearch behavior.
-;; After exiting isearch edit string, finction
-;; `isearch-edit-string', isearch restart itself and forgot about
-;; any modifications, such as this package.
-;; Disable if you faced any issues."
-;;   :type 'boolean
-;;   :group 'pinyin-isearch)
-
 (defcustom pinyin-isearch-strict nil
   "Non-nil means Enforce to search only pinyin and hieroglyphs.
 isearch will not fallback to find normal latin text if pinyin is
@@ -100,6 +82,16 @@ Used for mode `pinyin-isearch-mode', and functions
                  (const :tag "Search in hieroglyphs only" t)
                  (const :tag "Search in pinyin only" pinyin)
                  (const :tag "Search in pinyin only" nil))
+  :group 'pinyin-isearch)
+
+(defcustom pinyin-isearch-fix-jumping-flag t
+  "Non-nil means fix isearch behavior.
+When typing new character the new search begins from last
+success found occurance, not from when you begin whole search.
+This fix force isearch to begin from the starting point.
+Disable for native isearch behavior."
+  :local t
+  :type 'boolean
   :group 'pinyin-isearch)
 
 
@@ -155,7 +147,7 @@ Optional argument LAX for isearch special cases."
 
 (defun pinyin-isearch--pinyin-fix-jumping-advice ()
   "Advice to fix isearch behavior.  Force search from a starting point."
-  (if (and isearch-mode
+  (if (and isearch-mode pinyin-isearch-fix-jumping-flag
            (or
            (eq isearch-regexp-function #'pinyin-isearch-pinyin-regexp-function)
            (eq isearch-regexp-function #'pinyin-isearch-hieroglyphs-regexp-function)
@@ -168,22 +160,11 @@ Optional argument LAX for isearch special cases."
           (setq isearch-adjusted t)))))
 
 
-;; (defadvice isearch-message-prefix (after pinyin-isearch-message-prefix activate)
-;; "Add prefix when `search-default-mode' is used to make mode as default."
-;;   (if (and ; (eq search-default-mode 'pinyin-isearch-pinyin-regexp-function)
-;;            (eq isearch-regexp-function 'pinyin-isearch-pinyin-regexp-function))
-;;       (setq ad-return-value (concat pinyin-isearch-message-prefix ad-return-value))
-;;     ad-return-value))
-
-
-(isearch-define-mode-toggle "pinyin-isearch-pinyin" "p" pinyin-isearch-pinyin-regexp-function "\
+(isearch-define-mode-toggle "pinyin" "p" pinyin-isearch-pinyin-regexp-function "\
 Turning on pinyin-pinyin search turns off normal mode.")
 
-(isearch-define-mode-toggle "pinyin-isearch-hieroglyphs" "h" pinyin-isearch-hieroglyphs-regexp-function "\
+(isearch-define-mode-toggle "hieroglyphs" "h" pinyin-isearch-hieroglyphs-regexp-function "\
 Turning on pinyin-hieroglyphs search turns off normal mode.")
-
-;; (isearch-define-mode-toggle "pinyin-isearch-pinyin" "p" pinyin-isearch-pinyin-regexp-function "\
-;; Turning on pinyin-hieroglyphs search turns off normal mode.")
 
 (put 'pinyin-isearch-pinyin-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-P]"))
 

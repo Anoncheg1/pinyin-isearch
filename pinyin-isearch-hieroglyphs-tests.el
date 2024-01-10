@@ -1,4 +1,4 @@
-;;; pinyin-isearch-hieroglyphs-tests.el --- Tests for CSV mode         -*- lexical-binding: t; -*-
+;;; pinyin-isearch-hieroglyphs-tests.el --- Tests for pinyin-isearch hiearoglyphs mode      -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023 Free Software Foundation, Inc
 

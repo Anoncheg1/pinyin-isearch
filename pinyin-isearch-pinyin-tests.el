@@ -1,4 +1,4 @@
-;;; pinyin-isearch-pinyin-tests.el --- Tests for CSV mode         -*- lexical-binding: t; -*-
+;;; pinyin-isearch-pinyin-tests.el --- Tests for pinyin-isearch pinyin mode   -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023 Free Software Foundation, Inc
 
