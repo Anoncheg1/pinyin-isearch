@@ -1,11 +1,11 @@
 # pinyin-isearch
-Emacs package that allow search pinyin, ignoring tones.
+Emacs package for toneless pinyin search in pinyin and hieroglyphs.
 
 Allow to search with pinyin in pinyin text and ignore tone diacritical marks for speed.
 
 Isearch "submode" that replace isearch-regexp-function to generate regex.
 
-For example, to find "Shànghǎi" in text you just type: C-s shanghai.
+For example: to find "Shànghǎi" and "上海" in text you just type: ``` C-s shanghai ```.
 
 # Features
 - white spaces are ignored between syllables
@@ -13,6 +13,8 @@ For example, to find "Shànghǎi" in text you just type: C-s shanghai.
 - should not conflict with other isearch modes
 - fix isearch behavior when new search begins from last successed occurance and jump down
 
+# Demonstation
+![Demo](https://github.com/Anoncheg1/public-share/blob/main/pinyin-isearch.gif)
 
 # Installation
 copy file to ~/.emacs.d/contrib/pinyin-isearch.el
