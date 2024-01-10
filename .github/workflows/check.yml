@@ -1,5 +1,7 @@
 name: check
 
+run-name: "${{GITHUB_SHA}}"
+
 on:
   release:
     types: [published]

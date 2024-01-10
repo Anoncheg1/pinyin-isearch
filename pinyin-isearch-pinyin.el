@@ -251,7 +251,7 @@ if NORMAL add normal to regex."
                  (concat (substring st 0 1)
                          (mapconcat (lambda (x) (concat "\\s-*" x))
                                     (cdr (split-string st "" t))
-                                    nil))
+                                    ""))
                ;; else
                st)))
     ;; ignore tones, based on lisp/leim/quail/sisheng.el

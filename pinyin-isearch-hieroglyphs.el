@@ -155,13 +155,13 @@ Argument ST user input string for isearch search."
   (let* ((len_max (length st)) ; all len
         (len (if  (<= len_max 6) len_max 6)) ; 0-6 len
         (pos 1)
-        (first-chars) ;; per loop
-        (syllables) ;; per loop
-        (finals)) ;; accamulate found variants of disassembly by first found syllable
+        (first-chars) ; per loop
+        (syllables) ; per loop
+        (finals)) ; accamulate found variants of disassembly by first found syllable
     (while (<= pos len)
       (setq first-chars (substring st 0 pos))
       ;; - - find syllables for the first part - -
-      (if (eq pos len_max) ;; last while
+      (if (eq pos len_max) ; last while
           ;; if last letters we find uncompleted syllables
           (setq syllables (pinyin-isearch--get-syllables-by-prefix first-chars))
         ;; else if it is not last symbols we find only full one syllable
@@ -183,12 +183,12 @@ Argument ST user input string for isearch search."
                 ))
             ;; else - add only syllable as a single hieroglyph - no left was. Syllables is many
             (setq fin (list (list syllables) ))
-            ) ;; end of if
+            ) ; end of if
           (setq finals (cons fin finals))
-          )) ;; end of when and let
+          )) ; end of when and let
 
       (setq pos (1+ pos)) ; pos+=1
-      ) ;; end of while
+      ) ; end of while
     (if (null finals)
         ;; 1) variants of disassembly 2) variant 3) hieroglyph
         ;; we add marker to tag that it is not a syllable
@@ -198,8 +198,8 @@ Argument ST user input string for isearch search."
           (list (list (list (concat pinyin-isearch--non-syllable-marker-string st)) )))
       ;; else
       (setq finals (nreverse finals)) ; reverse
-      (apply 'append finals)) ;; flatten by one level
-    )) ;; end of let*
+      (apply 'append finals)) ; flatten by one level
+    )) ; end of let*
 
 
 
@@ -252,7 +252,7 @@ Argument L list of form ((\"gg\"))."
                        )
                    ;; else ("sd" "sd")
                    (concat "[" (apply 'concat x) "]"))))
-             l nil))
+             l ""))
 
 (defun pinyin-isearch--concat-variants (sac)
 "Create regex alternation for dissasemble variants.
