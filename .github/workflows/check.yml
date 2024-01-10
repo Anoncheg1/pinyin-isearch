@@ -1,6 +1,8 @@
 name: check
 
 on:
+  release:
+    types: [published]
   pull_request:
   push:
     branches:
