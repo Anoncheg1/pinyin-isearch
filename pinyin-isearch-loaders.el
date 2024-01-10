@@ -4,7 +4,6 @@
 (defvar pinyin-isearch--rules nil "used in advice")
 
 (defun pinyin-isearch--quail-define-rules-advice (&rest args)
-
   (setq pinyin-isearch--rules args))
 
 
