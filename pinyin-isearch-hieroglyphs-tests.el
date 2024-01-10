@@ -29,6 +29,10 @@
 (require 'ert)
 (require 'pinyin-isearch-hieroglyphs)
 
+(declare-function pinyin-isearch-hieroglyphs-regexp-function "pinyin-isearch-hieroglyphs" (string &optional lax))
+
+(declare-function pinyin-isearch--hieroglyphs-recursion "pinyin-isearch-hieroglyphs" (st))
+
 
 (ert-deftest pinyin-isearch--rules-to-first-syllable-letters ()
   (with-temp-buffer
