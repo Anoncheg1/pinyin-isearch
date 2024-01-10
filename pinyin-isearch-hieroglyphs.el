@@ -78,11 +78,10 @@ Argument RULES argument of funcion `quail-define-rules'."
         (dolist (l (number-sequence 1 (length rr)))
           (let* ((sub (substring (car r) 0 l))
                  (el (assoc-string sub ss))
-                 (el2 (car (cdr el)))
                  (newl))
             (when (not el) ;; el is nil
               (dolist ( r rules)
-                (if (s-starts-with? sub (car r))
+                (if (string-prefix-p sub (car r))
                     (push (car r) newl)))
               (setq ss (cons (list sub newl) ss))
               )
@@ -149,11 +148,11 @@ that hieroglyphs begining we have.
 Steps:
 1. in loop find syllables in 0-6 first letters.
 2. recursive call for right (left) part
-In 1. if it is last letters - we use hungry search
+In 1. if it is last letters than we use hungry search
 3. add syllable to every variant of right part at level 2)
 4. concat all found variants of dissasembly at level 3)
 Argument ST user input string for isearch search."
-  (let* ((len_max (length st)) - all len
+  (let* ((len_max (length st)) ; all len
         (len (if  (<= len_max 6) len_max 6)) ; 0-6 len
         (pos 1)
         (first-chars) ;; per loop
@@ -244,17 +243,16 @@ Argument L list of form ((\"gg\"))."
   (mapconcat (lambda (x)
                ;; apply to every ("sd" "sd") or ("sd")
                (let ((cx (car x)))
-                 ;; (print cx)
                  (if (or (eq (length x) 1))
                      (if  ; first character equel ""
-                         (eq (elt (car x) 0) pinyin-isearch--non-syllable-marker-number)
-                         (substring (car x) 1) ; delete first character
+                         (eq (elt cx 0) pinyin-isearch--non-syllable-marker-number)
+                         (substring cx 1) ; delete first character
                        ;; else
-                       (concat "[" (car x) "]")
-                     )
+                       (concat "[" cx "]")
+                       )
                    ;; else ("sd" "sd")
-                     (concat "[" (apply 'concat x) "]"))))
-             l))
+                   (concat "[" (apply 'concat x) "]"))))
+             l nil))
 
 (defun pinyin-isearch--concat-variants (sac)
 "Create regex alternation for dissasemble variants.

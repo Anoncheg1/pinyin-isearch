@@ -1,4 +1,4 @@
-;;; pinyin-isearch.el --- isearch mode for Chinese pinyin search.  -*- lexical-binding: t -*-
+;;; pinyin-isearch.el --- isearch mode for Chinese toleness pinyin search.  -*- lexical-binding: t -*-
 
 ;; Copyright (c) 2023 Anoncheg1
 
