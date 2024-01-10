@@ -252,7 +252,7 @@ Argument L list of form ((\"gg\"))."
                        )
                    ;; else ("sd" "sd")
                    (concat "[" (apply 'concat x) "]"))))
-             l ""))
+             l nil))
 
 (defun pinyin-isearch--concat-variants (sac)
 "Create regex alternation for dissasemble variants.

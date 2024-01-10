@@ -49,6 +49,10 @@
 ;; in config, to search only for hieroglyphs.
 ;; add (customize-set-variable 'pinyin-isearch-strict t)
 ;; to disable search in normal latin text, which is used for fallback.
+;;
+;; This package depends on Quail minor mode (input multilingual text
+;; easily) and uses it's translation table (named Quail map).
+;; It is possible to adopt this code to many other languages.
 
 ;;; Code:
 
