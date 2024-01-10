@@ -48,6 +48,8 @@
 ;; I was unable to determinate reason for this error It occure only
 ;; during loading and do somethin with case sensitivity.
 
+(declare-function string-replace "subr" (from-string to-string in-string))
+
 (condition-case nil
     (load "quail/sisheng") ; (quail-use-package "chinese-sisheng" "quail/sisheng")
   (args-out-of-range nil))
@@ -127,7 +129,7 @@ not found.  This apply to the first syllable only."
 
 
 (defun pinyin-isearch--sisheng-to-normal (syllable)
-  "Convert \"zhuō\" 'SYLLABLE' to \"zhuo\".
+  "Convert \"zhuō\" SYLLABLE to \"zhuo\".
 Used to create list pinyin-isearch-syllable-table from original
 sisheng."
   (string-match sisheng-regexp syllable)
@@ -240,15 +242,16 @@ Argument D-VOWELS result of function
 
 
 (defun pinyin-isearch--brute-replace (st &optional &key normal)
-  "Replace every vowels in 'ST' with wide range regex.
-if 'NORMAL' add normal to regex."
+  "Replace every vowels in ST with wide range regex.
+if NORMAL add normal to regex."
   (let* (
          ;; ignore white spaces if query is more than 2 characters
          (st (if (> (length st) 1)
                  ;; then - insert whitespaces between every character
                  (concat (substring st 0 1)
                          (mapconcat (lambda (x) (concat "\\s-*" x))
-                                    (cdr (split-string st "" t))))
+                                    (cdr (split-string st "" t))
+                                    nil))
                ;; else
                st)))
     ;; ignore tones, based on lisp/leim/quail/sisheng.el
@@ -267,7 +270,7 @@ if 'NORMAL' add normal to regex."
 
 (defun pinyin-isearch-pinyin-regexp-function (string &optional lax)
   "Replacement for function `isearch-regexp-function'.
-Main function to convert query 'STRING' to regex for isearch.
+Main function to convert query STRING to regex for isearch.
 Uses functions: `pinyin-isearch--get-position-first-syllable',
 `pinyin-isearch--make-syllable-to-regex',
 `pinyin-isearch--brute-replace'.
