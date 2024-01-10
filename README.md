@@ -7,7 +7,7 @@ Isearch "submode" that replace isearch-regexp-function to generate regex.
 
 For example: to find "Shànghǎi" and "上海" in text you just type: ``` C-s shanghai ```.
 
-# Features
+# Features of pinyin search
 - white spaces are ignored between syllables
 - tone required only in first syllable in text: Zhēn de ma
 - should not conflict with other isearch modes
@@ -27,7 +27,9 @@ add to ~/.emacs
 ```
 
 # Usage
-After ```C-s/r``` in isearch mode: ```M-s n``` to activate isearch submode.
+After ```C-s/r``` in isearch mode:
+- ```M-s p``` to activate pinyin isearch submode.
+- ```M-s h``` to activate hieroglyps isearch submode.
 
 or with M-x ```pinyin-isearch-forward/backward```
 
