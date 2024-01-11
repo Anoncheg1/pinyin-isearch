@@ -70,7 +70,7 @@
   :prefix "pinyin-isearch-")
 
 (defcustom pinyin-isearch-strict nil
-  "Non-nil means Enforce to search only pinyin and hieroglyphs.
+  "Non-nil means Enforce to search only pinyin and Chinese characters.
 isearch will not fallback to find normal latin text if pinyin is
 not found.  This apply to the first syllable only for search in
 pinyin."
@@ -79,11 +79,12 @@ pinyin."
   :group 'pinyin-isearch)
 
 (defcustom pinyin-isearch-target 'both
-  "Whether to search for hieroglyphs or for pinyin or for both of them.
-Used for mode `pinyin-isearch-mode', and functions
+  "Select target text.
+Whether to search for for pinyin or for Chinese characters or for
+both of them.  Used for mode `pinyin-isearch-mode', and functions
 `pinyin-isearch-forward', `pinyin-isearch-backward'."
   :local t
-  :type '(choice (const :tag "Search in both: pinyin and hieroglyphs" both)
+  :type '(choice (const :tag "Search in both: pinyin and Chinese characters" both)
                  (const :tag "Search in Chinese characters only" characters)
                  (const :tag "Search in Chinese characters only" t)
                  (const :tag "Search in pinyin only" pinyin)
@@ -103,7 +104,8 @@ Disable for native isearch behavior."
 
 
 (defun pinyin-isearch-both-regexp-function (string &optional lax)
-  "Concat pinyin and hieroglyphs search.
+  "Replacement for function `isearch-regexp-function'.
+Concat pinyin and Chinese characters regex as alternation.
 Argument STRING is a query string.
 Optional argument LAX for isearch special cases."
   (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
@@ -169,8 +171,8 @@ Optional argument LAX for isearch special cases."
 (isearch-define-mode-toggle "pinyin" "p" pinyin-isearch-pinyin-regexp-function "\
 Turning on pinyin-pinyin search turns off normal mode.")
 
-(isearch-define-mode-toggle "hieroglyphs" "h" pinyin-isearch-hieroglyphs-regexp-function "\
-Turning on pinyin-hieroglyphs search turns off normal mode.")
+(isearch-define-mode-toggle "characters" "h" pinyin-isearch-hieroglyphs-regexp-function "\
+Turning on pinyin-characters search turns off normal mode.")
 
 (put 'pinyin-isearch-pinyin-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-P]"))
 
