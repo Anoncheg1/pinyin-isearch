@@ -27,7 +27,7 @@
 ;; Used to load "quail/PY.el" and "quail/Punct.el".
 
 ;; The problem it that data defined as arguments to call macro
-;; `quail-define-rules'. We use advice to catch this argument.
+;; `quail-define-rules'.  We use advice to catch this argument.
 
 ;;; Code:
 
@@ -37,7 +37,7 @@
 
 (defun pinyin-isearch--quail-define-rules-advice (&rest rules)
   "Executed before `quail-define-rules' to catch passed arguments.
-Optional argument ARGS catched rules argument."
+Optional argument ARGS catched RULES argument."
   `(setq pinyin-isearch--rules ',rules)
 )
 
@@ -58,6 +58,8 @@ Argument QUAIL-FILE \"quail/PY.el\" for example."
 ;; ---------- load quail/PY.el for chinese hierogliphs ---------
 
 (defun pinyin-isearch--py-rules-loader ()
+  "Load quail rules and add lv and nv to lu and nu.
+Because ǚ and other u tones is very same and with same letter."
   (let ((rul (pinyin-isearch--quail-extractor "quail/PY.el")))
       ;; remove v letter from pinyin
       ;; remove lv
@@ -95,8 +97,10 @@ Argument QUAIL-FILE \"quail/PY.el\" for example."
 ;; We don't use result, we need only loaded variables
 ;; `sisheng-regexp', `sisheng-vowel-table', `sisheng-syllable-table'.
 (defun pinyin-isearch--quail-make-sisheng-rules-advice (syllable)
-  "We suppress function `quail-make-sisheng-rules.'
-From quail/sisheng.el, for speed."
+  "Suppress function `quail-make-sisheng-rules'.
+From quail/sisheng.el, for speed.
+Argument SYLLABLE not used."
+  (setq syllable syllable) ; suppress warning: Unused lexical argument
   nil)
 
 (advice-add 'quail-make-sisheng-rules :override #'pinyin-isearch--quail-make-sisheng-rules-advice)
