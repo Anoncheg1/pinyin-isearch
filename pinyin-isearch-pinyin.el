@@ -48,12 +48,11 @@
 ;; I was unable to determinate reason for this error It occure only
 ;; during loading and do somethin with case sensitivity.
 
-(declare-function string-replace "subr" (from-string to-string in-string))
+(require 'pinyin-isearch-loaders)
 
-(condition-case nil
-    (load "quail/sisheng") ; (quail-use-package "chinese-sisheng" "quail/sisheng")
-  (args-out-of-range nil))
+(declare-function string-replace "subr" (from-string to-string in-string)) ; to suppress warning
 
+;; from package `pinyin-isearch-loaders'
 (defvar sisheng-regexp :docstring "Located in quail/sisheng.")
 
 (defvar sisheng-vowel-table :docstring "Located in quail/sisheng.")
@@ -123,9 +122,6 @@ not found.  This apply to the first syllable only."
     ("ǖ" "u")
     ("üē" "ue"))
     "Used to convert sisheng pinyin to toneless pinyin.")
-
-;; (defconst pinyin-isearch-message-prefix "[Pinyin] "
-;;   "Prepended to the isearch prompt when Pinyin searching is activated.")
 
 
 (defun pinyin-isearch--sisheng-to-normal (syllable)
