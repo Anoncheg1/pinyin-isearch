@@ -24,7 +24,9 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; Two types of search: in pinyin (pīnyīn) and hieroglyph (汉字) text.
+;; Two types of search: in pinyin (pīnyīn)
+;; and Chinese characters (汉字) text.
+;;
 ;; You can use both or select one of them.
 ;; Pinyin without tones is used for input.
 ;; Input is transformed to regex expression like:
@@ -45,8 +47,8 @@
 ;; To configure:
 ;; M-x customize-group RET pinyin-isearch
 ;; or
-;; add (customize-set-variable 'pinyin-isearch-target 'hieroglyphs)
-;; in config, to search only for hieroglyphs.
+;; add (customize-set-variable 'pinyin-isearch-target 'characters)
+;; in config, to search only for Chinese characters.
 ;; add (customize-set-variable 'pinyin-isearch-strict t)
 ;; to disable search in normal latin text, which is used for fallback.
 ;;
@@ -82,8 +84,8 @@ Used for mode `pinyin-isearch-mode', and functions
 `pinyin-isearch-forward', `pinyin-isearch-backward'."
   :local t
   :type '(choice (const :tag "Search in both: pinyin and hieroglyphs" both)
-                 (const :tag "Search in hieroglyphs only" hieroglyphs)
-                 (const :tag "Search in hieroglyphs only" t)
+                 (const :tag "Search in Chinese characters only" characters)
+                 (const :tag "Search in Chinese characters only" t)
                  (const :tag "Search in pinyin only" pinyin)
                  (const :tag "Search in pinyin only" nil))
   :group 'pinyin-isearch)

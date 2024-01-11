@@ -1,5 +1,5 @@
 # pinyin-isearch
-Emacs package for toneless pinyin search in pinyin and hieroglyphs.
+Emacs package for toneless pinyin search in pinyin and Chinese characters.
 
 Allow to search with pinyin in pinyin text and ignore tone diacritical marks for speed.
 
@@ -29,7 +29,7 @@ add to ~/.emacs
 # Usage
 After ```C-s/r``` in isearch mode:
 - ```M-s p``` to activate pinyin isearch submode.
-- ```M-s h``` to activate hieroglyps isearch submode.
+- ```M-s h``` to activate Chinese characters isearch submode.
 
 or with M-x ```pinyin-isearch-forward/backward```
 
