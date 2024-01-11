@@ -58,6 +58,8 @@
 
 ;;; Code:
 
+(setq debug-on-error t)
+
 (require 'pinyin-isearch-pinyin)
 (require 'pinyin-isearch-hieroglyphs)
 
