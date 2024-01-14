@@ -206,7 +206,6 @@ Argument ST user input string for isearch search."
       (apply 'append finals)) ; flatten by one level
     )) ; end of let*
 
-
 (defun pinyin-isearch--filter-full-variants (f l)
   "Filter variants that has unfinished letters at the end.
 Variants of disassemble.  Unfinished letters is that we we can
@@ -218,36 +217,15 @@ Variants of disassemble.  Unfinished letters is that we we can
  L is a list of disassemble variants."
   (or
    ;; filter not nil
-   (seq-filter 'identity
-               ;; for every variant
-               (mapcar (lambda (x)
+   (seq-filter (lambda (x)
                          ;; get the last syllable variants
                          (let ((last (car (nth (1- (length x)) x))))
                            ;; save which can be converted to Chinese
                            ;; characters or replace to nil
                            (if (not (equal (funcall f last) last))
                                x))
-                         ) l)) l))
-
-;; (defun pinyin-isearch--filter-full-variants-and-characters (f l)
-;;   "Filter variants to have only full complete syllables.
-;; We check last character in variant to have only one syllable and
-;; syllable should be convertable to a charater.  Argument F is a
-;; function able to convert pinyin to Chinese charaters.  Argument L
-;; is a list of dissasemble variants of syllables for user input."
-;;   ;; filter not nil
-;;   (seq-filter 'identity
-;;               ;; for every variant
-;;               (mapcar (lambda (x)
-;;                         ;; get the last syllable
-;;                         (let ((last (nth (1- (length x)) x)))
-;;                           ;; save which can be converted to Chinese
-;;                           ;; characters or replace to nil AND have
-;;                           ;; only one variant of syllable
-;;                           (if (and (eq (length last) 1)
-;;                                    (not (equal (funcall f (car last)) (car last))))
-;;                               x))
-;;                         ) l)))
+                         ) l)
+               ) l)
 
 (defun pinyin-isearch--maptree (f l)
   "Apply map to every leaf of a list.
@@ -278,8 +256,7 @@ Argument L list of form ((\"gg\"))."
                          (eq (elt cx 0) pinyin-isearch--non-syllable-marker-number)
                          (substring cx 1) ; delete first character
                        ;; else
-                       (concat "[" cx "]")
-                       )
+                       (concat "[" cx "]"))
                    ;; else ("sd" "sd")
                    (concat "[" (apply 'concat x) "]"))))
              l nil))
@@ -290,10 +267,8 @@ Argument SAC is splitted-and-converted variants."
   (if (> (length sac) 1)
       (concat "\\(" (mapconcat 'pinyin-isearch--regex-concat-hieroglyphs
                                sac "\\|") "\\)")
-
     ;; else eq 1
-    (pinyin-isearch--regex-concat-hieroglyphs (car sac)))
-)
+    (pinyin-isearch--regex-concat-hieroglyphs (car sac))))
 
 
 (defun pinyin-isearch-hieroglyphs-regexp-function (string &optional lax)
