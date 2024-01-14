@@ -277,14 +277,11 @@ concat variants with \\|.
 Argument STRING isearch user input string of query.
 Optional argument LAX used for isearch special cases."
   (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
-
-  (let* (;;(st (regexp-quote string))
-        (splitted-and-converted (pinyin-isearch--convert-to-hieroglyphs
-                                 (pinyin-isearch--filter-full-variants
-                                  'pinyin-isearch--pinyin-to-hieroglyphs
-                                  (pinyin-isearch--hieroglyphs-recursion string)))))
-    (pinyin-isearch--concat-variants splitted-and-converted)
-    ))
+  (pinyin-isearch--concat-variants
+   ;; splitted and converted after it:
+   (pinyin-isearch--convert-to-hieroglyphs
+    (pinyin-isearch--filter-full-variants 'pinyin-isearch--pinyin-to-hieroglyphs
+                                          (pinyin-isearch--hieroglyphs-recursion string)))))
 
 
 
