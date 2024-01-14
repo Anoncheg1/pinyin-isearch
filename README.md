@@ -47,4 +47,4 @@ You can set this mode by default per file with:
 ```;-*- mode: pinyin-isearch; -*-```
 
 # Configuration
-kM-x customize-group pinyin-isearch
+M-x customize-group pinyin-isearch
