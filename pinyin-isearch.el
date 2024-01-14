@@ -24,8 +24,8 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; Two types of search: in pinyin (pīnyīn)
-;; and Chinese characters (汉字) text.
+;; There is two types of search: for pinyin (pīnyīn) and for Chinese
+;; characters (汉字) text.
 ;;
 ;; You can use both or select one of them.
 ;; Pinyin without tones is used for input.
@@ -36,21 +36,21 @@
 ;; add (require 'pinyin-isearch) line to your
 ;; ~/.emacs or ~/.emacs.d/init.el
 ;;
+;; to activate isearch submodes add line: (pinyin-isearch-activate-submodes)
+;;
 ;; To use:
+;;
 ;; M-x pinyin-isearch-mode
 ;; C-u C-s for normal search.
 ;; or
-;; C-s M-s p/h - to activate (p)inyin or (h)ieroglyph search.
+;; C-s M-s p/h/s - to activate (p)inyin or (h)ieroglyph (s)trict
+;; hieroglyph search submode.
 ;; or
 ;; M-x pinyin-isearch-forward/backward
 ;;
-;; To configure:
+;; Configuration:
+;;
 ;; M-x customize-group RET pinyin-isearch
-;; or
-;; add (customize-set-variable 'pinyin-isearch-target 'characters)
-;; in config, to search only for Chinese characters.
-;; add (customize-set-variable 'pinyin-isearch-strict t)
-;; to disable search in normal latin text, which is used for fallback.
 ;;
 ;; This package depends on Quail minor mode (input multilingual text
 ;; easily) and uses it's translation table (named Quail map).
@@ -63,6 +63,7 @@
 
 (declare-function pinyin-isearch-pinyin-regexp-function "pinyin-isearch-pinyin" (string &optional lax))
 (declare-function pinyin-isearch-hieroglyphs-regexp-function "pinyin-isearch-hieroglyphs" (string &optional lax))
+(declare-function pinyin-isearch-hieroglyphs-strict-regexp-function "pinyin-isearch-hieroglyphs" (string &optional lax))
 
 (defgroup pinyin-isearch nil
   "Fuzzy Matching."
@@ -71,15 +72,15 @@
 
 (defcustom pinyin-isearch-strict nil
   "Non-nil means Enforce to search only pinyin and Chinese characters.
-isearch will not fallback to find normal latin text if pinyin is
-not found.  This apply to the first syllable only for search in
-pinyin."
+isearch will not fallback to find normal latin text if pinyin was
+not found.  Configure `pinyin-isearch-mode' and pinyin isearch
+submode also."
   :local t
   :type 'boolean
   :group 'pinyin-isearch)
 
 (defcustom pinyin-isearch-target 'both
-  "Select target text.
+  "Select target text in `pinyin-isearch-mode'.
 Whether to search for for pinyin or for Chinese characters or for
 both of them.  Used for mode `pinyin-isearch-mode', and functions
 `pinyin-isearch-forward', `pinyin-isearch-backward'."
@@ -100,6 +101,12 @@ Disable for native isearch behavior."
   :local t
   :type 'boolean
   :group 'pinyin-isearch)
+
+(defvar-local pinyin-isearch--original-search-default-mode search-default-mode
+  "Used in `pinyin-isearch--set-isearch' to save previous state.")
+
+(defvar-local pinyin-isearch--original-isearch-regexp-function isearch-regexp-function
+  "Used in `pinyin-isearch--set-isearch' to save previous state.")
 
 
 
@@ -145,44 +152,10 @@ Optional argument LAX for isearch special cases."
   ))
 
 
-;; ------------ interface with isearch and user --------------
-
-
-(defvar-local pinyin-isearch--original-search-default-mode search-default-mode)
-
-(defvar-local pinyin-isearch--original-isearch-regexp-function isearch-regexp-function)
-
-
-(defun pinyin-isearch--pinyin-fix-jumping-advice ()
-  "Advice to fix isearch behavior.  Force search from a starting point."
-  (if (and isearch-mode pinyin-isearch-fix-jumping-flag
-           (or
-           (eq isearch-regexp-function #'pinyin-isearch-pinyin-regexp-function)
-           (eq isearch-regexp-function #'pinyin-isearch-hieroglyphs-regexp-function)
-           (eq isearch-regexp-function #'pinyin-isearch-both-regexp-function)))
-      (let ((key (this-single-command-keys)))
-        ;; (print (lookup-key isearch-mode-map key nil) ) ; debug
-        (when (and isearch-success
-                   (eq 'isearch-printing-char (lookup-key isearch-mode-map key nil)))
-          (goto-char isearch-opoint)
-          (setq isearch-adjusted t)))))
-
-
-(isearch-define-mode-toggle "pinyin" "p" pinyin-isearch-pinyin-regexp-function "\
-Turning on pinyin-pinyin search turns off normal mode.")
-
-(isearch-define-mode-toggle "characters" "h" pinyin-isearch-hieroglyphs-regexp-function "\
-Turning on pinyin-characters search turns off normal mode.")
-
-(put 'pinyin-isearch-pinyin-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-P]"))
-
-(put 'pinyin-isearch-hieroglyphs-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-H]"))
-
-;; for pinyin-isearch-pinyin
-(add-hook 'pre-command-hook 'pinyin-isearch--pinyin-fix-jumping-advice)
-
 (defun pinyin-isearch--set-isearch()
-  "Help subfunction to replace isearch functions."
+  "Help subfunction to replace isearch functions.
+Used in functions `pinyin-isearch-forward' and
+`pinyin-isearch-backward'."
   (let ((func (cond
                ;; both
                ((eq pinyin-isearch-target 'both)
@@ -197,6 +170,47 @@ Turning on pinyin-characters search turns off normal mode.")
                 #'pinyin-isearch-pinyin-regexp-function))))
     (setq search-default-mode func)
     (setq isearch-regexp-function func)))
+
+
+(defun pinyin-isearch--pinyin-fix-jumping-advice ()
+  "Advice to fix isearch behavior.  Force search from a starting point."
+  (if (and isearch-mode pinyin-isearch-fix-jumping-flag
+           (or
+           (eq isearch-regexp-function #'pinyin-isearch-pinyin-regexp-function)
+           (eq isearch-regexp-function #'pinyin-isearch-hieroglyphs-regexp-function)
+           (eq isearch-regexp-function #'pinyin-isearch-hieroglyphs-strict-regexp-function)
+           (eq isearch-regexp-function #'pinyin-isearch-both-regexp-function)))
+      (let ((key (this-single-command-keys)))
+        ;; (print (lookup-key isearch-mode-map key nil) ) ; debug
+        (when (and isearch-success
+                   (eq 'isearch-printing-char (lookup-key isearch-mode-map key nil)))
+          (goto-char isearch-opoint)
+          (setq isearch-adjusted t)))))
+
+;; ------------ interface with isearch and user --------------
+
+;; used in all modes
+(add-hook 'pre-command-hook 'pinyin-isearch--pinyin-fix-jumping-advice)
+
+;;;###autoload
+(defun pinyin-isearch-activate-submodes()
+  "Add submodes to `isearch-mode' accessible with key `M-s KEY'.
+Call macros to define global functions `isearch-toggle-*.'"
+  (isearch-define-mode-toggle "pinyin" "p" pinyin-isearch-pinyin-regexp-function "\
+  Turning on pinyin search turns off normal mode.")
+
+  (isearch-define-mode-toggle "characters" "h" pinyin-isearch-hieroglyphs-regexp-function "\
+  Turning on characters search turns off normal mode.")
+
+  (isearch-define-mode-toggle "strict" "s" pinyin-isearch-hieroglyphs-strict-regexp-function "\
+  Turning on strict characters search turns off normal mode.")
+
+  (put 'pinyin-isearch-pinyin-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-P]"))
+
+  (put 'pinyin-isearch-hieroglyphs-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-H]"))
+
+  (put 'pinyin-isearch-hieroglyphs-strict-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-HS]")))
+
 
 ;;;###autoload
 (defun pinyin-isearch-forward (&optional regexp-p no-recursive-edit)
@@ -217,7 +231,7 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-forward'."
         (apply #'isearch-forward '(regexp-p no-recursive-edit)))
   ;; restore
   (setq search-default-mode pinyin-isearch--original-search-default-mode)
-  ;; (setq isearch-regexp-function pinyin-isearch--original-isearch-regexp-function)
+  ;; (setq isearch-regexp-function pinyin-isearch--original-isearch-regexp-function) ; should not be restored
   )
 
 
@@ -239,7 +253,7 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
     (apply #'isearch-backward '(regexp-p no-recursive-edit)))
   ;; restore
   (setq search-default-mode pinyin-isearch--original-search-default-mode)
-  ;; (setq isearch-regexp-function pinyin-isearch--original-isearch-regexp-function)
+  ;; (setq isearch-regexp-function pinyin-isearch--original-isearch-regexp-function) ; should not be restored
 )
 
 

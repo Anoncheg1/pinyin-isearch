@@ -77,7 +77,7 @@
     (should (equal (pinyin-isearch--hieroglyphs-recursion "cccc") nil ))
     (should (equal (pinyin-isearch--hieroglyphs-recursion "zuhna") nil ))
     (should (equal (pinyin-isearch--hieroglyphs-recursion "nai") '((("n") ("ai")) (("nai"))) ))
-    (should (equal (pinyin-isearch--hieroglyphs-recursion "nu") '((("nuo" "nue" "nuan" "nu"))) ))
+    (should (equal (pinyin-isearch--hieroglyphs-recursion "nu") '((("nu"))) ))
     (setq pinyin-isearch-strict nil)
     )
 )
@@ -89,8 +89,23 @@
     (should (equal (pinyin-isearch--filter-full-variants 'pinyin-isearch--pinyin-to-hieroglyphs
                                                          '((("n") ("a") ("i")) (("n") ("ai")) (("na") ("i")) (("nai"))))
             '((("n") ("ai")) (("nai"))) ))
+
+
     )
 )
+
+;; (ert-deftest pinyin-isearch--filter-full-variants-and-characters ()
+;;   (with-temp-buffer
+;;     (should (equal (pinyin-isearch--filter-full-variants-and-characters 'pinyin-isearch--pinyin-to-hieroglyphs
+;;                                                          '((("na") ("i")))) nil ))
+;;     (should (equal (pinyin-isearch--filter-full-variants-and-characters 'pinyin-isearch--pinyin-to-hieroglyphs
+;;                                                          '((("n") ("a") ("i")) (("n") ("ai")) (("na") ("i")) (("nai"))))
+;;             '((("n") ("ai")) (("nai"))) ))
+;;     (should (equal (pinyin-isearch--filter-full-variants-and-characters 'pinyin-isearch--pinyin-to-hieroglyphs
+;;                                                                         '((("zu") ("a") ("n") ("ai")) (("zu") ("a") ("nao" "nang" "nan" "nai" "na")) (("zu") ("an") ("ao" "ang" "an" "ai" "a")) (("zuan") ("ao" "ang" "an" "ai" "a"))))
+;;                    '((("zu") ("a") ("n") ("ai"))) ))
+;;     )
+;; )
 
 (ert-deftest pinyin-isearch--convert-to-hieroglyphs ()
   (with-temp-buffer
@@ -125,12 +140,27 @@
     (should (equal (pinyin-isearch-hieroglyphs-regexp-function ".") "[．\\.。・¨…∵∴°⊙]"))
     (should (equal (pinyin-isearch-hieroglyphs-regexp-function "nu") "[诺挪懦糯喏搦傩锘虐疟暖女钕恧衄怒努奴弩驽胬孥]"))
     (should (equal (pinyin-isearch-hieroglyphs-regexp-function "lu") "[落罗络洛逻裸骆萝螺锣箩摞烙捋珞骡猡镙椤倮蠃荦瘰泺漯脶硌雒论轮伦沦仑抡囵纶略掠锊乱卵峦挛孪栾銮娈滦鸾脔律旅绿率虑履屡侣缕驴吕榈滤捋铝褛闾膂氯稆路陆录卢露鲁炉鹿碌庐芦噜颅禄辘卤虏麓泸赂漉戮簏轳鹭掳潞鲈撸栌垆胪蓼渌鸬逯璐辂橹镥舻氇]"))
+    (should (equal (pinyin-isearch-hieroglyphs-regexp-function "nui") "\\([嗯唔]ui\\|[女钕恧衄怒努奴弩驽胬孥]i\\)"))
     (setq pinyin-isearch-strict t)
     (should (equal (pinyin-isearch-hieroglyphs-regexp-function "gg") ""))
     (should (equal (pinyin-isearch-hieroglyphs-regexp-function ".") "[．。・¨…∵∴°⊙]"))
+    (should (equal (pinyin-isearch-hieroglyphs-regexp-function "nu") "[女钕恧衄怒努奴弩驽胬孥]"))
+    (should (equal (pinyin-isearch-hieroglyphs-regexp-function "lu") "[律旅绿率虑履屡侣缕驴吕榈滤捋铝褛闾膂氯稆路陆录卢露鲁炉鹿碌庐芦噜颅禄辘卤虏麓泸赂漉戮簏轳鹭掳潞鲈撸栌垆胪蓼渌鸬逯璐辂橹镥舻氇]"))
+    (should (equal (pinyin-isearch-hieroglyphs-regexp-function "nui") ""))
+    (should (equal (pinyin-isearch-hieroglyphs-regexp-function "nuai") "[女钕恧衄怒努奴弩驽胬孥][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]"))
     (setq pinyin-isearch-strict nil)
     )
 )
+
+(ert-deftest pinyin-isearch-hieroglyphs-strict-regexp-function ()
+  (with-temp-buffer
+    (should (equal (pinyin-isearch-hieroglyphs-strict-regexp-function "gg") ""))
+    (should (equal (pinyin-isearch-hieroglyphs-strict-regexp-function ".") "[．。・¨…∵∴°⊙]"))
+    (should (equal (pinyin-isearch-hieroglyphs-strict-regexp-function "nu") "[女钕恧衄怒努奴弩驽胬孥]"))
+    (should (equal (pinyin-isearch-hieroglyphs-strict-regexp-function "lu") "[律旅绿率虑履屡侣缕驴吕榈滤捋铝褛闾膂氯稆路陆录卢露鲁炉鹿碌庐芦噜颅禄辘卤虏麓泸赂漉戮簏轳鹭掳潞鲈撸栌垆胪蓼渌鸬逯璐辂橹镥舻氇]"))
+    (should (equal (pinyin-isearch-hieroglyphs-strict-regexp-function "nui") ""))
+    (should (equal (pinyin-isearch-hieroglyphs-strict-regexp-function "nuai") "[女钕恧衄怒努奴弩驽胬孥][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]"))
+))
 
 
 (provide 'pinyin-isearch-hieroglyphs-tests)

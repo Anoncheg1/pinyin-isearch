@@ -119,16 +119,16 @@ Argument ST the begining letters of any syllable."
 (defun pinyin-isearch--pinyin-to-hieroglyphs (syl)
   "Interface to constant `pinyin-isearch--py-punct-rules'.
 For syllable \"an\" we get \"昂肮盎\".
-Argument SYL syllable of toneless pinyin."
+Argument SYL syllable of toneless pinyin." ; Optional argument STRICT is equivalent to variable `pinyin-isearch-strict'.
   ;; this if for speed optimization only
   (if (eq (elt syl 0) pinyin-isearch--non-syllable-marker-number)
       (regexp-quote syl)
     ;; else
     (let ((r (assoc-string syl pinyin-isearch--py-punct-rules))) ; TODO: make rules as a variable
       (if r
-          (if pinyin-isearch-strict
+          (if (or pinyin-isearch-strict)
               (car (cdr r))
-            ;; else, fix for "."
+            ;; else, fix for "." we add normal dot
             (regexp-quote (string-replace "．" "．." (car (cdr r)))))
         ;;else
         (regexp-quote syl)
@@ -151,6 +151,11 @@ Steps:
 In 1. if it is last letters than we use hungry search
 3. add syllable to every variant of right part at level 2)
 4. concat all found variants of dissasembly at level 3)
+
+Global variable `pinyin-isearch-strict' strict last syllable to
+only one variant of syllable and only full ony.  And don't allow
+pinyin characters at the end that was not found in syllables.
+
 Argument ST user input string for isearch search."
   (let* ((len_max (length st)) ; all len
         (len (if  (<= len_max 6) len_max 6)) ; 0-6 len
@@ -161,7 +166,7 @@ Argument ST user input string for isearch search."
     (while (<= pos len)
       (setq first-chars (substring st 0 pos))
       ;; - - find syllables for the first part - -
-      (if (eq pos len_max) ; last while
+      (if (and (eq pos len_max) (not pinyin-isearch-strict)) ; last while
           ;; if last letters we find uncompleted syllables
           (setq syllables (pinyin-isearch--get-syllables-by-prefix first-chars))
         ;; else if it is not last symbols we find only full one syllable
@@ -202,22 +207,47 @@ Argument ST user input string for isearch search."
     )) ; end of let*
 
 
-
 (defun pinyin-isearch--filter-full-variants (f l)
   "Filter variants that has unfinished letters at the end.
-Variants of disassemble.  If there is only variants with
-unfinished letters, we don't filter them.
-Function `F' convert pinyin to hierogliph.
-Steps: 1) filter variants ending with hieroglyphs
-2) return filtered varians or all if filtered is nil.
-Argument L is a list of disassemble variants."
-  (or (seq-filter 'identity (mapcar (lambda (x)
-            (let ((last (car (nth (1- (length x)) x))))
-              (if (not (equal (funcall f last) last))
-                  x))
-            ) l)) l)
-  )
+Variants of disassemble.  Unfinished letters is that we we can
+ not guess what Chinese charater it is.  If there is only
+ variants with unfinished letters, we don't filter them.
+ Function `F' is a function able convert pinyin to Chinese
+ characters.  Steps: 1) filter variants ending with hieroglyphs
+ 2) return filtered varians or all if filtered is nil.  Argument
+ L is a list of disassemble variants."
+  (or
+   ;; filter not nil
+   (seq-filter 'identity
+               ;; for every variant
+               (mapcar (lambda (x)
+                         ;; get the last syllable variants
+                         (let ((last (car (nth (1- (length x)) x))))
+                           ;; save which can be converted to Chinese
+                           ;; characters or replace to nil
+                           (if (not (equal (funcall f last) last))
+                               x))
+                         ) l)) l))
 
+;; (defun pinyin-isearch--filter-full-variants-and-characters (f l)
+;;   "Filter variants to have only full complete syllables.
+;; We check last character in variant to have only one syllable and
+;; syllable should be convertable to a charater.  Argument F is a
+;; function able to convert pinyin to Chinese charaters.  Argument L
+;; is a list of dissasemble variants of syllables for user input."
+;;   ;; filter not nil
+;;   (seq-filter 'identity
+;;               ;; for every variant
+;;               (mapcar (lambda (x)
+;;                         ;; get the last syllable
+;;                         (let ((last (nth (1- (length x)) x)))
+;;                           ;; save which can be converted to Chinese
+;;                           ;; characters or replace to nil AND have
+;;                           ;; only one variant of syllable
+;;                           (if (and (eq (length last) 1)
+;;                                    (not (equal (funcall f (car last)) (car last))))
+;;                               x))
+;;                         ) l)))
 
 (defun pinyin-isearch--maptree (f l)
   "Apply map to every leaf of a list.
@@ -275,14 +305,28 @@ How it works, in step:
 4) surround variants of syllables with [], concat hieroglyphs and
 concat variants with \\|.
 Argument STRING isearch user input string of query.
-Optional argument LAX used for isearch special cases."
+Optional argument LAX (not used) used for isearch special cases."
   (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
   (pinyin-isearch--concat-variants
    ;; splitted and converted after it:
    (pinyin-isearch--convert-to-hieroglyphs
+    ;; apply filter
     (pinyin-isearch--filter-full-variants 'pinyin-isearch--pinyin-to-hieroglyphs
+                                          ;; split to variants
                                           (pinyin-isearch--hieroglyphs-recursion string)))))
 
+(defun pinyin-isearch-hieroglyphs-strict-regexp-function (string &optional lax)
+  "Function `isearch-regexp-function' with strict mode.
+For strict - variable `pinyin-isearch-strict' enabled.
+Argument STRING isearch user input string of query.
+Optional argument LAX (not used) used for isearch special cases."
+  (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
+  (let ((strict pinyin-isearch-strict)
+        (result)) ; save
+          (setq pinyin-isearch-strict t) ; modify
+          (setq result (pinyin-isearch-hieroglyphs-regexp-function string lax))
+          (setq pinyin-isearch-strict strict) ; restore
+          result )) ; return
 
 
 (provide 'pinyin-isearch-hieroglyphs)

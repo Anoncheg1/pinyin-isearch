@@ -38,6 +38,7 @@ add to ~/.emacs
 After ```C-s/r``` in isearch mode:
 - ```M-s p``` to activate pinyin isearch submode.
 - ```M-s h``` to activate Chinese characters isearch submode.
+- ```M-s s``` to activate strict Chinese characters isearch submode.
 
 or with M-x ```pinyin-isearch-forward/backward```
 
