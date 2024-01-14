@@ -224,8 +224,7 @@ Variants of disassemble.  Unfinished letters is that we we can
                            ;; characters or replace to nil
                            (if (not (equal (funcall f last) last))
                                x))
-                         ) l)
-               ) l)
+                         ) l) l))
 
 (defun pinyin-isearch--maptree (f l)
   "Apply map to every leaf of a list.
