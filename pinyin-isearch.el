@@ -5,7 +5,7 @@
 ;; Author: Anoncheg1
 ;; Keywords: chinese, pinyin, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
-;; Version: 1.6.2
+;; Version: 1.6.3
 ;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is not part of GNU Emacs.
@@ -190,7 +190,7 @@ Used in functions `pinyin-isearch-forward' and
 ;; ------------ interface with isearch and user --------------
 
 ;; used in all modes
-(add-hook #'pre-command-hook #'pinyin-isearch--pinyin-fix-jumping-advice)
+(add-hook 'pre-command-hook #'pinyin-isearch--pinyin-fix-jumping-advice)
 
 ;;;###autoload
 (defun pinyin-isearch-activate-submodes()
