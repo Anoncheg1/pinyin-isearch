@@ -1,6 +1,6 @@
 (package "pinyin-isearch"
          "1.6.0"
-         "isearch mode for Chinese toneless pinyin search.")
+         "Pinyin mode for isearch.")
 
 (website-url "https://github.com/Anoncheg1/pinyin-isearch")
 (keywords "chinese" "pinyin" "matching" "convenience")

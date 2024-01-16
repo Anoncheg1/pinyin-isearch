@@ -1,4 +1,4 @@
-;;; pinyin-isearch-loaders.el --- Loaders of pinyin and hierogliphs from guail.  -*- lexical-binding: t -*-
+;;; pinyin-isearch-loaders.el --- Loaders of pinyin and hierogliphs from guail  -*- lexical-binding: t -*-
 
 ;; Copyright (c) 2023 Anoncheg1
 
@@ -24,7 +24,9 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; Used to load "quail/PY.el" and "quail/Punct.el".
+;; Used to locate and load "chinese-sisheng", "chinese-py",
+;; "chinese-punct".
+
 
 ;; The problem it that data defined as arguments to call macro
 ;; `quail-define-rules'.  We use advice to catch this argument.
@@ -33,34 +35,55 @@
 
 ;; ---------- tools -------------------
 
-(defvar pinyin-isearch--rules nil "Used in advice.")
+(defvar pinyin-isearch-loaders--rules nil "Used in advice.")
 
-(defun pinyin-isearch--quail-define-rules-advice (&rest rules)
-  "Executed before `quail-define-rules' to catch passed arguments.
+(defun pinyin-isearch-loaders--get-location-of-input-method (leim-name)
+  "Get elisp file location.
+Argument LEIM-NAME input-method name."
+  (car (nthcdr 5 (assoc leim-name input-method-alist))))
+
+(defun pinyin-isearch-loaders--quail-define-rules-advice (&rest rules)
+  "Replace `quail-define-rules' to catch passed arguments.
 Optional argument ARGS catched RULES argument."
-  `(setq pinyin-isearch--rules ',rules)
-)
+  `(setq pinyin-isearch-loaders--rules ',rules))
 
-(defun pinyin-isearch--quail-extractor (quail-file)
-  "Used to set variable `pinyin-isearch--punct-rules'.
+(defun pinyin-isearch-loaders--quail-define-package-advice (&rest args)
+  "Replace `quail-define-package' to disable it.
+Argument ARGS not used."
+  (setq args args) ; suppress Warning: Unused lexical argument `args'
+  )
+
+(defun pinyin-isearch-loaders--quail-defrule-advice (&rest args)
+  "Replace `quail-defrule' to disable it.
+Argument ARGS not used."
+  (setq args args) ; suppress Warning: Unused lexical argument `args'
+  )
+
+
+(defun pinyin-isearch-loaders--quail-extractor (quail-file)
+  "Used to set variable `pinyin-isearch-loaders--punct-rules'.
 Argument QUAIL-FILE \"quail/PY.el\" for example."
-  (advice-add 'quail-define-rules :override #'pinyin-isearch--quail-define-rules-advice)
-  (load-file (locate-file quail-file load-path))
-  (advice-remove 'quail-define-rules #'pinyin-isearch--quail-define-rules-advice)
+  (advice-add 'quail-define-rules :override #'pinyin-isearch-loaders--quail-define-rules-advice)
+  (advice-add 'quail-define-package :override #'pinyin-isearch-loaders--quail-define-package-advice)
+  (advice-add 'quail-defrule :override #'pinyin-isearch-loaders--quail-defrule-advice)
+  (load (concat (pinyin-isearch-loaders--get-location-of-input-method quail-file) ".el"))
+  (advice-remove 'quail-define-rules #'pinyin-isearch-loaders--quail-define-rules-advice)
+  (advice-remove 'quail-define-package #'pinyin-isearch-loaders--quail-define-package-advice)
+  (advice-remove 'quail-defrule #'pinyin-isearch-loaders--quail-defrule-advice)
   ;; return
-  pinyin-isearch--rules)
+  pinyin-isearch-loaders--rules)
 
-(defun pinyin-isearch--punct-quail-filter (rules)
+(defun pinyin-isearch-loaders--punct-quail-filter (rules)
   "Load RULES for single letters of punctuations."
    (seq-filter (lambda (x) (= (length (car x)) 1)) rules))
 
 
 ;; ---------- load quail/PY.el for chinese hierogliphs ---------
 
-(defun pinyin-isearch--py-rules-loader ()
+(defun pinyin-isearch-loaders--py-rules-loader ()
   "Load quail rules and add lv and nv to lu and nu.
 Because ǚ and other u tones is very same and with same letter."
-  (let ((rul (pinyin-isearch--quail-extractor "quail/PY.el")))
+  (let ((rul (pinyin-isearch-loaders--quail-extractor "chinese-py")))
       ;; remove v letter from pinyin
       ;; remove lv
       (setf (cadr (assoc-string "lu" rul))
@@ -72,23 +95,22 @@ Because ǚ and other u tones is very same and with same letter."
             (concat (cadr (assoc-string "nv" rul))
                     (cadr (assoc-string "nu" rul))))
       ;; (setq rul (remove (assoc-string "nv" rul) rul))
-      rul)
-  )
+      rul))
 
-(defconst pinyin-isearch--py-rules
-  (pinyin-isearch--py-rules-loader)
+(defconst pinyin-isearch-loaders--py-rules
+  (pinyin-isearch-loaders--py-rules-loader)
   "Rules in form: ((\"a\" \"阿啊呵腌嗄锕吖\") (\"ai\" \"爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹\")...")
 
 
 ;; ---------- load punct and concatenate: py + punct --------
 
-(defconst pinyin-isearch--punct-rules
-  (pinyin-isearch--punct-quail-filter
-   (pinyin-isearch--quail-extractor "quail/Punct.el"))
+(defconst pinyin-isearch-loaders--punct-rules
+  (pinyin-isearch-loaders--punct-quail-filter
+   (pinyin-isearch-loaders--quail-extractor "chinese-punct"))
   "Extracted and filtered Chinese punctuation.")
 
-(defconst pinyin-isearch--py-punct-rules
-  (append pinyin-isearch--py-rules pinyin-isearch--punct-rules)
+(defconst pinyin-isearch-loaders--py-punct-rules
+  (append pinyin-isearch-loaders--py-rules pinyin-isearch-loaders--punct-rules)
   "Extracted quail/PY.el + quail/Punct.el - Chinese heieroglyphs and punctuation.")
 
 
@@ -96,16 +118,16 @@ Because ǚ and other u tones is very same and with same letter."
 
 ;; We don't use result, we need only loaded variables
 ;; `sisheng-regexp', `sisheng-vowel-table', `sisheng-syllable-table'.
-(defun pinyin-isearch--quail-make-sisheng-rules-advice (syllable)
+(defun pinyin-isearch-loaders--quail-make-sisheng-rules-advice (syllable)
   "Suppress function `quail-make-sisheng-rules'.
 From quail/sisheng.el, for speed.
 Argument SYLLABLE not used."
   (setq syllable syllable) ; suppress warning: Unused lexical argument
   nil)
 
-(advice-add 'quail-make-sisheng-rules :override #'pinyin-isearch--quail-make-sisheng-rules-advice)
-(pinyin-isearch--quail-extractor "quail/sisheng.el")
-(advice-remove 'quail-make-sisheng-rules #'pinyin-isearch--quail-make-sisheng-rules-advice)
+(advice-add 'quail-make-sisheng-rules :override #'pinyin-isearch-loaders--quail-make-sisheng-rules-advice)
+(pinyin-isearch-loaders--quail-extractor "chinese-sisheng")
+(advice-remove 'quail-make-sisheng-rules #'pinyin-isearch-loaders--quail-make-sisheng-rules-advice)
 
 (provide 'pinyin-isearch-loaders)
 ;;; pinyin-isearch-loaders.el ends here

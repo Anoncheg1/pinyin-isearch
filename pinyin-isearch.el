@@ -1,4 +1,4 @@
-;;; pinyin-isearch.el --- isearch mode for Chinese toneless pinyin search.  -*- lexical-binding: t -*-
+;;; pinyin-isearch.el --- Pinyin mode for isearch  -*- lexical-binding: t -*-
 
 ;; Copyright (c) 2023 Anoncheg1
 
@@ -43,8 +43,8 @@
 ;; M-x pinyin-isearch-mode
 ;; C-u C-s for normal search.
 ;; or
-;; C-s M-s p/h/s - to activate (p)inyin or (h)ieroglyph (s)trict
-;; hieroglyph search submode.
+;; C-s M-s p/h/s - to activate (p)inyin or (h) Chonese characters (s)trict
+;; Chinese characters search submode.
 ;; or
 ;; M-x pinyin-isearch-forward/backward
 ;;
@@ -59,11 +59,11 @@
 ;;; Code:
 
 (require 'pinyin-isearch-pinyin)
-(require 'pinyin-isearch-hieroglyphs)
+(require 'pinyin-isearch-chars)
 
 (declare-function pinyin-isearch-pinyin-regexp-function "pinyin-isearch-pinyin" (string &optional lax))
-(declare-function pinyin-isearch-hieroglyphs-regexp-function "pinyin-isearch-hieroglyphs" (string &optional lax))
-(declare-function pinyin-isearch-hieroglyphs-strict-regexp-function "pinyin-isearch-hieroglyphs" (string &optional lax))
+(declare-function pinyin-isearch-chars-regexp-function "pinyin-isearch-chars" (string &optional lax))
+(declare-function pinyin-isearch-chars-strict-regexp-function "pinyin-isearch-chars" (string &optional lax))
 
 (defgroup pinyin-isearch nil
   "Fuzzy Matching."
@@ -117,7 +117,7 @@ Argument STRING is a query string.
 Optional argument LAX for isearch special cases."
   (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
   (let* ((psr (pinyin-isearch-pinyin-regexp-function string))
-        (hsr (pinyin-isearch-hieroglyphs-regexp-function string))
+        (hsr (pinyin-isearch-chars-regexp-function string))
         (p (string-prefix-p "\\(" psr))
         (h (string-prefix-p "\\(" hsr)))
     (cond
@@ -148,8 +148,7 @@ Optional argument LAX for isearch special cases."
               psr
               "\\|"
               hsr
-              "\\)")))
-  ))
+              "\\)")))))
 
 
 (defun pinyin-isearch--set-isearch()
@@ -161,9 +160,9 @@ Used in functions `pinyin-isearch-forward' and
                ((eq pinyin-isearch-target 'both)
                      #'pinyin-isearch-both-regexp-function)
                ;; hieroglyphs
-               ((or (eq pinyin-isearch-target 'hieroglyphs)
+               ((or (eq pinyin-isearch-target 'characters)
                     (eq pinyin-isearch-target t))
-                #'pinyin-isearch-hieroglyphs-regexp-function)
+                #'pinyin-isearch-chars-regexp-function)
                ;; pinyin
                ((or (eq pinyin-isearch-target 'pinyin)
                     (eq pinyin-isearch-target nil) )
@@ -177,8 +176,8 @@ Used in functions `pinyin-isearch-forward' and
   (if (and isearch-mode pinyin-isearch-fix-jumping-flag
            (or
            (eq isearch-regexp-function #'pinyin-isearch-pinyin-regexp-function)
-           (eq isearch-regexp-function #'pinyin-isearch-hieroglyphs-regexp-function)
-           (eq isearch-regexp-function #'pinyin-isearch-hieroglyphs-strict-regexp-function)
+           (eq isearch-regexp-function #'pinyin-isearch-chars-regexp-function)
+           (eq isearch-regexp-function #'pinyin-isearch-chars-strict-regexp-function)
            (eq isearch-regexp-function #'pinyin-isearch-both-regexp-function)))
       (let ((key (this-single-command-keys)))
         ;; (print (lookup-key isearch-mode-map key nil) ) ; debug
@@ -199,17 +198,17 @@ Call macros to define global functions `isearch-toggle-*.'"
   (isearch-define-mode-toggle "pinyin" "p" pinyin-isearch-pinyin-regexp-function "\
   Turning on pinyin search turns off normal mode.")
 
-  (isearch-define-mode-toggle "characters" "h" pinyin-isearch-hieroglyphs-regexp-function "\
+  (isearch-define-mode-toggle "characters" "h" pinyin-isearch-chars-regexp-function "\
   Turning on characters search turns off normal mode.")
 
-  (isearch-define-mode-toggle "strict" "s" pinyin-isearch-hieroglyphs-strict-regexp-function "\
+  (isearch-define-mode-toggle "strict" "s" pinyin-isearch-chars-strict-regexp-function "\
   Turning on strict characters search turns off normal mode.")
 
   (put 'pinyin-isearch-pinyin-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-P]"))
 
-  (put 'pinyin-isearch-hieroglyphs-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-H]"))
+  (put 'pinyin-isearch-chars-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-H]"))
 
-  (put 'pinyin-isearch-hieroglyphs-strict-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-HS]")))
+  (put 'pinyin-isearch-chars-strict-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-HS]")))
 
 
 ;;;###autoload
