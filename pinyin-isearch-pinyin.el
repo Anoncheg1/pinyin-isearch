@@ -47,9 +47,6 @@
 
 ;; REQUIRE variable `pinyin-isearch-strict'
 
-;; I was unable to determinate reason for this error It occure only
-;; during loading and do somethin with case sensitivity.
-
 (require 'pinyin-isearch-loaders)
 
 (declare-function string-replace "subr" (from-string to-string in-string)) ; to suppress warning
