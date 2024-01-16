@@ -233,7 +233,7 @@ Argument L list with any structure of sublists."
   "For every leaf of splitted request apply converter to hieroglyphs.
 Argument LIST-OF-VARIANTS list that is result of function
 `pinyin-isearch-chars--recursion'."
-  (pinyin-isearch-chars--maptree 'pinyin-isearch-chars--pinyin-to-hieroglyphs list-of-variants))
+  (pinyin-isearch-chars--maptree #'pinyin-isearch-chars--pinyin-to-hieroglyphs list-of-variants))
 
 (defun pinyin-isearch-chars--regex-concat-hieroglyphs (l)
   "昂肮盎 to [昂肮盎] and concat such strings.
@@ -256,7 +256,7 @@ Argument L list of form ((\"gg\"))."
 "Create regex alternation for dissasemble variants.
 Argument SAC is splitted-and-converted variants."
   (if (> (length sac) 1)
-      (concat "\\(" (mapconcat 'pinyin-isearch-chars--regex-concat-hieroglyphs
+      (concat "\\(" (mapconcat #'pinyin-isearch-chars--regex-concat-hieroglyphs
                                sac "\\|") "\\)")
     ;; else eq 1
     (pinyin-isearch-chars--regex-concat-hieroglyphs (car sac))))
@@ -301,7 +301,7 @@ Optional argument LAX (not used) used for isearch special cases."
              ;; splitted and converted after it:
              (pinyin-isearch-chars--convert-to-hieroglyphs
               ;; apply filter
-              (pinyin-isearch-chars--filter-full-variants 'pinyin-isearch-chars--pinyin-to-hieroglyphs
+              (pinyin-isearch-chars--filter-full-variants #'pinyin-isearch-chars--pinyin-to-hieroglyphs
                                                     ;; split to variants
                                                     (pinyin-isearch-chars--recursion string)))))
       (pinyin-isearch-chars--impossible-regex pinyin-isearch-chars--saved-regex))))

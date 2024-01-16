@@ -286,7 +286,7 @@ Argument STRING is query."
     (setq pinyin-isearch-pinyin--saved-strict pinyin-isearch-strict))
   (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
   (if (equal string pinyin-isearch-pinyin--saved-query)
-      pinyin-isearch-pinyin--saved-query
+      pinyin-isearch-pinyin--saved-regex
     ;; else
     (progn
       (setq pinyin-isearch-pinyin--saved-query string)

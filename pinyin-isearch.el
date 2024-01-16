@@ -183,14 +183,14 @@ Used in functions `pinyin-isearch-forward' and
       (let ((key (this-single-command-keys)))
         ;; (print (lookup-key isearch-mode-map key nil) ) ; debug
         (when (and isearch-success
-                   (eq 'isearch-printing-char (lookup-key isearch-mode-map key nil)))
+                   (eq #'isearch-printing-char (lookup-key isearch-mode-map key nil)))
           (goto-char isearch-opoint)
           (setq isearch-adjusted t)))))
 
 ;; ------------ interface with isearch and user --------------
 
 ;; used in all modes
-(add-hook 'pre-command-hook #'pinyin-isearch--pinyin-fix-jumping-advice)
+(add-hook #'pre-command-hook #'pinyin-isearch--pinyin-fix-jumping-advice)
 
 ;;;###autoload
 (defun pinyin-isearch-activate-submodes()
@@ -205,11 +205,11 @@ Call macros to define global functions `isearch-toggle-*.'"
   (isearch-define-mode-toggle "strict" "s" pinyin-isearch-chars-strict-regexp-function "\
   Turning on strict characters search turns off normal mode.")
 
-  (put 'pinyin-isearch-pinyin-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-P]"))
+  (put #'pinyin-isearch-pinyin-regexp-function #'isearch-message-prefix (format "%s " "[Pinyin-P]"))
 
-  (put 'pinyin-isearch-chars-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-H]"))
+  (put #'pinyin-isearch-chars-regexp-function #'isearch-message-prefix (format "%s " "[Pinyin-H]"))
 
-  (put 'pinyin-isearch-chars-strict-regexp-function 'isearch-message-prefix (format "%s " "[Pinyin-HS]")))
+  (put #'pinyin-isearch-chars-strict-regexp-function #'isearch-message-prefix (format "%s " "[Pinyin-HS]")))
 
 
 ;;;###autoload
