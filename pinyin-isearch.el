@@ -121,17 +121,21 @@ Optional argument LAX for isearch special cases."
         (p (string-prefix-p "\\(" psr))
         (h (string-prefix-p "\\(" hsr)))
     (cond
+     ;; 1 nil
+     ((equal hsr "$^") psr)
+     ;; nil 1
+     ((equal psr "$^") hsr)
+     ;; ? == ?
+     ((equal psr hsr) psr)
      ;; 1 1
      ((and p h)
-      (concat "\\("
-              (substring psr 3) ;; skip \\(
+      (concat (substring psr 0 -3) ;; skip \\)
               "\\|"
-              (substring hsr 0 -3) ;; skip \\)
-              "\\)"))
+              (substring hsr 3) ;; skip \\(
+              ))
      ;; 1 0
      ((and p (not h))
-      (concat "\\("
-              (substring psr 3) ;; skip \\(
+      (concat (substring psr 0 -3) ;; skip \\)
               "\\|"
               hsr
               "\\)"))
@@ -140,7 +144,7 @@ Optional argument LAX for isearch special cases."
       (concat "\\("
               psr
               "\\|"
-              (substring hsr 0 -3) ;; skip \\)
+              (substring hsr 3) ;; skip \\(
               "\\)"))
      ;; 0 0
      ((not (and p h))
@@ -167,9 +171,7 @@ Used in functions `pinyin-isearch-forward' and
                ((or (eq pinyin-isearch-target 'pinyin)
                     (eq pinyin-isearch-target nil) )
                 #'pinyin-isearch-pinyin-regexp-function))))
-    (setq search-default-mode func)
-    (setq isearch-regexp-function func)))
-
+    func))
 
 (defun pinyin-isearch--pinyin-fix-jumping-advice ()
   "Advice to fix isearch behavior.  Force search from a starting point."
@@ -217,44 +219,14 @@ Call macros to define global functions `isearch-toggle-*.'"
 Optional argument REGEXP-P see original function `isearch-forward'.
 Optional argument NO-RECURSIVE-EDIT see original function `isearch-forward'."
   (interactive "P\np")
-  ;;save
-  (setq pinyin-isearch--original-search-default-mode search-default-mode)
-  (setq pinyin-isearch--original-isearch-regexp-function isearch-regexp-function)
-  ;; set
-  (pinyin-isearch--set-isearch)
+  (isearch-mode t (not (null regexp-p)) nil (not no-recursive-edit) (pinyin-isearch--set-isearch)))
 
-  ;; call interactively or simple
-  (if (called-interactively-p "any")
-          (funcall-interactively #'isearch-forward regexp-p no-recursive-edit)
-        ;; else
-        (apply #'isearch-forward '(regexp-p no-recursive-edit)))
-  ;; restore
-  (setq search-default-mode pinyin-isearch--original-search-default-mode)
-  ;; (setq isearch-regexp-function pinyin-isearch--original-isearch-regexp-function) ; should not be restored
-  )
-
-
-;;;###autoload
 (defun pinyin-isearch-backward (&optional regexp-p no-recursive-edit)
   "Do incremental search backward.
 Optional argument REGEXP-P see original function `isearch-backward'.
 Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
   (interactive "P\np")
-  ;; save
-  (setq pinyin-isearch--original-search-default-mode search-default-mode)
-  (setq pinyin-isearch--original-isearch-regexp-function isearch-regexp-function)
-  ;; set
-  (pinyin-isearch--set-isearch)
-  ;; call interactively or simple
-  (if (called-interactively-p "any")
-          (funcall-interactively #'isearch-backward regexp-p no-recursive-edit)
-    ;; else
-    (apply #'isearch-backward '(regexp-p no-recursive-edit)))
-  ;; restore
-  (setq search-default-mode pinyin-isearch--original-search-default-mode)
-  ;; (setq isearch-regexp-function pinyin-isearch--original-isearch-regexp-function) ; should not be restored
-)
-
+   (isearch-mode nil (not (null regexp-p)) nil (not no-recursive-edit) (pinyin-isearch--set-isearch)))
 
 ;;;###autoload
 (define-minor-mode pinyin-isearch-mode

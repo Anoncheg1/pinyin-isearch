@@ -29,6 +29,7 @@
 (require 'ert)
 (require 'pinyin-isearch-pinyin)
 
+(defvar pinyin-isearch-strict nil)
 
 (ert-deftest pinyin-isearch-pinyin--get_vowel_from_sisheng ()
   (with-temp-buffer
@@ -85,6 +86,7 @@
     ;; (pinyin-isearch-mode)
     (should (equal (pinyin-isearch-pinyin-regexp-function "") ""))
     (should (equal (pinyin-isearch-pinyin-regexp-function "n") "n"))
+    (should (equal (pinyin-isearch-pinyin-regexp-function "nu") "n[ūúǔùǖǘǚǜ]"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "nu") "n[ūúǔùǖǘǚǜ]"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "ssd") "ssd"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "zuo") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)"))

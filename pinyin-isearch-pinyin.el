@@ -45,6 +45,8 @@
 
 ;;; Code:
 
+;; REQUIRE variable `pinyin-isearch-strict'
+
 ;; I was unable to determinate reason for this error It occure only
 ;; during loading and do somethin with case sensitivity.
 
@@ -262,14 +264,13 @@ if NORMAL add normal to regex."
     st))
 
 
-(defun pinyin-isearch-pinyin-regexp-function (string &optional lax)
+(defun pinyin-isearch-pinyin-regexp-f (string)
   "Replacement for function `isearch-regexp-function'.
 Main function to convert query STRING to regex for isearch.
 Uses functions: `pinyin-isearch-pinyin--get-position-first-syllable',
 `pinyin-isearch-pinyin--make-syllable-to-regex',
-`pinyin-isearch-pinyin--brute-replace'.
-Optional argument LAX not used."
-  (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
+`pinyin-isearch-pinyin--brute-replace'."
+
   (let* ((st (regexp-quote string))
          ;; save length
          (len (length st))
@@ -298,6 +299,31 @@ Optional argument LAX not used."
       ;; else - no syllable found
       (if (not pinyin-isearch-strict) st) ; if not strict search for original text
 )))
+
+(defvar pinyin-isearch-pinyin--saved-query nil
+  "For `pinyin-isearch-pinyin-regexp-function'.")
+(defvar pinyin-isearch-pinyin--saved-regex nil
+  "For `pinyin-isearch-pinyin-regexp-function'.")
+(defvar pinyin-isearch-pinyin--saved-strict nil
+  "For `pinyin-isearch-pinyin-regexp-function'.")
+
+(defun pinyin-isearch-pinyin-regexp-function (string &optional lax)
+  "Replacement for function `isearch-regexp-function'.
+Optional argument LAX not used.
+Argument STRING is query."
+  ;; check that pinyin-isearch-strict did not changed
+  (when (not (eq pinyin-isearch-pinyin--saved-strict pinyin-isearch-strict))
+    (setq pinyin-isearch-pinyin--saved-query nil)
+    (setq pinyin-isearch-pinyin--saved-regex nil)
+    (setq pinyin-isearch-pinyin--saved-strict pinyin-isearch-strict))
+  (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
+  (if (equal string pinyin-isearch-pinyin--saved-query)
+      pinyin-isearch-pinyin--saved-query
+    ;; else
+    (progn
+      (setq pinyin-isearch-pinyin--saved-query string)
+      (setq pinyin-isearch-pinyin--saved-regex
+            (pinyin-isearch-pinyin-regexp-f string)))))
 
 (provide 'pinyin-isearch-pinyin)
 ;;; pinyin-isearch-pinyin.el ends here
