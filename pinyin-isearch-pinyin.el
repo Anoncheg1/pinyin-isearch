@@ -61,38 +61,6 @@
 
 ;; (defvar sisheng-syllable-table :docstring "Located in quail/sisheng.")
 
-;; -------------- after sisheng loading ----------
-
-;; (defgroup pinyin-isearch nil
-;;   "Fuzzy Matching."
-;;   :group 'pinyin-isearch
-;;   :prefix "pinyin-isearch-")
-
-;; (defcustom pinyin-isearch-fix-jumping-flag t
-;;   "Non-nil means fix isearch behavior.
-;; When typing new character the new search begins from last
-;; success found occurance, not from when you begin whole search.
-;; This fix force isearch to begin from the starting point.
-;; Disable for native isearch behavior."
-;;   :type 'boolean
-;;   :group 'pinyin-isearch)
-
-;; (defcustom pinyin-isearch-fix-edit-flag t
-;;   "Non-nil means fix isearch behavior.
-;; After exiting isearch edit string, finction
-;; `isearch-edit-string', isearch restart itself and forgot about
-;; any modifications, such as this package.
-;; Disable if you faced any issues."
-;;   :type 'boolean
-;;   :group 'pinyin-isearch)
-
-;; (defcustom pinyin-isearch-strict nil
-;;   "Non-nil means Enforce to search only pinyin.
-;; isearch will not fallback to find normal latin text if pinyin is
-;; not found.  This apply to the first syllable only."
-;;   :local t
-;;   :type 'boolean
-;;   :group 'pinyin-isearch)
 
 (defconst pinyin-isearch-pinyin-vowel-table
   '(("a" "[āáǎà]")

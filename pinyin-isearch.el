@@ -159,7 +159,7 @@ Optional argument LAX for isearch special cases."
   "Help subfunction to replace isearch functions.
 Used in functions `pinyin-isearch-forward' and
 `pinyin-isearch-backward'."
-  (let ((func (cond
+  (cond
                ;; both
                ((eq pinyin-isearch-target 'both)
                      #'pinyin-isearch-both-regexp-function)
@@ -170,8 +170,7 @@ Used in functions `pinyin-isearch-forward' and
                ;; pinyin
                ((or (eq pinyin-isearch-target 'pinyin)
                     (eq pinyin-isearch-target nil) )
-                #'pinyin-isearch-pinyin-regexp-function))))
-    func))
+                #'pinyin-isearch-pinyin-regexp-function)))
 
 (defun pinyin-isearch--pinyin-fix-jumping-advice ()
   "Advice to fix isearch behavior.  Force search from a starting point."
@@ -191,7 +190,7 @@ Used in functions `pinyin-isearch-forward' and
 ;; ------------ interface with isearch and user --------------
 
 ;; used in all modes
-(add-hook 'pre-command-hook 'pinyin-isearch--pinyin-fix-jumping-advice)
+(add-hook 'pre-command-hook #'pinyin-isearch--pinyin-fix-jumping-advice)
 
 ;;;###autoload
 (defun pinyin-isearch-activate-submodes()
