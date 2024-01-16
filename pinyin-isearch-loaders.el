@@ -1,6 +1,6 @@
 ;;; pinyin-isearch-loaders.el --- Loaders of pinyin and hierogliphs from guail  -*- lexical-binding: t -*-
 
-;; Copyright (c) 2023 Anoncheg1
+;; Copyright (c) 2024 Anoncheg1
 
 ;; Author: Anoncheg1
 ;; Keywords: chinese, pinyin, matching, convenience

@@ -1,6 +1,6 @@
 ;;; pinyin-isearch-chars-tests.el --- Tests for pinyin-isearch chars mode      -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023 Free Software Foundation, Inc
+;; Copyright (C) 2024 Free Software Foundation, Inc
 
 ;; Author: Anoncheg1
 ;; Keywords:

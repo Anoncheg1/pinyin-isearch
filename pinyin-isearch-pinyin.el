@@ -1,6 +1,6 @@
 ;;; pinyin-isearch-pinyin.el --- Chinese pinyin search for isearch  -*- lexical-binding: t -*-
 
-;; Copyright (c) 2023 Anoncheg1
+;; Copyright (c) 2024 Anoncheg1
 
 ;; Author: Anoncheg1
 ;; Keywords: chinese, pinyin, matching, convenience
