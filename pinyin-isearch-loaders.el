@@ -1,4 +1,4 @@
-;;; pinyin-isearch-loaders.el --- Loaders of pinyin and hierogliphs from guail  -*- lexical-binding: t -*-
+;;; pinyin-isearch-loaders.el --- Loaders of pinyin and Chinese characters from guail  -*- lexical-binding: t -*-
 
 ;; Copyright (c) 2024 Anoncheg1
 
