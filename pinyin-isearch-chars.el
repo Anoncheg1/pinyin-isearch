@@ -199,7 +199,27 @@ Argument ST user input string for isearch search."
       (apply 'append finals)) ; flatten by one level
     )) ; end of let*
 
-(defun pinyin-isearch-chars--filter-full-variants (f l)
+;; (defun pinyin-isearch-chars--filter-full-variants (f l)
+;;   "Filter variants that has unfinished letters at the end.
+;; Variants of disassemble.  Unfinished letters is that we we can
+;;  not guess what Chinese charater it is.  If there is only
+;;  variants with unfinished letters, we don't filter them.
+;;  Function `F' is a function able convert pinyin to Chinese
+;;  characters.  Steps: 1) filter variants ending with hieroglyphs
+;;  2) return filtered varians or all if filtered is nil.  Argument
+;;  L is a list of disassemble variants."
+;;   (or
+;;    ;; filter not nil
+;;    (seq-filter (lambda (x)
+;;                          ;; get the last syllable variants
+;;                          (let ((last (car (nth (1- (length x)) x))))
+;;                            ;; save which can be converted to Chinese
+;;                            ;; characters or replace to nil
+;;                            (if (not (equal (funcall f last) last))
+;;                                x)))
+;;                l) l))
+
+(defun pinyin-isearch-chars--filter-full-variants (f l string)
   "Filter variants that has unfinished letters at the end.
 Variants of disassemble.  Unfinished letters is that we we can
  not guess what Chinese charater it is.  If there is only
@@ -207,17 +227,25 @@ Variants of disassemble.  Unfinished letters is that we we can
  Function `F' is a function able convert pinyin to Chinese
  characters.  Steps: 1) filter variants ending with hieroglyphs
  2) return filtered varians or all if filtered is nil.  Argument
- L is a list of disassemble variants."
-  (or
-   ;; filter not nil
-   (seq-filter (lambda (x)
-                         ;; get the last syllable variants
-                         (let ((last (car (nth (1- (length x)) x))))
-                           ;; save which can be converted to Chinese
-                           ;; characters or replace to nil
-                           (if (not (equal (funcall f last) last))
-                               x)))
-               l) l))
+ L is a list of disassemble variants.
+Argument STRING original request to add for fallback when strict mode is not activated."
+  (let ((ret
+         (or
+          ;; filter not nil
+          (seq-filter (lambda (x)
+                                ;; get the last syllable variants
+                                (let ((last (car (nth (1- (length x)) x)))) ;; todo replace to last
+                                  ;; save which can be converted to Chinese
+                                  ;; characters or replace to nil
+                                  (if (not (equal (funcall f last) last))
+                                      x)))
+                      l) l)))
+    ;; add full string for fallback to latin if we have unconvertable characters at the end
+    (if (and (not pinyin-isearch-strict) (or (> (length ret) 1) (> (length (car ret)) 1)))
+        (let ((la (car (car (last (car (last ret)))))))
+          (if (eq (elt la 0) pinyin-isearch-chars--non-syllable-marker-number)
+              (setq ret (cons (list (list (concat pinyin-isearch-chars--non-syllable-marker-string string))) ret)))))
+      ret))
 
 (defun pinyin-isearch-chars--maptree (f l)
   "Apply map to every leaf of a list.
@@ -273,6 +301,9 @@ Argument SAC is splitted-and-converted variants."
 
 
 (defmacro pinyin-isearch-chars--impossible-regex ( variable)
+  "Replace string with impossible regex to abort isearch.
+Didn't find better approach yet.
+Argument VARIABLE variable with string."
   `(if (equal ,variable "")
           "$^"
         ;; else
@@ -303,7 +334,7 @@ Optional argument LAX (not used) used for isearch special cases."
               ;; apply filter
               (pinyin-isearch-chars--filter-full-variants #'pinyin-isearch-chars--pinyin-to-hieroglyphs
                                                     ;; split to variants
-                                                    (pinyin-isearch-chars--recursion string)))))
+                                                    (pinyin-isearch-chars--recursion string) string))))
       (pinyin-isearch-chars--impossible-regex pinyin-isearch-chars--saved-regex))))
 
 (defun pinyin-isearch-chars-strict-regexp-function (string &optional lax)

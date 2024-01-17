@@ -87,9 +87,9 @@
 (ert-deftest pinyin-isearch-chars--filter-full-variants ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-chars--filter-full-variants 'pinyin-isearch-chars--pinyin-to-hieroglyphs
-                                                         '((("na") ("i")))) '((("na") ("i"))) ))
+                                                         '((("na") ("i"))) "nai") '((("na") ("i"))) ))
     (should (equal (pinyin-isearch-chars--filter-full-variants 'pinyin-isearch-chars--pinyin-to-hieroglyphs
-                                                         '((("n") ("a") ("i")) (("n") ("ai")) (("na") ("i")) (("nai"))))
+                                                         '((("n") ("a") ("i")) (("n") ("ai")) (("na") ("i")) (("nai"))) "nai")
             '((("n") ("ai")) (("nai"))) ))
 
 
@@ -139,11 +139,12 @@
   (with-temp-buffer
     (should (equal (pinyin-isearch-chars-regexp-function "nai") "\\([嗯唔][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]\\|[乃奶奈耐氖艿鼐佴萘柰]\\)"))
     (should (equal (pinyin-isearch-chars-regexp-function "ggg") "ggg"))
-    (should (equal (pinyin-isearch-chars-regexp-function "vi") "ggg"))
+    (should (equal (pinyin-isearch-chars-regexp-function "vi") "vi"))
+    (should (equal (pinyin-isearch-chars-regexp-function "task") "\\(task\\|[他她它踏塔塌榻嗒蹋沓遢挞鳎闼铊趿漯溻獭]sk\\)"))
     (should (equal (pinyin-isearch-chars-regexp-function ".") "[．\\.。・¨…∵∴°⊙]"))
     (should (equal (pinyin-isearch-chars-regexp-function "nu") "[诺挪懦糯喏搦傩锘虐疟暖女钕恧衄怒努奴弩驽胬孥]"))
     (should (equal (pinyin-isearch-chars-regexp-function "lu") "[落罗络洛逻裸骆萝螺锣箩摞烙捋珞骡猡镙椤倮蠃荦瘰泺漯脶硌雒论轮伦沦仑抡囵纶略掠锊乱卵峦挛孪栾銮娈滦鸾脔律旅绿率虑履屡侣缕驴吕榈滤捋铝褛闾膂氯稆路陆录卢露鲁炉鹿碌庐芦噜颅禄辘卤虏麓泸赂漉戮簏轳鹭掳潞鲈撸栌垆胪蓼渌鸬逯璐辂橹镥舻氇]"))
-    (should (equal (pinyin-isearch-chars-regexp-function "nui") "\\([嗯唔]ui\\|[女钕恧衄怒努奴弩驽胬孥]i\\)"))
+    (should (equal (pinyin-isearch-chars-regexp-function "nui") "\\(nui\\|[嗯唔]ui\\|[女钕恧衄怒努奴弩驽胬孥]i\\)")) ; "\\([嗯唔]ui\\|[女钕恧衄怒努奴弩驽胬孥]i\\)"
     (setq pinyin-isearch-strict t)
     (should (equal (pinyin-isearch-chars-regexp-function "gg") "$^"))
     (should (equal (pinyin-isearch-chars-regexp-function ".") "[．。・¨…∵∴°⊙]"))
