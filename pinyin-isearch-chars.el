@@ -319,8 +319,7 @@ Optional argument LAX (not used) used for isearch special cases."
                          'pinyin-isearch-chars--saved-regex-s
                        'pinyin-isearch-chars--saved-regex)))
 
-    (if (not (equal string (symbol-value saved-query)))
-      (progn
+    (when (not (equal string (symbol-value saved-query)))
         (set saved-query string)
         (set saved-regex
              (pinyin-isearch-chars--concat-variants
@@ -332,7 +331,7 @@ Optional argument LAX (not used) used for isearch special cases."
                 (pinyin-isearch-chars--filter-full-variants
                  #'pinyin-isearch-chars--pinyin-to-hieroglyphs
                  ;; split to variants
-                 (pinyin-isearch-chars--recursion string))))))))
+                 (pinyin-isearch-chars--recursion string)))))))
     (pinyin-isearch-chars--impossible-regex (symbol-value saved-regex))))
 
 (defun pinyin-isearch-chars-strict-regexp-function (string &optional lax)
