@@ -227,23 +227,24 @@ Variants of disassemble.  Unfinished letters is that we we can
  Function `F' is a function able convert pinyin to Chinese
  characters.  Steps: 1) filter variants ending with hieroglyphs
  2) return filtered varians or all if filtered is nil.  Argument
- L is a list of disassemble variants.
-Argument STRING original request to add for fallback when strict mode is not activated."
+ L is a list of disassemble variants.  Argument STRING original
+ request to add for fallback when strict mode is not activated."
   (let ((ret
          (or
           ;; filter not nil
           (seq-filter (lambda (x)
                                 ;; get the last syllable variants
-                                (let ((last (car (nth (1- (length x)) x)))) ;; todo replace to last
+                                (let ((last (car (nth (1- (length x)) x))))
                                   ;; save which can be converted to Chinese
                                   ;; characters or replace to nil
                                   (if (not (equal (funcall f last) last))
                                       x)))
                       l) l)))
-    ;; add full string for fallback to latin if we have unconvertable characters at the end
+    ;; add full string for fallback to latin if we have unconvertable characters at the end (marked)
     (if (and (not pinyin-isearch-strict) (or (> (length ret) 1) (> (length (car ret)) 1)))
         (let ((la (car (car (last (car (last ret)))))))
           (if (eq (elt la 0) pinyin-isearch-chars--non-syllable-marker-number)
+              ;; add full string (marked) to result list as an another variant.
               (setq ret (cons (list (list (concat pinyin-isearch-chars--non-syllable-marker-string string))) ret)))))
       ret))
 
@@ -290,13 +291,13 @@ Argument SAC is splitted-and-converted variants."
     (pinyin-isearch-chars--regex-concat-hieroglyphs (car sac))))
 
 
-(defvar pinyin-isearch-chars--saved-query nil
+(defvar-local pinyin-isearch-chars--saved-query nil
   "For `pinyin-isearch-chars-regexp-function'.")
-(defvar pinyin-isearch-chars--saved-regex nil
+(defvar-local pinyin-isearch-chars--saved-regex nil
   "For `pinyin-isearch-chars-regexp-function'.")
-(defvar pinyin-isearch-chars--saved-query-s nil
+(defvar-local pinyin-isearch-chars--saved-query-s nil
   "For `pinyin-isearch-chars-strict-regexp-function'.")
-(defvar pinyin-isearch-chars--saved-regex-s nil
+(defvar-local pinyin-isearch-chars--saved-regex-s nil
   "For `pinyin-isearch-chars-strict-regexp-function'.")
 
 
@@ -312,6 +313,7 @@ Argument VARIABLE variable with string."
 
 (defun pinyin-isearch-chars-regexp-function (string &optional lax)
   "Replacement for function `isearch-regexp-function'.
+If Variable `pinyin-isearch-strict' is set it uses strict version.
 How it works, in step:
  1) split to parts according to pinyin.
 2) filter variants that do not endings without pinyin.
@@ -321,27 +323,36 @@ concat variants with \\|.
 Argument STRING isearch user input string of query.
 Optional argument LAX (not used) used for isearch special cases."
   (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
+  ;; create references to saved values, if next call will be the same.
+  (let ((saved-query (if pinyin-isearch-strict
+                         'pinyin-isearch-chars--saved-query-s
+                       'pinyin-isearch-chars--saved-query))
+        (saved-regex (if pinyin-isearch-strict
+                         'pinyin-isearch-chars--saved-regex-s
+                       'pinyin-isearch-chars--saved-regex)))
 
-  (if (equal string pinyin-isearch-chars--saved-query)
-      (pinyin-isearch-chars--impossible-regex pinyin-isearch-chars--saved-regex)
-    ;; else
-    (progn
-      (setq pinyin-isearch-chars--saved-query string)
-      (setq pinyin-isearch-chars--saved-regex
-            (pinyin-isearch-chars--concat-variants
-             ;; splitted and converted after it:
-             (pinyin-isearch-chars--convert-to-hieroglyphs
-              ;; apply filter
-              (pinyin-isearch-chars--filter-full-variants #'pinyin-isearch-chars--pinyin-to-hieroglyphs
-                                                    ;; split to variants
-                                                    (pinyin-isearch-chars--recursion string) string))))
-      (pinyin-isearch-chars--impossible-regex pinyin-isearch-chars--saved-regex))))
+    (if (equal string (eval saved-query))
+        (pinyin-isearch-chars--impossible-regex (eval saved-regex))
+      ;; else
+      (progn
+        (set saved-query string)
+        (set saved-regex
+              (pinyin-isearch-chars--concat-variants
+               ;; splitted and converted after it:
+               (pinyin-isearch-chars--convert-to-hieroglyphs
+                ;; apply filter
+                (pinyin-isearch-chars--filter-full-variants #'pinyin-isearch-chars--pinyin-to-hieroglyphs
+                                                      ;; split to variants
+                                                      (pinyin-isearch-chars--recursion string) string))))
+        (pinyin-isearch-chars--impossible-regex (eval saved-regex))))))
+
 
 (defun pinyin-isearch-chars-strict-regexp-function (string &optional lax)
   "Function `isearch-regexp-function' with strict mode.
-For strict - variable `pinyin-isearch-strict' enabled.
-Argument STRING isearch user input string of query.
-Optional argument LAX (not used) used for isearch special cases."
+This version of function set `pinyin-isearch-strict' enabled for
+time of call.  Argument STRING isearch user input string of
+query.  Optional argument LAX (not used) used for isearch special
+cases."
   (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
 
   (if (equal string pinyin-isearch-chars--saved-query-s)
@@ -353,7 +364,6 @@ Optional argument LAX (not used) used for isearch special cases."
       (setq pinyin-isearch-strict t) ; modify
       (setq pinyin-isearch-chars--saved-regex-s (pinyin-isearch-chars-regexp-function string lax))
       (setq pinyin-isearch-strict strict) ; restore
-      ;; (print pinyin-isearch-chars--saved-regex-s)
       (pinyin-isearch-chars--impossible-regex pinyin-isearch-chars--saved-regex-s) ))) ; return
 
 

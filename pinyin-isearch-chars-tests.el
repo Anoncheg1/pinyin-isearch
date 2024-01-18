@@ -147,6 +147,7 @@
     (should (equal (pinyin-isearch-chars-regexp-function "nui") "\\(nui\\|[嗯唔]ui\\|[女钕恧衄怒努奴弩驽胬孥]i\\)")) ; "\\([嗯唔]ui\\|[女钕恧衄怒努奴弩驽胬孥]i\\)"
     (setq pinyin-isearch-strict t)
     (should (equal (pinyin-isearch-chars-regexp-function "gg") "$^"))
+    (should (equal (pinyin-isearch-chars-regexp-function "task") "$^"))
     (should (equal (pinyin-isearch-chars-regexp-function ".") "[．。・¨…∵∴°⊙]"))
     (should (equal (pinyin-isearch-chars-regexp-function "nu") "[女钕恧衄怒努奴弩驽胬孥]"))
     (should (equal (pinyin-isearch-chars-regexp-function "lu") "[律旅绿率虑履屡侣缕驴吕榈滤捋铝褛闾膂氯稆路陆录卢露鲁炉鹿碌庐芦噜颅禄辘卤虏麓泸赂漉戮簏轳鹭掳潞鲈撸栌垆胪蓼渌鸬逯璐辂橹镥舻氇]"))
