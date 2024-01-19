@@ -70,6 +70,13 @@
 ;;   :type 'boolean
 ;;   :group 'pinyin-isearch)
 
+(defcustom pinyin-isearch-chars-fallback t
+  "Non-nil means add full query string as a regex variant.
+If there is undecoded letters at the end after dissasembling."
+  :local t
+  :type 'boolean
+  :group 'pinyin-isearch)
+
 
 ;; ---------- prepare syllable table ---------
 (defun pinyin-isearch-chars--rules-to-first-syllable-letters (rules)
@@ -229,7 +236,9 @@ original request to add for fallback when strict mode is not
 activated.
 Argument LVAR dissasembled variants of characters for query."
   ;; add full string for fallback to latin if we have unconvertable characters at the end (marked)
-  (if (and (not pinyin-isearch-strict) (or (> (length lvar) 1) (> (length (car lvar)) 1)))
+  (if (and pinyin-isearch-chars-fallback
+           (not pinyin-isearch-strict)
+           (or (> (length lvar) 1) (> (length (car lvar)) 1)))
       (let ((la (car (car (last (car (last lvar)))))))
         (if (eq (elt la 0) pinyin-isearch-chars--non-syllable-marker-number)
             ;; add full string (marked) to result list as an another variant.
@@ -283,10 +292,14 @@ Argument SAC is splitted-and-converted variants."
   "For `pinyin-isearch-chars-regexp-function'.")
 (defvar-local pinyin-isearch-chars--saved-regex nil
   "For `pinyin-isearch-chars-regexp-function'.")
-(defvar-local pinyin-isearch-chars--saved-query-s nil
-  "For `pinyin-isearch-chars-strict-regexp-function'.")
-(defvar-local pinyin-isearch-chars--saved-regex-s nil
-  "For `pinyin-isearch-chars-strict-regexp-function'.")
+(defvar-local pinyin-isearch-chars--strict-flag nil
+  "Non-nil means values saved for `pinyin-isearch-chars-regexp-function'.")
+(defvar-local pinyin-isearch-chars--fallback-flag nil
+  "Non-nil means values saved for `pinyin-isearch-chars-regexp-function'.")
+;; (defvar-local pinyin-isearch-chars--saved-query-s nil
+;;   "For `pinyin-isearch-chars-strict-regexp-function'.")
+;; (defvar-local pinyin-isearch-chars--saved-regex-s nil
+;;   "For `pinyin-isearch-chars-strict-regexp-function'.")
 
 
 (defmacro pinyin-isearch-chars--impossible-regex ( variable)
@@ -312,27 +325,26 @@ Argument STRING isearch user input string of query.
 Optional argument LAX (not used) used for isearch special cases."
   (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
   ;; create references to saved values, if next call will be the same.
-  (let ((saved-query (if pinyin-isearch-strict
-                         'pinyin-isearch-chars--saved-query-s
-                       'pinyin-isearch-chars--saved-query))
-        (saved-regex (if pinyin-isearch-strict
-                         'pinyin-isearch-chars--saved-regex-s
-                       'pinyin-isearch-chars--saved-regex)))
+  (when (or (not (eq pinyin-isearch-chars--strict-flag pinyin-isearch-strict))
+            (not (eq pinyin-isearch-chars--fallback-flag pinyin-isearch-chars-fallback)))
+      (setq pinyin-isearch-chars--saved-query nil
+            pinyin-isearch-chars--saved-regex nil))
 
-    (when (not (equal string (symbol-value saved-query)))
-        (set saved-query string)
-        (set saved-regex
-             (pinyin-isearch-chars--concat-variants
-              ;; splitted and converted after it:
-              (pinyin-isearch-chars--convert-to-hieroglyphs
-               (pinyin-isearch-chars--add-fallback
-                string
-                ;; apply filter
-                (pinyin-isearch-chars--filter-full-variants
-                 #'pinyin-isearch-chars--pinyin-to-hieroglyphs
-                 ;; split to variants
-                 (pinyin-isearch-chars--recursion string)))))))
-    (pinyin-isearch-chars--impossible-regex (symbol-value saved-regex))))
+  (when (not (equal string pinyin-isearch-chars--saved-query))
+    (setq pinyin-isearch-chars--saved-query string)
+    (setq pinyin-isearch-chars--saved-regex
+          (pinyin-isearch-chars--impossible-regex
+           (pinyin-isearch-chars--concat-variants
+            ;; splitted and converted after it:
+            (pinyin-isearch-chars--convert-to-hieroglyphs
+             (pinyin-isearch-chars--add-fallback
+              string
+              ;; apply filter
+              (pinyin-isearch-chars--filter-full-variants
+               #'pinyin-isearch-chars--pinyin-to-hieroglyphs
+               ;; split to variants
+               (pinyin-isearch-chars--recursion string))))))))
+  pinyin-isearch-chars--saved-regex)
 
 (defun pinyin-isearch-chars-strict-regexp-function (string &optional lax)
   "Function `isearch-regexp-function' with strict mode.

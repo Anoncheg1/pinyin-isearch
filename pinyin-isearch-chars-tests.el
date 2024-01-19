@@ -157,6 +157,11 @@
     (should (equal (pinyin-isearch-chars-regexp-function "nui") "$^"))
     (should (equal (pinyin-isearch-chars-regexp-function "nuai") "[女钕恧衄怒努奴弩驽胬孥][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]"))
     (setq pinyin-isearch-strict nil)
+    ;; test fallback
+    (setq pinyin-isearch-chars-fallback nil)
+    (should (equal (pinyin-isearch-chars-regexp-function "task") "[他她它踏塔塌榻嗒蹋沓遢挞鳎闼铊趿漯溻獭]sk"))
+    (setq pinyin-isearch-chars-fallback t)
+    (should (equal (pinyin-isearch-chars-regexp-function "task") "\\(task\\|[他她它踏塔塌榻嗒蹋沓遢挞鳎闼铊趿漯溻獭]sk\\)"))
     )
 )
 
