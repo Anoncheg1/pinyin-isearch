@@ -218,12 +218,11 @@ Variants of disassemble.  Unfinished letters is that we we can
  2) return filtered varians or all if filtered is nil.  Argument
  L is a list of disassemble variants."
   (or
-   ;; filter not nil
+   ;; remove all except satisfying IF
    (seq-filter (lambda (x)
                  ;; get the last syllable variants
                  (let ((last (car (nth (1- (length x)) x))))
                    ;; save which can be converted to Chinese
-                   ;; characters or replace to nil
                    (if (not (equal (funcall f last) last))
                        x)))
                l) l))
