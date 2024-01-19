@@ -36,12 +36,21 @@
 
 ;; How it works:
 ;; 1) we create list of ((\"zhuo\" . \"zhuō\")...) :
-;;      pinyin-isearch-pinyin-syllable-table
+;;      `pinyin-isearch-pinyin-syllable-table'
 ;; 2) we define isearch-toggle-[pinyin] with
 ;;      isearch-define-mode-toggle macros
 ;; 3) we find first longest syllable and very accurate do regex
 ;;      with tones "n\\([ūúǔùǖǘǚǜ]e\\|ü[ēéěè]\\)" for the rest of
 ;;      the line we apply rough regex for every vowel [eēéěè]
+
+
+;; 1) create own table with `pinyin-isearch-pinyin--sisheng-to-normal'
+;; and `sisheng-vowel-table', form: (orig . our + patch v->u, ve->ue.)
+;;
+;; 2) For input: `pinyin-isearch-pinyin--get-position-first-syllable'
+;; which uses our syllable-table to find \"zhuō\" and
+;; `pinyin-isearch-pinyin--get_vowel_from_sisheng' which uses
+;; `pinyin-isearch-pinyin-vowels' to get "ue" from "üē".
 
 ;;; Code:
 
@@ -99,10 +108,13 @@ sisheng."
   (let* (;; fin vowel
         (vowel-match (downcase (match-string 0 syllable)))
         (vowel-list (cdr (assoc-string vowel-match sisheng-vowel-table)))
-        (base-key (nth 0 vowel-list))
-        (base-key (if (equal base-key "v") "u"
-                     ;; else
-                     (if (equal base-key "ve") "ue" base-key))))
+        (base-key (nth 0 vowel-list)))
+    ;; case for üē and ǖ and ū
+    (if (equal base-key "v")
+        (setq base-key "u")
+      ;; else
+      (if (equal base-key "ve")
+          (setq base-key "ue" )))
     ;; fix for sisheng, we don't need "v"
     (replace-match base-key nil nil syllable)))
 
