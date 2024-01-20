@@ -1,6 +1,4 @@
-<<<<<<< HEAD
 ![example workflow](https://github.com/Anoncheg1/pinyin-isearch/actions/workflows/test.yml/badge.svg?event=push)
->>>>>>> refs/remotes/origin/main
 
 # pinyin-isearch
 Emacs package for toneless pinyin search in pinyin and Chinese characters.
