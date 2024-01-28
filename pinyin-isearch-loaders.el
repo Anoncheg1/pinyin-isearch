@@ -97,26 +97,8 @@ Because ǚ and other u tones is very same and with same letter."
       ;; (setq rul (remove (assoc-string "nv" rul) rul))
       rul))
 
-(defconst pinyin-isearch-loaders--py-rules
-  (pinyin-isearch-loaders--py-rules-loader)
-  "Rules in form: ((\"a\" \"阿啊呵腌嗄锕吖\") (\"ai\" \"爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹\")...")
-
-
-;; ---------- load punct and concatenate: py + punct --------
-
-(defconst pinyin-isearch-loaders--punct-rules
-  (pinyin-isearch-loaders--punct-quail-filter
-   (pinyin-isearch-loaders--quail-extractor "chinese-punct"))
-  "Extracted and filtered Chinese punctuation.")
-
-(defconst pinyin-isearch-loaders--py-punct-rules
-  (append pinyin-isearch-loaders--py-rules pinyin-isearch-loaders--punct-rules)
-  "Extracted quail/PY.el + quail/Punct.el - Chinese heieroglyphs and punctuation.")
-
-
 ;; ---------- load pinyin from "quail/sisheng"  --------
 
-;; We don't use result, we need only loaded variables
 ;; `sisheng-regexp', `sisheng-vowel-table', `sisheng-syllable-table'.
 (defun pinyin-isearch-loaders--quail-make-sisheng-rules-advice (syllable)
   "Suppress function `quail-make-sisheng-rules'.
@@ -125,9 +107,12 @@ Argument SYLLABLE not used."
   (setq syllable syllable) ; suppress warning: Unused lexical argument
   nil)
 
-(advice-add 'quail-make-sisheng-rules :override #'pinyin-isearch-loaders--quail-make-sisheng-rules-advice)
-(pinyin-isearch-loaders--quail-extractor "chinese-sisheng")
-(advice-remove 'quail-make-sisheng-rules #'pinyin-isearch-loaders--quail-make-sisheng-rules-advice)
+(defun pinyin-isearch-loaders-load-chinese-sisheng ()
+  "We don't use result, we need only loaded variables `sisheng-*'."
+  (when (not (boundp 'sisheng-vowel-table))
+    (advice-add 'quail-make-sisheng-rules :override #'pinyin-isearch-loaders--quail-make-sisheng-rules-advice)
+    (pinyin-isearch-loaders--quail-extractor "chinese-sisheng")
+    (advice-remove 'quail-make-sisheng-rules #'pinyin-isearch-loaders--quail-make-sisheng-rules-advice)))
 
 (provide 'pinyin-isearch-loaders)
 ;;; pinyin-isearch-loaders.el ends here

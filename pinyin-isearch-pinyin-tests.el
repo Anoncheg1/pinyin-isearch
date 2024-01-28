@@ -31,6 +31,8 @@
 
 (defvar pinyin-isearch-strict nil)
 
+(pinyin-isearch-pinyin-load) ; activate pinyin-isearch-pinyin
+
 (ert-deftest pinyin-isearch-pinyin--get_vowel_from_sisheng ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-pinyin--get_vowel_from_sisheng "zuō") "o"))

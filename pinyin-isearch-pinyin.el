@@ -58,7 +58,10 @@
 
 (require 'pinyin-isearch-loaders)
 
-(declare-function string-replace "subr" (from-string to-string in-string)) ; to suppress warning
+;; (declare-function string-replace "subr" (from-string to-string in-string)) ; to suppress warning
+(declare-function pinyin-isearch-loaders-load-chinese-sisheng "pinyin-isearch-loaders") ; load sisheng variables
+
+(defvar pinyin-isearch-strict) ; (require 'pinyin-isearch)
 
 ;; from package `pinyin-isearch-loaders'
 ;; (defvar sisheng-regexp :docstring "Located in quail/sisheng.")
@@ -119,11 +122,16 @@ sisheng."
     (replace-match base-key nil nil syllable)))
 
 
-(defconst pinyin-isearch-pinyin-syllable-table
-    (mapcar (lambda (arg)
+(defvar pinyin-isearch-pinyin-syllable-table nil
+"Initialize syllable's table ((\"zhuo\" . \"zhuō\")...).")
+
+(defun pinyin-isearch-pinyin-load ()
+  "Initialize variable `pinyin-isearch-pinyin-syllable-table'."
+  (when (null pinyin-isearch-pinyin-syllable-table)
+    (pinyin-isearch-loaders-load-chinese-sisheng)
+    (setq pinyin-isearch-pinyin-syllable-table (mapcar (lambda (arg)
               (cons (pinyin-isearch-pinyin--sisheng-to-normal arg) arg))
-            sisheng-syllable-table) ;; sequence
-    "Initialize syllable's table ((\"zhuo\" . \"zhuō\")...).")
+            sisheng-syllable-table))))
 
 
 (defun pinyin-isearch-pinyin--get_vowel_from_sisheng (string)
@@ -211,7 +219,7 @@ Argument D-VOWELS result of function
                          ;; else
                          (apply #'concat (cdr d-vowels)))) ; "uo"
           (replacement (pinyin-isearch-pinyin--vowels-to-regex (cdr d-vowels))))
-      (string-replace vowels-conc replacement syllable))))
+      (s-replace vowels-conc replacement syllable))))
 
 
 (defun pinyin-isearch-pinyin--brute-replace (st &optional &key normal)
@@ -232,12 +240,12 @@ if NORMAL add normal to regex."
         (dolist ( c (split-string "aeiou" "" t))
           (let ((vowel-list-regex
                  (car (cdr (assoc-string c pinyin-isearch-pinyin-vowel-table-normal))) ))
-            (setq st (string-replace c vowel-list-regex st))))
+            (setq st (s-replace c vowel-list-regex st))))
       ;; else (not used now)
       (dolist ( c (split-string "aeiou" "" t))
           (let ((vowel-list-regex
                  (car (cdr (assoc-string c pinyin-isearch-pinyin-vowel-table))) ))
-            (setq st (string-replace c vowel-list-regex st)))))
+            (setq st (s-replace c vowel-list-regex st)))))
     st))
 
 

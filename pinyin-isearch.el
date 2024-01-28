@@ -64,6 +64,9 @@
 (declare-function pinyin-isearch-pinyin-regexp-function "pinyin-isearch-pinyin" (string &optional lax))
 (declare-function pinyin-isearch-chars-regexp-function "pinyin-isearch-chars" (string &optional lax))
 (declare-function pinyin-isearch-chars-strict-regexp-function "pinyin-isearch-chars" (string &optional lax))
+(declare-function pinyin-isearch-chars-strict-regexp-function "pinyin-isearch-chars" (string &optional lax))
+(declare-function pinyin-isearch-chars-load "pinyin-isearch-chars")
+(declare-function pinyin-isearch-pinyin-load "pinyin-isearch-pinyin")
 
 (defgroup pinyin-isearch nil
   "Fuzzy Matching."
@@ -169,7 +172,7 @@ Used in functions `pinyin-isearch-forward' and
                 #'pinyin-isearch-chars-regexp-function)
                ;; pinyin
                ((or (eq pinyin-isearch-target 'pinyin)
-                    (eq pinyin-isearch-target nil) )
+                    (not pinyin-isearch-target) )
                 #'pinyin-isearch-pinyin-regexp-function)))
 
 (defun pinyin-isearch--pinyin-fix-jumping-advice ()
@@ -187,15 +190,21 @@ Used in functions `pinyin-isearch-forward' and
           (goto-char isearch-opoint)
           (setq isearch-adjusted t)))))
 
-;; ------------ interface with isearch and user --------------
+(defun pinyin-isearch--activate ()
+  "Load and activate modules and hooks used by all."
+  (pinyin-isearch-chars-load) ; activate pinyin-isearch-chars
+  (pinyin-isearch-pinyin-load) ; activate pinyin-isearch-pinyin
+  ;; used in all modes
+  (add-hook 'pre-command-hook #'pinyin-isearch--pinyin-fix-jumping-advice))
 
-;; used in all modes
-(add-hook 'pre-command-hook #'pinyin-isearch--pinyin-fix-jumping-advice)
+;; ------------ interface with isearch and user --------------
 
 ;;;###autoload
 (defun pinyin-isearch-activate-submodes()
   "Add submodes to `isearch-mode' accessible with key `M-s KEY'.
 Call macros to define global functions `isearch-toggle-*.'"
+  (pinyin-isearch--activate)
+
   (isearch-define-mode-toggle "pinyin" "p" pinyin-isearch-pinyin-regexp-function "\
   Turning on pinyin search turns off normal mode.")
 
@@ -218,14 +227,16 @@ Call macros to define global functions `isearch-toggle-*.'"
 Optional argument REGEXP-P see original function `isearch-forward'.
 Optional argument NO-RECURSIVE-EDIT see original function `isearch-forward'."
   (interactive "P\np")
-  (isearch-mode t (not (null regexp-p)) nil (not no-recursive-edit) (pinyin-isearch--set-isearch)))
+  (pinyin-isearch--activate)
+  (isearch-mode t regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch)))
 
 (defun pinyin-isearch-backward (&optional regexp-p no-recursive-edit)
   "Do incremental search backward.
 Optional argument REGEXP-P see original function `isearch-backward'.
 Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
   (interactive "P\np")
-   (isearch-mode nil (not (null regexp-p)) nil (not no-recursive-edit) (pinyin-isearch--set-isearch)))
+  (pinyin-isearch--activate)
+  (isearch-mode nil regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch)))
 
 ;;;###autoload
 (define-minor-mode pinyin-isearch-mode
@@ -236,7 +247,8 @@ normal search."
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-s") #'pinyin-isearch-forward)
             (define-key map (kbd "C-r") #'pinyin-isearch-backward)
-            map))
+            map)
+  (pinyin-isearch--activate))
 
 
 (provide 'pinyin-isearch)

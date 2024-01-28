@@ -29,12 +29,14 @@
 (require 'ert)
 (require 'pinyin-isearch-chars)
 
-(declare-function pinyin-isearch-chars-regexp-function "pinyin-isearch-chars" (string &optional lax))
+;; (declare-function pinyin-isearch-chars-regexp-function "pinyin-isearch-chars" (string &optional lax))
 
-(declare-function pinyin-isearch--chars-recursion "pinyin-isearch-chars" (st))
-(declare-function pinyin-isearch-chars--recursion "pinyin-isearch-chars" (st))
+;; (declare-function pinyin-isearch--chars-recursion "pinyin-isearch-chars" (st))
+;; (declare-function pinyin-isearch-chars--recursion "pinyin-isearch-chars" (st))
 
 
+(pinyin-isearch-chars-load) ; activate pinyin-isearch-chars
+(defvar pinyin-isearch-strict nil)
 
 (ert-deftest pinyin-isearch-chars--rules-to-first-syllable-letters ()
   (with-temp-buffer

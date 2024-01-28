@@ -6,7 +6,7 @@
 ;; Keywords: chinese, pinyin, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 1.6.3
-;; Package-Requires: ((emacs "28.1"))
+;; Package-Requires: ((emacs "27.2"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -54,14 +54,12 @@
 
 (require 'pinyin-isearch-loaders) ; for pinyin-isearch-loaders--py-punct-rules
 
-;; (defvar-local pinyin-isearch-strict pinyin-isearch-strict)
-;; (require 'pinyin-isearch)
-
 ;; (defgroup pinyin-isearch nil
 ;;   "Fuzzy matching."
 ;;   :group 'pinyin-isearch
 ;;   :prefix "pinyin-isearch-")
 
+(defvar pinyin-isearch-strict) ; (require 'pinyin-isearch)
 ;; (defcustom pinyin-isearch-strict nil
 ;;   "Non-nil means enforce to search only hierogliphs.
 ;; isearch will not fallback to find normal latin text if pinyin is
@@ -76,6 +74,32 @@ If there is undecoded letters at the end after dissasembling."
   :local t
   :type 'boolean
   :group 'pinyin-isearch)
+
+
+;; ---------- loaded punct and concatenate: py + punct --------
+(defvar pinyin-isearch-chars--py-rules nil
+  "Rules in form: ((\"a\" \"阿啊呵腌嗄锕吖\") (\"ai\" \"爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹\")...")
+
+(defvar pinyin-isearch-chars--punct-rules nil
+  "Extracted and filtered Chinese punctuation.")
+
+(defvar pinyin-isearch-chars--py-punct-rules nil
+  "Extracted quail/PY.el + quail/Punct.el - Chinese heieroglyphs and punctuation.")
+
+;; (defconst pinyin-isearch-chars--first-syllable-letters
+;;   (pinyin-isearch-chars--rules-to-first-syllable-letters pinyin-isearch-chars--py-punct-rules)
+;; "This table allow to quickly find all syllables by their first letters.
+;; \((a (ao ang an ai a)) ...)")
+
+(defconst pinyin-isearch-chars--first-syllable-letters nil
+"This table allow to quickly find all syllables by their first letters.
+\((a (ao ang an ai a)) ...)")
+
+
+(defconst pinyin-isearch-chars--non-syllable-marker-number 28
+  "Used to distringuish non syllable sequences from syllables after split.") ;\34
+
+(defconst pinyin-isearch-chars--non-syllable-marker-string "\34")
 
 
 ;; ---------- prepare syllable table ---------
@@ -96,16 +120,17 @@ Argument RULES argument of funcion `quail-define-rules'."
               (setq ss (cons (list sub newl) ss)))))))
     ss))
 
-
-(defconst pinyin-isearch-chars--first-syllable-letters
-  (pinyin-isearch-chars--rules-to-first-syllable-letters pinyin-isearch-loaders--py-punct-rules)
-"This table allow to quickly find all syllables by their first letters.
-\((a (ao ang an ai a)) ...)")
-
-(defconst pinyin-isearch-chars--non-syllable-marker-number 28
-  "Used to distringuish non syllable sequences from syllables after split.") ;\34
-
-(defconst pinyin-isearch-chars--non-syllable-marker-string "\34")
+(defun pinyin-isearch-chars-load()
+  "Prepare variables from `pinyin-isearch-loaders'."
+  (when (null pinyin-isearch-chars--first-syllable-letters)
+    (setq pinyin-isearch-chars--py-rules (pinyin-isearch-loaders--py-rules-loader))
+    (setq pinyin-isearch-chars--punct-rules
+          (pinyin-isearch-loaders--punct-quail-filter
+           (pinyin-isearch-loaders--quail-extractor "chinese-punct")))
+    (setq pinyin-isearch-chars--py-punct-rules
+          (append pinyin-isearch-chars--py-rules pinyin-isearch-chars--punct-rules))
+    (setq pinyin-isearch-chars--first-syllable-letters
+          (pinyin-isearch-chars--rules-to-first-syllable-letters pinyin-isearch-chars--py-punct-rules))))
 
 ;; ----------- tools -----------
 (defun pinyin-isearch-chars--get-syllables-by-prefix (st)
@@ -124,19 +149,19 @@ Argument ST the begining letters of any syllable."
 
 
 (defun pinyin-isearch-chars--pinyin-to-hieroglyphs (syl)
-  "Interface to constant `pinyin-isearch-loaders--py-punct-rules'.
+  "Interface to constant `pinyin-isearch-chars--py-punct-rules'.
 For syllable \"an\" we get \"昂肮盎\".
 Argument SYL syllable of toneless pinyin."
   ;; this if for speed optimization only
   (if (eq (elt syl 0) pinyin-isearch-chars--non-syllable-marker-number)
       (regexp-quote syl)
     ;; else
-    (let ((r (assoc-string syl pinyin-isearch-loaders--py-punct-rules))) ; TODO: make rules as a variable
+    (let ((r (assoc-string syl pinyin-isearch-chars--py-punct-rules))) ; TODO: make rules as a variable
       (if r
           (if pinyin-isearch-strict
               (car (cdr r))
             ;; else, fix for "." we add normal dot
-            (regexp-quote (string-replace "．" "．." (car (cdr r)))))
+            (regexp-quote (s-replace "．" "．." (car (cdr r)))))
         ;;else
         (regexp-quote syl)))))
 
@@ -177,7 +202,7 @@ Argument ST user input string for isearch search."
           (setq syllables (pinyin-isearch-chars--get-syllables-by-prefix first-chars))
         ;; else if it is not last symbols we find only full one syllable
         (progn
-          (setq syllables (copy-sequence (assoc-string first-chars pinyin-isearch-loaders--py-punct-rules))) ; copy to prevent destruction. TODO: make as variable
+          (setq syllables (copy-sequence (assoc-string first-chars pinyin-isearch-chars--py-punct-rules))) ; copy to prevent destruction. TODO: make as variable
           (if syllables (setq syllables (list (car syllables))) )))
 
       (when syllables ; variants of one hierogliph
@@ -204,7 +229,7 @@ Argument ST user input string for isearch search."
           (list (list (list (concat pinyin-isearch-chars--non-syllable-marker-string st)) )))
       ;; else
       (setq finals (nreverse finals)) ; reverse
-      (apply 'append finals)) ; flatten by one level
+      (apply #'append finals)) ; flatten by one level
     )) ; end of let*
 
 
@@ -274,7 +299,7 @@ Argument L list of form ((\"gg\"))."
                        ;; else
                        (concat "[" cx "]"))
                    ;; else ("sd" "sd")
-                   (concat "[" (apply 'concat x) "]"))))
+                   (concat "[" (apply #'concat x) "]"))))
              l nil))
 
 (defun pinyin-isearch-chars--concat-variants (sac)
