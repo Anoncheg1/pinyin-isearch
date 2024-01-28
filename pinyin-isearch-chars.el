@@ -6,7 +6,7 @@
 ;; Keywords: chinese, pinyin, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 1.6.5
-;; Package-Requires: ((emacs "27.2"))
+;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -161,7 +161,7 @@ Argument SYL syllable of toneless pinyin."
           (if pinyin-isearch-strict
               (car (cdr r))
             ;; else, fix for "." we add normal dot
-            (regexp-quote (s-replace "．" "．." (car (cdr r)))))
+            (regexp-quote (string-replace "．" "．." (car (cdr r)))))
         ;;else
         (regexp-quote syl)))))
 

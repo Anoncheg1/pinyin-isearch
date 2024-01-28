@@ -6,7 +6,7 @@
 ;; Keywords: chinese, pinyin, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 1.6.5
-;; Package-Requires: ((emacs "27.2"))
+;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -61,14 +61,14 @@
 ;; (declare-function string-replace "subr" (from-string to-string in-string)) ; to suppress warning
 (declare-function pinyin-isearch-loaders-load-chinese-sisheng "pinyin-isearch-loaders") ; load sisheng variables
 
-(defvar pinyin-isearch-strict) ; (require 'pinyin-isearch)
+(defvar pinyin-isearch-strict) ; "Located in `pinyin-isearch'."
 
 ;; from package `pinyin-isearch-loaders'
-;; (defvar sisheng-regexp :docstring "Located in quail/sisheng.")
+(defvar sisheng-regexp) ; "Located in quail/sisheng."
 
-;; (defvar sisheng-vowel-table :docstring "Located in quail/sisheng.")
+(defvar sisheng-vowel-table) ; "Located in quail/sisheng."
 
-;; (defvar sisheng-syllable-table :docstring "Located in quail/sisheng.")
+(defvar sisheng-syllable-table) ; "Located in quail/sisheng."
 
 
 (defconst pinyin-isearch-pinyin-vowel-table
@@ -219,7 +219,7 @@ Argument D-VOWELS result of function
                          ;; else
                          (apply #'concat (cdr d-vowels)))) ; "uo"
           (replacement (pinyin-isearch-pinyin--vowels-to-regex (cdr d-vowels))))
-      (s-replace vowels-conc replacement syllable))))
+      (string-replace vowels-conc replacement syllable))))
 
 
 (defun pinyin-isearch-pinyin--brute-replace (st &optional &key normal)
@@ -240,12 +240,12 @@ if NORMAL add normal to regex."
         (dolist ( c (split-string "aeiou" "" t))
           (let ((vowel-list-regex
                  (car (cdr (assoc-string c pinyin-isearch-pinyin-vowel-table-normal))) ))
-            (setq st (s-replace c vowel-list-regex st))))
+            (setq st (string-replace c vowel-list-regex st))))
       ;; else (not used now)
       (dolist ( c (split-string "aeiou" "" t))
           (let ((vowel-list-regex
                  (car (cdr (assoc-string c pinyin-isearch-pinyin-vowel-table))) ))
-            (setq st (s-replace c vowel-list-regex st)))))
+            (setq st (string-replace c vowel-list-regex st)))))
     st))
 
 
