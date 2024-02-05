@@ -58,6 +58,7 @@
 
 ;;; Code:
 
+(require 'cl-lib); (require 'cl-macs) ; Warning: the function ‘cl-callf’ is not known to be defined.
 (require 'pinyin-isearch-pinyin)
 (require 'pinyin-isearch-chars)
 
@@ -67,6 +68,9 @@
 (declare-function pinyin-isearch-chars-strict-regexp-function "pinyin-isearch-chars" (string &optional lax))
 (declare-function pinyin-isearch-chars-load "pinyin-isearch-chars")
 (declare-function pinyin-isearch-pinyin-load "pinyin-isearch-pinyin")
+(declare-function isearch-toggle-strict "pinyin-isearch")
+(declare-function isearch-toggle-characters "pinyin-isearch")
+(declare-function isearch-toggle-pinyin "pinyin-isearch")
 
 (defgroup pinyin-isearch nil
   "Fuzzy Matching."
