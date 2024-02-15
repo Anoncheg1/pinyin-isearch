@@ -167,26 +167,26 @@ Optional argument LAX for isearch special cases."
 Used in functions `pinyin-isearch-forward' and
 `pinyin-isearch-backward'."
   (cond
-               ;; both
-               ((eq pinyin-isearch-target 'both)
-                     #'pinyin-isearch-both-regexp-function)
-               ;; hieroglyphs
-               ((or (eq pinyin-isearch-target 'characters)
-                    (eq pinyin-isearch-target t))
-                #'pinyin-isearch-chars-regexp-function)
-               ;; pinyin
-               ((or (eq pinyin-isearch-target 'pinyin)
-                    (not pinyin-isearch-target) )
-                #'pinyin-isearch-pinyin-regexp-function)))
+   ;; both
+   ((eq pinyin-isearch-target 'both)
+         #'pinyin-isearch-both-regexp-function)
+   ;; hieroglyphs
+   ((or (eq pinyin-isearch-target 'characters)
+        (eq pinyin-isearch-target t))
+    #'pinyin-isearch-chars-regexp-function)
+   ;; pinyin
+   ((or (eq pinyin-isearch-target 'pinyin)
+        (not pinyin-isearch-target) )
+    #'pinyin-isearch-pinyin-regexp-function)))
 
 (defun pinyin-isearch--pinyin-fix-jumping-advice ()
   "Advice to fix isearch behavior.  Force search from a starting point."
   (if (and isearch-mode pinyin-isearch-fix-jumping-flag
            (or
-           (eq isearch-regexp-function #'pinyin-isearch-pinyin-regexp-function)
-           (eq isearch-regexp-function #'pinyin-isearch-chars-regexp-function)
-           (eq isearch-regexp-function #'pinyin-isearch-chars-strict-regexp-function)
-           (eq isearch-regexp-function #'pinyin-isearch-both-regexp-function)))
+            (eq isearch-regexp-function #'pinyin-isearch-pinyin-regexp-function)
+            (eq isearch-regexp-function #'pinyin-isearch-chars-regexp-function)
+            (eq isearch-regexp-function #'pinyin-isearch-chars-strict-regexp-function)
+            (eq isearch-regexp-function #'pinyin-isearch-both-regexp-function)))
       (let ((key (this-single-command-keys)))
         ;; (print (lookup-key isearch-mode-map key nil) ) ; debug
         (when (and isearch-success
