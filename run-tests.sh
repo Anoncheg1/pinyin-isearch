@@ -9,7 +9,7 @@ else
 fi
 
 # NEEDED_PACKAGES="cl-lib let-alist compat"
-# ----- ert -------
+echo '# ----- ert -------'
 "$EMACS" --quick -batch -l ert -l pinyin-isearch-loaders.el -l \
          pinyin-isearch-pinyin.el -l pinyin-isearch-pinyin-tests.el -f \
          ert-run-tests-batch-and-exit
@@ -17,7 +17,7 @@ fi
 "$EMACS" --quick -batch -l ert -l pinyin-isearch-loaders.el -l \
          pinyin-isearch-chars.el -l pinyin-isearch-chars-tests.el -f \
          ert-run-tests-batch-and-exit
-# ----- batch-byte-compile -------
+echo '# ----- batch-byte-compile -------'
 "$EMACS" --quick -batch \
          -l pinyin-isearch-loaders.el \
          -l pinyin-isearch-pinyin.el \
@@ -27,8 +27,9 @@ fi
          -f batch-byte-compile \
          pinyin-isearch.el pinyin-isearch-loaders.el pinyin-isearch-chars.el pinyin-isearch-pinyin.el
 
-# ----- package-lint ---------
+echo '# ----- package-lint ---------'
 "$EMACS" --quick -batch \
+         --eval "(setq package-lint-main-file \"pinyin-isearch.el\")" \
          --eval "(let ((default-directory  \"~/.emacs.d/elpa/\")) (normal-top-level-add-subdirs-to-load-path))" \
          --eval "(setq byte-compile-error-on-warn ${ERROR_ON_WARN})" \
          -l package-lint \
