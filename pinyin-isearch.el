@@ -247,7 +247,7 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
   "Replace key bindings for functions `isearch-forward' and `isearch-backward'.
 Allow with query {pinyin} to find {pīnyīn}.  \\C-\\u \\C-\\s used for
 normal search."
-  :lighter " p-isearch" :global nil :group 'isearch :version "27.2"
+  :lighter " p-isearch" :global nil :group 'isearch
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-s") #'pinyin-isearch-forward)
             (define-key map (kbd "C-r") #'pinyin-isearch-backward)
