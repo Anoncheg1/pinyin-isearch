@@ -1,8 +1,8 @@
 ;;; pinyin-isearch.el --- Pinyin mode for isearch  -*- lexical-binding: t -*-
 
-;; Copyright (c) 2024 Anoncheg1
+;; Copyright (c) 2024 github.com/Anoncheg1,codeberg.org/Anoncheg
 
-;; Author: Anoncheg1
+;; Author: github.com/Anoncheg1,codeberg.org/Anoncheg
 ;; Keywords: chinese, pinyin, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 1.6.9
