@@ -53,3 +53,7 @@ You can set this mode by default per file with:
 
 # Configuration
 M-x customize-group pinyin-isearch
+
+# Todo
+- Upperacase for pinyin.
+- Cangjie search
