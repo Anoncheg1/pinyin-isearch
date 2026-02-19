@@ -3,10 +3,14 @@
 ;; Copyright (c) 2024 github.com/Anoncheg1,codeberg.org/Anoncheg
 
 ;; Author: github.com/Anoncheg1,codeberg.org/Anoncheg
+;; Maintainer: github.com/Anoncheg1,codeberg.org/Anoncheg
 ;; Keywords: chinese, pinyin, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 1.6.9
 ;; Package-Requires: ((emacs "28.1"))
+;; SPDX-License-Identifier: AGPL-3.0-or-later
+
+;;; License
 
 ;; This file is not part of GNU Emacs.
 
@@ -24,6 +28,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+
 ;; There are two types of search: for pinyin (pīnyīn) and for Chinese
 ;; characters (汉字) text.
 
@@ -38,7 +43,7 @@
 ;; (pinyin-isearch--activate) ; force loading (optional)
 ;; (pinyin-isearch-activate-submodes) ; to activate isearch submodes
 
-;; Usage:
+;;;; Usage:
 
 ;; M-x pinyin-isearch-mode
 ;; C-u C-s for normal search.

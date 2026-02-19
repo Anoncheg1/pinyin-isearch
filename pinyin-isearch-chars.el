@@ -33,7 +33,7 @@
 ;; - should not conflict with other isearch modes
 ;; - search do not jump down but always begins from start point.
 
-;; How it works:
+;;;; How it works:
 ;; 1) Split toneless pinyin to variants of syllables, final syllables
 ;; may be unfinished.
 ;; 2) Filter variants with full syllables if there is all

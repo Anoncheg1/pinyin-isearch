@@ -33,7 +33,8 @@
 ;; - should not conflict with other isearch modes
 ;; - search do not jump down but always begins from start point.
 
-;; How it works:
+;;;; How it works:
+
 ;; 1) we create list of ((\"zhuo\" . \"zhuō\")...) :
 ;;      `pinyin-isearch-pinyin-syllable-table'
 ;; 2) we define isearch-toggle-[pinyin] with
