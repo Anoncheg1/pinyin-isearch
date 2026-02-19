@@ -6,6 +6,7 @@
 ;; Keywords: chinese, pinyin, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 1.6.9
+;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -33,7 +34,8 @@
 ;; - should not conflict with other isearch modes
 ;; - search do not jump down but always begins from start point.
 
-;; How it works:
+;;;; How it works:
+
 ;; 1) we create list of ((\"zhuo\" . \"zhuō\")...) :
 ;;      `pinyin-isearch-pinyin-syllable-table'
 ;; 2) we define isearch-toggle-[pinyin] with
@@ -145,15 +147,14 @@ Argument STRING sisheng syllable."
     (car vowel-list)))
 
 
-(defun pinyin-isearch-pinyin--get-position-first-syllable(string)
+(defun pinyin-isearch-pinyin--get-position-first-syllable (string)
   "Get position of the first syllable in query STRING.
 It also return all vowels for all possible sub-syllables.
 For \"zuom\" return (3 \"u\" \"o\").
 Syllables with same tone vowel is ignored and used shortest.
 Uses: function `pinyin-isearch-pinyin--get_vowel_from_sisheng'
 and global variable `pinyin-isearch-pinyin-syllable-table'."
-  (let (
-        (first-chars)
+  (let ((first-chars)
         (pos (length string))
         (ret)
         (vowels nil)
