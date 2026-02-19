@@ -146,15 +146,14 @@ Argument STRING sisheng syllable."
     (car vowel-list)))
 
 
-(defun pinyin-isearch-pinyin--get-position-first-syllable(string)
+(defun pinyin-isearch-pinyin--get-position-first-syllable (string)
   "Get position of the first syllable in query STRING.
 It also return all vowels for all possible sub-syllables.
 For \"zuom\" return (3 \"u\" \"o\").
 Syllables with same tone vowel is ignored and used shortest.
 Uses: function `pinyin-isearch-pinyin--get_vowel_from_sisheng'
 and global variable `pinyin-isearch-pinyin-syllable-table'."
-  (let (
-        (first-chars)
+  (let ((first-chars)
         (pos (length string))
         (ret)
         (vowels nil)

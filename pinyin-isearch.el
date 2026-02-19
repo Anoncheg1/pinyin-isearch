@@ -78,9 +78,8 @@
 (declare-function isearch-toggle-pinyin "pinyin-isearch")
 
 (defgroup pinyin-isearch nil
-  "Fuzzy Matching."
-  :group 'pinyin-isearch
-  :prefix "pinyin-isearch-")
+  "Fuzzy Matching by pinyin."
+  :group 'pinyin-isearch)
 
 (defcustom pinyin-isearch-strict nil
   "Non-nil means Enforce to search only pinyin and Chinese characters.
@@ -98,10 +97,10 @@ both of them.  Used for mode `pinyin-isearch-mode', and functions
 `pinyin-isearch-forward', `pinyin-isearch-backward'."
   :local t
   :type '(choice (const :tag "Search in both: pinyin and Chinese characters" both)
-                 (const :tag "Search in Chinese characters only" characters)
-                 (const :tag "Search in Chinese characters only" t)
-                 (const :tag "Search in pinyin only" pinyin)
-                 (const :tag "Search in pinyin only" nil))
+                 (const :tag "Search in Chinese characters only, same as t" characters)
+                 (const :tag "Search in Chinese characters only, same as characters" t)
+                 (const :tag "Search in pinyin only, same as nil" pinyin)
+                 (const :tag "Search in pinyin only, same as pinyin" nil))
   :group 'pinyin-isearch)
 
 (defcustom pinyin-isearch-fix-jumping-flag t
@@ -120,7 +119,7 @@ Disable for native isearch behavior."
 (defvar-local pinyin-isearch--original-isearch-regexp-function isearch-regexp-function
   "Used in `pinyin-isearch--set-isearch' to save previous state.")
 
-
+;; -=-= fns
 
 (defun pinyin-isearch-both-regexp-function (string &optional lax)
   "Replacement for function `isearch-regexp-function'.
@@ -166,8 +165,7 @@ Optional argument LAX for isearch special cases."
               hsr
               "\\)")))))
 
-
-(defun pinyin-isearch--set-isearch()
+(defun pinyin-isearch--set-isearch ()
   "Help subfunction to replace isearch functions.
 Used in functions `pinyin-isearch-forward' and
 `pinyin-isearch-backward'."
@@ -206,10 +204,10 @@ Used in functions `pinyin-isearch-forward' and
   ;; used in all modes
   (add-hook 'pre-command-hook #'pinyin-isearch--pinyin-fix-jumping-advice))
 
-;; ------------ interface with isearch and user --------------
+;; -=-= ------------ interface with isearch and user --------------
 
 ;;;###autoload
-(defun pinyin-isearch-activate-submodes()
+(defun pinyin-isearch-activate-submodes ()
   "Add submodes to `isearch-mode' accessible with key `M-s KEY'.
 Call macros to define global functions `isearch-toggle-*.'"
   (pinyin-isearch--activate)
@@ -259,6 +257,6 @@ normal search."
             map)
   (pinyin-isearch--activate))
 
-
+;; -=-= provide
 (provide 'pinyin-isearch)
 ;;; pinyin-isearch.el ends here
