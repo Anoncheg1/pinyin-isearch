@@ -1,8 +1,7 @@
+---
 name: CI
 
-"on":
-  release:
-    types: [published]
+'on': [published]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -30,11 +29,12 @@ jobs:
             #   experimental: true
 
     steps:
-      - uses: actions/checkout@v5
+      - name: Get repo to access in conteiner
+        uses: actions/checkout@v5
 
-      - uses: jcs090218/setup-emacs@master
-        with:
-          version: ${{ matrix.emacs-version }}
+      # - uses: jcs090218/setup-emacs@master
+      #   with:
+      #     version: ${{ matrix.emacs-version }}
 
       - uses: emacs-eask/setup-eask@master
         with:
