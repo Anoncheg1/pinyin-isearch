@@ -1,3 +1,4 @@
+# -*- fill-column: 120; -*-
 ---
 name: CI
 
@@ -9,7 +10,7 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ strategy.matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
@@ -32,9 +33,9 @@ jobs:
       - name: Get repo to access in conteiner
         uses: actions/checkout@v5
 
-      # - uses: jcs090218/setup-emacs@master
-      #   with:
-      #     version: ${{ matrix.emacs-version }}
+      - uses: jcs090218/setup-emacs@master
+        with:
+          version: ${{ strategy.matrix.emacs-version }}
 
       - uses: emacs-eask/setup-eask@master
         with:

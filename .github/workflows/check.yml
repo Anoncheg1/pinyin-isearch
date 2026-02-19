@@ -1,8 +1,10 @@
+# -*- fill-column: 120; -*-
+---
 name: check
 
 run-name: "${{GITHUB_SHA}}"
 
-on:
+'on':
   release:
     types: [published]
   pull_request:
