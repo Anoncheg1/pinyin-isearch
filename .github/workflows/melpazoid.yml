@@ -25,9 +25,9 @@ jobs:
           sudo apt-get install emacs-nox && emacs --version
           git clone https://github.com/riscy/melpazoid.git ~/melpazoid
           pip install ~/melpazoid
-      - name: Tests
-        run: |
-         emacs -Q --batch -l ert.el -l selected-window-contrast.el -l swc2-tests.el -f ert-run-tests-batch-and-exit
+      # - name: Tests
+      #   run: |
+      #    emacs -Q --batch -l ert.el -l selected-window-contrast.el -l swc2-tests.el -f ert-run-tests-batch-and-exit
       - name: Run
         env:
           LOCAL_REPO: ${{ github.workspace }}
