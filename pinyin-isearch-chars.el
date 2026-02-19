@@ -6,6 +6,7 @@
 ;; Keywords: chinese, pinyin, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 1.6.9
+;; Package-Requires: ((emacs "28.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -33,7 +34,7 @@
 ;; - should not conflict with other isearch modes
 ;; - search do not jump down but always begins from start point.
 
-;; How it works:
+;;;; How it works:
 ;; 1) Split toneless pinyin to variants of syllables, final syllables
 ;; may be unfinished.
 ;; 2) Filter variants with full syllables if there is all
@@ -119,7 +120,7 @@ Argument RULES argument of funcion `quail-define-rules'."
               (setq ss (cons (list sub newl) ss)))))))
     ss))
 
-(defun pinyin-isearch-chars-load()
+(defun pinyin-isearch-chars-load ()
   "Prepare variables from `pinyin-isearch-loaders'."
   (when (null pinyin-isearch-chars--first-syllable-letters)
     (setq pinyin-isearch-chars--py-rules (pinyin-isearch-loaders--py-rules-loader))
@@ -237,7 +238,7 @@ Argument ST user input string for isearch search."
 Variants of disassemble.  Unfinished letters is that we we can
  not guess what Chinese charater it is.  If there is only
  variants with unfinished letters, we don't filter them.
- Function `F' is a function able convert pinyin to Chinese
+ Function F is a function able convert pinyin to Chinese
  characters.  Steps: 1) filter variants ending with hieroglyphs
  2) return filtered varians or all if filtered is nil.  Argument
  L is a list of disassemble variants."
