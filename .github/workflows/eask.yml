@@ -20,9 +20,9 @@ jobs:
     steps:
       - name: Get repo to access in conteiner
         uses: actions/checkout@v5
-      - uses: jcs090218/setup-emacs@master
+      - uses: purcell/setup-emacs@master
         with:
-          version: ${{ strategy.matrix.emacs-version }}
+          version: ${{ matrix.emacs-version }}
       - uses: emacs-eask/setup-eask@master
         with:
           version: 'snapshot'
