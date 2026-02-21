@@ -3,19 +3,20 @@ EASK ?= eask
 
 .PHONY: clean checkdoc lint package install compile test
 
-ci: clean package install compile
+ci: test checkdoc link clean
+# clean package install compile
 
-package:
-	@echo "Packaging..."
-	$(EASK) package
+# package:
+# 	@echo "Packaging..."
+# 	$(EASK) package
 
-install:
-	@echo "Installing..."
-	$(EASK) install
+# install:
+# 	@echo "Installing..."
+# 	$(EASK) install
 
-compile:
-	@echo "Compiling..."
-	$(EASK) compile
+# compile:
+# 	@echo "Compiling..."
+# 	$(EASK) compile
 
 test:
 	@echo "Testing..."

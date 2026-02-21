@@ -39,6 +39,9 @@ jobs:
         run: |
           echo $GITHUB_REF
           make ci |& tee output.log  # stdout & stderr to log file
+      - uses: emacs-eask/setup-eask@master
+        with:
+          version: 'snapshot'
       - uses: leotaku/elisp-check@master
         with:
           file: '*.el'
