@@ -19,18 +19,18 @@ jobs:
         emacs-version: [28.2, 29.4, 30.2, snapshot]
         experimental: [false]
 
-    steps:
-      - name: Get repo to access in conteiner
-        uses: actions/checkout@v5
+      steps:
+        - name: Get repo to access in conteiner
+          uses: actions/checkout@v5
 
-      - uses: jcs090218/setup-emacs@master
-        with:
-          version: ${{ strategy.matrix.emacs-version }}
+        - uses: jcs090218/setup-emacs@master
+          with:
+            version: ${{ strategy.matrix.emacs-version }}
 
-      - uses: emacs-eask/setup-eask@master
-        with:
-          version: 'snapshot'
+        - uses: emacs-eask/setup-eask@master
+          with:
+            version: 'snapshot'
 
-      - name: Run tests
-        run:
-          make ci
+        - name: Run tests
+          run:
+            make ci
