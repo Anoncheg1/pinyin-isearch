@@ -7,10 +7,6 @@ run-name: "${{GITHUB_SHA}}"
 'on':
   release:
     types: [push, pull_request]
-  pull_request:
-  push:
-    branches:
-      - master
 
 jobs:
   check:
