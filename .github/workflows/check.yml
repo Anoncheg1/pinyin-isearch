@@ -35,6 +35,10 @@ jobs:
       - uses: purcell/setup-emacs@master
         with:
           version: ${{ matrix.emacs_version }}
+      - name: Run tests
+        run: |
+          echo $GITHUB_REF
+          make ci |& tee output.log  # stdout & stderr to log file
       - uses: leotaku/elisp-check@master
         with:
           file: '*.el'
