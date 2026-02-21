@@ -237,7 +237,7 @@ Argument ST user input string for isearch search."
 Variants of disassemble.  Unfinished letters is that we we can
  not guess what Chinese charater it is.  If there is only
  variants with unfinished letters, we don't filter them.
- Function `F' is a function able convert pinyin to Chinese
+ Function F is a function able convert pinyin to Chinese
  characters.  Steps: 1) filter variants ending with hieroglyphs
  2) return filtered varians or all if filtered is nil.  Argument
  L is a list of disassemble variants."

@@ -6,7 +6,7 @@ run-name: "${{GITHUB_SHA}}"
 
 'on':
   release:
-    types: [published]
+    types: [push, pull_request]
   pull_request:
   push:
     branches:
@@ -27,26 +27,23 @@ jobs:
           - 28.1
           - 28.2
           - 29.1
-          - release-snapshot
-        ignore_warnings:
-          - true
-        include:
-          - emacs_version: snapshot
-            ignore_warnings: false
+          - 29.2
+          - 29.3
+          - 29.4
+          - 30.1
+          - 30.2
+          - snapshot
     steps:
-    - uses: actions/checkout@v3
-    - uses: purcell/setup-emacs@master
-      with:
-        version: ${{ matrix.emacs_version }}
-    - uses: leotaku/elisp-check@master
-      with:
-        file: '*-tests.el'
-        ignore_warnings: ${{ matrix.ignore_warnings }}
-        check: ert
-        warnings_as_errors: false
-    - uses: leotaku/elisp-check@master
-      with:
-        file: '*.el'
-        ignore_warnings: ${{ matrix.ignore_warnings }}
-        check: melpa
-        warnings_as_errors: false
+      - name: Get repo to access in conteiner
+        uses: actions/checkout@v5
+
+      - uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs_version }}
+
+      - uses: leotaku/elisp-check@master
+        with:
+          file: '*.el'
+          check: melpa
+          ignore_warnings: false
+          warnings_as_errors: true

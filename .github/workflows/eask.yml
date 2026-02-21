@@ -2,7 +2,7 @@
 ---
 name: CI
 
-'on': [published]
+'on': [push, pull_request]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -18,16 +18,6 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         emacs-version: [28.2, 29.4, 30.2, snapshot]
         experimental: [false]
-        include:
-          - os: ubuntu-latest
-            emacs-version: snapshot
-            experimental: true
-          - os: macos-latest
-            emacs-version: snapshot
-            experimental: true
-            # - os: windows-latest
-            #   emacs-version: snapshot
-            #   experimental: true
 
     steps:
       - name: Get repo to access in conteiner
