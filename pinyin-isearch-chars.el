@@ -119,7 +119,7 @@ Argument RULES argument of funcion `quail-define-rules'."
               (setq ss (cons (list sub newl) ss)))))))
     ss))
 
-(defun pinyin-isearch-chars-load()
+(defun pinyin-isearch-chars-load ()
   "Prepare variables from `pinyin-isearch-loaders'."
   (when (null pinyin-isearch-chars--first-syllable-letters)
     (setq pinyin-isearch-chars--py-rules (pinyin-isearch-loaders--py-rules-loader))
