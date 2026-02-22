@@ -1,9 +1,9 @@
 EMACS ?= emacs
 EASK ?= eask
 
-.PHONY: clean checkdoc lint package install compile test
+# .PHONY: clean checkdoc lint package install compile test
 
-ci: test checkdoc lint clean
+ci: test checkdoc lint
 # clean package install compile
 
 # package:
@@ -30,5 +30,5 @@ lint:
 	@echo "Run package-lint..."
 	$(EASK) lint package
 
-clean:
-	$(EASK) clean all
+# clean:
+# 	$(EASK) clean all
