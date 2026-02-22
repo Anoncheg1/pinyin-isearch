@@ -4,9 +4,9 @@
 # 2) leotaku/elisp-check
 
 ---
-name: check
+name: test
 
-'on': [push, pull_request]
+'on': [push, release, pull_request]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

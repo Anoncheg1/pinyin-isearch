@@ -1,4 +1,7 @@
-![example workflow](https://github.com/Anoncheg1/pinyin-isearch/actions/workflows/test.yml/badge.svg?event=release)
+![build](https://github.com/Anoncheg1/pinyin-isearch/workflows/test/badge.svg?event=push)
+[![MELPA](https://melpa.org/packages/pinyin-isearch-badge.svg)](http://melpa.org/#/pinyin-isearch)
+![build](https://github.com/Anoncheg1/pinyin-isearch/workflows/test/badge.svg?event=release)
+[![MELPA Stable](https://stable.melpa.org/packages/pinyin-isearch-badge.svg)](https://stable.melpa.org/#/pinyin-isearch)
 
 Tested with Emacs 29.3
 
