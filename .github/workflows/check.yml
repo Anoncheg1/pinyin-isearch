@@ -30,18 +30,21 @@ jobs:
           - 30.2
           - snapshot
     steps:
-      - name: Get repo to access in conteiner
+      - name: Copy repo
         uses: actions/checkout@v5
-      - uses: purcell/setup-emacs@master
+      - name: Install Emacs
+        uses: purcell/setup-emacs@master
         with:
           version: ${{ matrix.emacs_version }}
-      - name: Run tests
+      - name: Install Eask
+        uses: emacs-eask/setup-eask@master
+        with:
+          version: 'snapshot'
+      - name: Run tests with eask and Make
         run: |
           echo $GITHUB_REF
           make ci |& tee output.log  # stdout & stderr to log file
-      - uses: emacs-eask/setup-eask@master
-        with:
-          version: 'snapshot'
+          [ $? -ne 0 ] && { echo "Make command failed, failing workflow"; exit 1; }
       - uses: leotaku/elisp-check@master
         with:
           file: '*.el'
