@@ -14,7 +14,8 @@ jobs:
       - name: Get repo to access in conteiner
         uses: actions/checkout@v5
         with:
-          fetch-depth: 0
+          fetch-depth: 1
+
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
