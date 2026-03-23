@@ -17,7 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
+  test:
+
     strategy:
       fail-fast: false
       matrix:
@@ -40,7 +41,9 @@ jobs:
         include:
           - emacs_version: snapshot
             experimental: true
-      runs-on: ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Install Emacs
         uses: jcs090218/setup-emacs@master
