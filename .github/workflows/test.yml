@@ -18,11 +18,10 @@ concurrency:
 
 jobs:
   check:
-    runs-on: ${{ matrix.os }}
+    runs-on: [ubuntu-latest, windows-latest]
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
         emacs_version:
           # - 26.1
           # - 26.2
