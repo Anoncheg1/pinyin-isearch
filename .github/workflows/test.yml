@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   test:
-    runs-on: [ubuntu-latest, macos-latest-large]
+    runs-on: ubuntu-latest # , macos-latest-large, windows-latest - github waiting is too large
     strategy:
       fail-fast: false
       matrix:
@@ -41,9 +41,6 @@ jobs:
         include:
           - emacs_version: snapshot
             experimental: true
-
-
-
     steps:
       - name: Install Emacs
         uses: jcs090218/setup-emacs@master
