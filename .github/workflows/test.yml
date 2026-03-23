@@ -18,11 +18,11 @@ concurrency:
 
 jobs:
   test:
-
+    runs-on: [ubuntu-latest, windows-latest]
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        # os: [ubuntu-latest, windows-latest]
         emacs_version:
           # - 26.1
           # - 26.2
@@ -42,7 +42,7 @@ jobs:
           - emacs_version: snapshot
             experimental: true
 
-    runs-on: ${{ matrix.os }}
+
 
     steps:
       - name: Install Emacs
