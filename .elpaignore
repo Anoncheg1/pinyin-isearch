@@ -4,4 +4,4 @@ Eask
 .github
 Makefile
 *-tests.el
-run-tests.sh
+tests.sh
