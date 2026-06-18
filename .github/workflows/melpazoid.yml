@@ -9,27 +9,75 @@ name: melpazoid
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get repo to access in conteiner
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
 
-      - name: Set up Python 3.12
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # os: [ubuntu-latest, windows-latest]
+        emacs_version:
+          # - 26.1
+          # - 26.2
+          # - 26.3
+          # - 27.1
+          # - 27.2
+          - 28.1
+          # - 28.2
+          # - 29.1
+          # - 29.2
+          # - 29.3
+          # - 29.4
+          - 30.1
+          - release-snapshot
+    steps:
+      - name: Set up Python 3.12 for melpazoid
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
-      - name: Install
-        run: |
-          python -m pip install --upgrade pip
-          sudo apt-get install emacs-nox && emacs --version
-          git clone https://github.com/riscy/melpazoid.git ~/melpazoid
-          pip install ~/melpazoid
-      # - name: Tests
+
+      # - name: Install
       #   run: |
-      #    emacs -Q --batch -l ert.el -l selected-window-contrast.el -l swc2-tests.el -f ert-run-tests-batch-and-exit
-      - name: Run
+      #     python -m pip install --upgrade pip
+      #     sudo apt-get install emacs-nox && emacs --version
+      #     git clone https://github.com/riscy/melpazoid.git ~/melpazoid
+      #     pip install ~/melpazoid
+
+      - name: Install Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs_version }}
+
+      - name: Install Eask
+        uses: emacs-eask/setup-eask@master
+        with:
+          version: 'snapshot'
+
+      - name: Copy repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Tests1
+        run: |
+         emacs -Q --batch --no-site-file -l pinyin-isearch-loaders.el -l pinyin-isearch-pinyin.el -l pinyin-isearch-pinyin-tests.el -f ert-run-tests-batch-and-exit
+
+      - name: Tests2
+        run: |
+         emacs -Q --batch --no-site-file -l pinyin-isearch-loaders.el -l pinyin-isearch-chars.el -l pinyin-isearch-chars-tests.el -f ert-run-tests-batch-and-exit
+
+      - name: Run CI
+        run: |
+          make test
+          [ $? -ne 0 ] && { echo "Make test command failed, failing workflow"; exit 1; }
+          make checkdoc
+          [ $? -ne 0 ] && { echo "Make checkdoc command failed, failing workflow"; exit 1; }
+          make lint
+          [ $? -ne 0 ] && { echo "Make lint command failed, failing workflow"; exit 1; }
+
+      - name: Melpazoid check
         env:
           LOCAL_REPO: ${{ github.workspace }}
           # RECIPE is your recipe as written for MELPA:
@@ -46,9 +94,12 @@ jobs:
           if grep -q ': error: ' output.log ; then
             echo "Error detected, failing workflow" ; exit 1
           fi
-          if grep -q ' with checkdoc ' output.log ; then
+          if grep -q ' with [melpazoid]' output.log ; then
+            echo "Melpazoid warning detected, failing workflow" ; exit 1
+          fi
+          if grep -q ' with package-lint ' output.log ; then
             echo "Checkdoc warning detected, failing workflow" ; exit 1
           fi
-          if grep -q 'much wider than 80 characters' output.log ; then
+          if grep -q ' with checkdoc ' output.log ; then
             echo "Checkdoc warning detected, failing workflow" ; exit 1
           fi

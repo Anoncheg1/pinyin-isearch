@@ -1,5 +1,5 @@
 # -*- fill-column: 120; -*-
-#
+
 # purcell/setup-emacs - to install emacs
 #
 # 1) package-lint run from Makefile (https://github.com/purcell/package-lint)
@@ -8,17 +8,18 @@
 # purcell/setup-emacs - install emacs
 
 ---
-name: test
+name: melpazoid-release
+'on': {release: {types: [published]}}
 
-'on': [push, release, pull_request]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: true
 
 jobs:
-  test:
-    runs-on: ubuntu-latest # , macos-latest-large, windows-latest - github waiting is too large
+  build:
+
+    runs-on: ubuntu-latest  # , macos-latest-large, windows-latest - github waiting is too large
+
     strategy:
       fail-fast: false
       matrix:
@@ -76,10 +77,18 @@ jobs:
       #     ignore_warnings: false
       #     warnings_as_errors: true
 
-      - name: Run tests with eask and Make
+      # - name: Run tests with eask and Make
+      #   run: |
+      #     make ci
+      #     [ $? -ne 0 ] && { echo "Make command failed, failing workflow"; exit 1; }
+      - name: Run CI
         run: |
-          make ci
-          [ $? -ne 0 ] && { echo "Make command failed, failing workflow"; exit 1; }
+          make test
+          [ $? -ne 0 ] && { echo "Make test command failed, failing workflow"; exit 1; }
+          make checkdoc
+          [ $? -ne 0 ] && { echo "Make checkdoc command failed, failing workflow"; exit 1; }
+          make lint
+          [ $? -ne 0 ] && { echo "Make lint command failed, failing workflow"; exit 1; }
         # |
         #          echo $GITHUB_REF
         # |& tee output.log

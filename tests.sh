@@ -28,6 +28,7 @@ echo '# ----- batch-byte-compile -------'
          pinyin-isearch.el pinyin-isearch-loaders.el pinyin-isearch-chars.el pinyin-isearch-pinyin.el
 
 echo '# ----- package-lint ---------'
+# require 'package-lint
 "$EMACS" --quick -batch \
          --eval "(setq package-lint-main-file \"pinyin-isearch.el\")" \
          --eval "(let ((default-directory  \"~/.emacs.d/elpa/\")) (normal-top-level-add-subdirs-to-load-path))" \
