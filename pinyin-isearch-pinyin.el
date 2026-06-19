@@ -130,11 +130,12 @@ sisheng."
 
 (defun pinyin-isearch-pinyin-load ()
   "Initialize variable `pinyin-isearch-pinyin-syllable-table'."
-  (when (null pinyin-isearch-pinyin-syllable-table)
+  (unless pinyin-isearch-pinyin-syllable-table
     (pinyin-isearch-loaders-load-chinese-sisheng)
-    (setq pinyin-isearch-pinyin-syllable-table (mapcar (lambda (arg)
-              (cons (pinyin-isearch-pinyin--sisheng-to-normal arg) arg))
-            sisheng-syllable-table))))
+    (setq pinyin-isearch-pinyin-syllable-table
+          (mapcar (lambda (arg)
+                    (cons (pinyin-isearch-pinyin--sisheng-to-normal arg) arg))
+                  sisheng-syllable-table))))
 
 
 (defun pinyin-isearch-pinyin--get_vowel_from_sisheng (string)
@@ -181,7 +182,6 @@ and global variable `pinyin-isearch-pinyin-syllable-table'."
     (cons ret vowels)))
 
 
-
 (defun pinyin-isearch-pinyin--vowels-to-regex (vowels)
   "Used for accurate apply regex to the first syllable of toneless pinyin.
 Convert (u o) to
@@ -224,33 +224,6 @@ Argument D-VOWELS result of function
                          (apply #'concat (cdr d-vowels)))) ; "uo"
           (replacement (pinyin-isearch-pinyin--vowels-to-regex (cdr d-vowels))))
       (string-replace vowels-conc replacement syllable))))
-
-
-;; (defun pinyin-isearch-pinyin--brute-replace (st &optional &key normal)
-;;   "Replace every vowels in ST with wide range regex.
-;; if NORMAL add normal to regex."
-;;   (let* (
-;;          ;; ignore white spaces if query is more than 2 characters
-;;          (st (if (> (length st) 1)
-;;                  ;; then - insert whitespaces between every character
-;;                  (concat (substring st 0 1)
-;;                          (mapconcat (lambda (x) (concat "\\s-*" x))
-;;                                     (cdr (split-string st "" t))
-;;                                     nil))
-;;                ;; else
-;;                st)))
-;;     ;; ignore tones, based on lisp/leim/quail/sisheng.el
-;;     (if normal
-;;         (dolist ( c (split-string "aeiou" "" t))
-;;           (let ((vowel-list-regex
-;;                  (car (cdr (assoc-string c pinyin-isearch-pinyin-vowel-table-normal))) ))
-;;             (setq st (string-replace c vowel-list-regex st))))
-;;       ;; else (not used now)
-;;       (dolist ( c (split-string "aeiou" "" t))
-;;           (let ((vowel-list-regex
-;;                  (car (cdr (assoc-string c pinyin-isearch-pinyin-vowel-table))) ))
-;;             (setq st (string-replace c vowel-list-regex st)))))
-;;     st))
 
 
 (defun pinyin-isearch-pinyin--brute-replace (st &optional &key normal)
@@ -303,8 +276,8 @@ Uses functions: `pinyin-isearch-pinyin--get-position-first-syllable',
                          nil)))
           (concat first-syllable others))
       ;; else - no syllable found
-      (if (not pinyin-isearch-strict) st) ; if not strict search for original text
-)))
+      (if (not pinyin-isearch-strict) st)))) ; if not strict search for original text
+
 
 (defvar-local pinyin-isearch-pinyin--saved-query nil
   "For `pinyin-isearch-pinyin-regexp-function'.")

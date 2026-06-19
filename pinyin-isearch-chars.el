@@ -62,13 +62,6 @@
 ;;   :prefix "pinyin-isearch-")
 
 (defvar pinyin-isearch-strict) ; (require 'pinyin-isearch)
-;; (defcustom pinyin-isearch-strict nil
-;;   "Non-nil means enforce to search only hierogliphs.
-;; isearch will not fallback to find normal latin text if pinyin is
-;; not found."
-;;   :local t
-;;   :type 'boolean
-;;   :group 'pinyin-isearch)
 
 (defcustom pinyin-isearch-chars-fallback t
   "Non-nil means add full query string as a regex variant.
@@ -88,12 +81,7 @@ If there is undecoded letters at the end after dissasembling."
 (defvar pinyin-isearch-chars--py-punct-rules nil
   "Extracted quail/PY.el + quail/Punct.el - Chinese heieroglyphs and punctuation.")
 
-;; (defconst pinyin-isearch-chars--first-syllable-letters
-;;   (pinyin-isearch-chars--rules-to-first-syllable-letters pinyin-isearch-chars--py-punct-rules)
-;; "This table allow to quickly find all syllables by their first letters.
-;; \((a (ao ang an ai a)) ...)")
-
-(defconst pinyin-isearch-chars--first-syllable-letters nil
+(defvar pinyin-isearch-chars--first-syllable-letters nil
 "This table allow to quickly find all syllables by their first letters.
 \((a (ao ang an ai a)) ...)")
 
@@ -124,8 +112,7 @@ Argument RULES argument of funcion `quail-define-rules'."
 
 (defun pinyin-isearch-chars-load ()
   "Prepare variables from `pinyin-isearch-loaders'."
-  (when (null pinyin-isearch-chars--first-syllable-letters)
-    (message "loading")
+  (unless pinyin-isearch-chars--first-syllable-letters
     (setq pinyin-isearch-chars--py-rules (pinyin-isearch-loaders--py-rules-loader))
     (setq pinyin-isearch-chars--punct-rules
           (pinyin-isearch-loaders--punct-quail-filter
@@ -169,7 +156,7 @@ Argument SYL syllable of toneless pinyin."
         (regexp-quote syl)))))
 
 
-;; (defun pinyin-isearch-chars--recursion (st)
+;; Old docstring:
 ;;   "Split string to variants of splits to pinyin syllables.
 ;; Return variants of separateion (variant1 variant2), where
 ;; variant1 is a list of variants of hieroglyphs
@@ -189,52 +176,6 @@ Argument SYL syllable of toneless pinyin."
 ;; Global variable `pinyin-isearch-strict' strict last syllable to
 ;; only one variant of syllable and only full ony.  And don't allow
 ;; pinyin characters at the end that was not found in syllables.
-
-;; Argument ST user input string for isearch search."
-;;   (let* ((len_max (length st)) ; all len
-;;         (len (if  (<= len_max 6) len_max 6)) ; 0-6 len
-;;         (pos 1)
-;;         (first-chars) ; per loop
-;;         (syllables) ; per loop
-;;         (finals)) ; accamulate found variants of disassembly by first found syllable
-;;     (while (<= pos len)
-;;       (setq first-chars (substring st 0 pos))
-;;       ;; - - find syllables for the first part - -
-;;       (if (and (eq pos len_max) (not pinyin-isearch-strict)) ; last while
-;;           ;; if last letters we find uncompleted syllables
-;;           (setq syllables (pinyin-isearch-chars--get-syllables-by-prefix first-chars))
-;;         ;; else if it is not last symbols we find only full one syllable
-;;         (progn
-;;           (setq syllables (copy-sequence (assoc-string first-chars pinyin-isearch-chars--py-punct-rules))) ; copy to prevent destruction. TODO: make as variable
-;;           (if syllables (setq syllables (list (car syllables))) )))
-
-;;       (when syllables ; variants of one hierogliph
-;;         (let ((fin)) ; current part of finals - ((( )))
-;;           ;; recurse call for left letters:
-;;           (if (> (- len_max pos) 0)
-;;               ;; when there is left characters - we do recursive call. Syllables is one.
-;;               (let* ((left-let (substring st pos len_max))
-;;                      (left-rec (pinyin-isearch-chars--recursion left-let))) ; ((( ))) - result of recursion
-;;                 (if left-rec
-;;                     (setq fin (mapcar (lambda (x) (cons syllables x)) left-rec))))
-;;             ;; else - add only syllable as a single hieroglyph - no left was. Syllables is many
-;;             (setq fin (list (list syllables) ))) ; end of if
-;;           (setq finals (cons fin finals)))) ; end of when and let
-
-;;       (setq pos (1+ pos)) ; pos+=1
-;;       ) ; end of while
-;;     (if (null finals)
-;;         ;; 1) variants of disassembly 2) variant 3) hieroglyph
-;;         ;; we add marker to tag that it is not a syllable
-;;         (if pinyin-isearch-strict
-;;             nil
-;;           ;; else
-;;           (list (list (list (concat pinyin-isearch-chars--non-syllable-marker-string st)) )))
-;;       ;; else
-;;       (setq finals (nreverse finals)) ; reverse
-;;       (apply #'append finals)) ; flatten by one level
-;;     )) ; end of let*
-
 
 (defun pinyin-isearch-chars--recursion (st)
   "Split ST into all valid pinyin syllable variants for isearch.
@@ -370,7 +311,7 @@ Argument SAC is splitted-and-converted variants."
 ;;   "For `pinyin-isearch-chars-strict-regexp-function'.")
 
 
-(defmacro pinyin-isearch-chars--impossible-regex ( variable)
+(defmacro pinyin-isearch-chars--impossible-regex (variable)
   "Replace string with impossible regex to abort isearch.
 Didn't find better approach yet.
 Argument VARIABLE variable with string."
@@ -380,7 +321,7 @@ Argument VARIABLE variable with string."
         ,variable)) ; impossible regex - to abort search
 
 
-(defun pinyin-isearch-chars-regexp-function (string &optional lax)
+(defun pinyin-isearch-chars-regexp-function (string &optional _lax)
   "Replacement for function `isearch-regexp-function'.
 If Variable `pinyin-isearch-strict' is set it uses strict version.
 How it works, in step:
@@ -391,7 +332,6 @@ How it works, in step:
 concat variants with \\|.
 Argument STRING isearch user input string of query.
 Optional argument LAX (not used) used for isearch special cases."
-  (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
   ;; create references to saved values, if next call will be the same.
   (when (or (not (eq pinyin-isearch-chars--strict-flag pinyin-isearch-strict))
             (not (eq pinyin-isearch-chars--fallback-flag pinyin-isearch-chars-fallback)))
@@ -414,13 +354,12 @@ Optional argument LAX (not used) used for isearch special cases."
                (pinyin-isearch-chars--recursion string))))))))
   pinyin-isearch-chars--saved-regex)
 
-(defun pinyin-isearch-chars-strict-regexp-function (string &optional lax)
+(defun pinyin-isearch-chars-strict-regexp-function (string &optional _lax)
   "Function `isearch-regexp-function' with strict mode.
 This version of function set `pinyin-isearch-strict' enabled for
 time of call.  Argument STRING isearch user input string of
 query.  Optional argument LAX (not used) used for isearch special
 cases."
-  (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
   (let ((strict pinyin-isearch-strict) ; save
         (ret))
     (setq pinyin-isearch-strict t) ; modify
