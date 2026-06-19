@@ -26,40 +26,41 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+;; Fuzzy matching by pinyin.
 
-;; Allow to search with Chinese pinyin in pinyin text and ignore
-;; diacritical tone marks for speed.
+;; Allow to search for both of one of them: Chinese characters by
+;;  typing pinyin text and ignore diacritical tone marks for speed.
+
 ;; Features:
 ;; - white spaces are ignored between syllables,
-;;   but not ignored if in query
+;;  but not ignored if in query
 ;; - tone required in text only for first syllable: Zhēn de ma
 ;; - should not conflict with other isearch modes
 ;; - search do not jump down but always begins from start point.
 
 ;;;; How it works:
 ;; 1) Split toneless pinyin to variants of syllables, final syllables
-;; may be unfinished.
+;;  may be unfinished.
 ;; 2) Filter variants with full syllables if there is all
-;; kidnds of variants.
+;;  kidnds of variants.
 ;; 3) Convert toneless pinyin syllables to hieroglyphs.
 ;; 4) Make accurate regex from result list of lists with hieroglyphs.
-;; Solved problems: How to store charaters that is not part
-;; of any syllable? Special marker before string \34 was used
-;; to make it fast.
+;;  Solved problems: How to store charaters that is not part
+;;  of any syllable? Special marker before string \34 was used
+;;  to make it fast.
 ;; What to do with nv and lv and lu and lu pinyin?
 ;; We added lv and nv to lu and nu, but leave lv and nv as they was.
 ;; What to do with characters that is used regex?
 ;; We escaped all strings in function
-;; `pinyin-isearch--pinyin-to-hieroglyphs'.
+;;  `pinyin-isearch--pinyin-to-hieroglyphs'.
 
 ;;; Code:
 
 (require 'pinyin-isearch-loaders) ; for pinyin-isearch-loaders--py-punct-rules
 
-;; (defgroup pinyin-isearch nil
-;;   "Fuzzy matching."
-;;   :group 'pinyin-isearch
-;;   :prefix "pinyin-isearch-")
+(defgroup pinyin-isearch nil
+  "Pinyin-isearch customization."
+  :group 'pinyin-isearch)
 
 (defvar pinyin-isearch-strict) ; (require 'pinyin-isearch)
 
