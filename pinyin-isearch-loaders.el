@@ -49,17 +49,15 @@ Argument LEIM-NAME input-method name."
 Optional argument ARGS catched RULES argument."
   `(setq pinyin-isearch-loaders--rules ',rules))
 
-(defun pinyin-isearch-loaders--quail-define-package-advice (&rest args)
+(defun pinyin-isearch-loaders--quail-define-package-advice (&rest _args)
   "Replace `quail-define-package' to disable it.
 Argument ARGS not used."
-  (setq args args) ; suppress Warning: Unused lexical argument `args'
-  )
+  nil)
 
-(defun pinyin-isearch-loaders--quail-defrule-advice (&rest args)
+(defun pinyin-isearch-loaders--quail-defrule-advice (&rest _args)
   "Replace `quail-defrule' to disable it.
 Argument ARGS not used."
-  (setq args args) ; suppress Warning: Unused lexical argument `args'
-  )
+  nil)
 
 
 (defun pinyin-isearch-loaders--quail-extractor (quail-file)
@@ -102,11 +100,10 @@ Because ǚ and other u tones is very same and with same letter."
 ;; ---------- load pinyin from "quail/sisheng"  --------
 
 ;; `sisheng-regexp', `sisheng-vowel-table', `sisheng-syllable-table'.
-(defun pinyin-isearch-loaders--quail-make-sisheng-rules-advice (syllable)
+(defun pinyin-isearch-loaders--quail-make-sisheng-rules-advice (_syllable)
   "Suppress function `quail-make-sisheng-rules'.
 From quail/sisheng.el, for speed.
 Argument SYLLABLE not used."
-  (setq syllable syllable) ; suppress warning: Unused lexical argument
   nil)
 
 (defun pinyin-isearch-loaders-load-chinese-sisheng ()

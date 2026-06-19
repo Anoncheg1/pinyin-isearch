@@ -33,7 +33,7 @@
 
 (pinyin-isearch-pinyin-load) ; activate pinyin-isearch-pinyin
 
-(ert-deftest pinyin-isearch-pinyin--get_vowel_from_sisheng ()
+(ert-deftest test-pinyin-isearch-pinyin--get_vowel_from_sisheng ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-pinyin--get_vowel_from_sisheng "zuō") "o"))
     (should (equal (pinyin-isearch-pinyin--get_vowel_from_sisheng "nüē") "ue"))
@@ -41,7 +41,7 @@
 )
 
 
-(ert-deftest pinyin-isearch-pinyin--vowels-to-regex ()
+(ert-deftest test-pinyin-isearch-pinyin--vowels-to-regex ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-pinyin--vowels-to-regex '("u" "o")) "\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)"))
     (should (equal (pinyin-isearch-pinyin--vowels-to-regex '("u")) "[ūúǔùǖǘǚǜ]"))
@@ -50,7 +50,7 @@
 )
 
 
-(ert-deftest pinyin--get-position-first-syllable ()
+(ert-deftest test-pinyin--get-position-first-syllable ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-pinyin--get-position-first-syllable "zuom") '(3 "u" "o")))
     (should (equal (pinyin-isearch-pinyin--get-position-first-syllable "svssvv") '(nil)))
@@ -62,7 +62,7 @@
     )
 )
 
-(ert-deftest pinyin-isearch-pinyin--make-syllable-to-regex ()
+(ert-deftest test-pinyin-isearch-pinyin--make-syllable-to-regex ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-pinyin--make-syllable-to-regex "zuo" '(3 "u" "o")) "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)"))
     (should (equal (pinyin-isearch-pinyin--make-syllable-to-regex "zu" '(2 "u")) "z[ūúǔùǖǘǚǜ]"))
@@ -72,7 +72,7 @@
 )
 
 
-(ert-deftest pinyin-brute-replace ()
+(ert-deftest test-pinyin-brute-replace ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-pinyin--brute-replace "zuss") "z\\s-*[ūúǔùǖǘǚǜ]\\s-*s\\s-*s"))
     (should (equal (pinyin-isearch-pinyin--brute-replace "zuss" :normal t) "z\\s-*[uūúǔùǖǘǚǜ]\\s-*s\\s-*s"))
@@ -83,7 +83,7 @@
     )
 )
 
-(ert-deftest pinyin-isearch-pinyin-regexp-function ()
+(ert-deftest test-pinyin-isearch-pinyin-regexp-function ()
   (with-temp-buffer
     ;; (pinyin-isearch-mode)
     (should (equal (pinyin-isearch-pinyin-regexp-function "") ""))

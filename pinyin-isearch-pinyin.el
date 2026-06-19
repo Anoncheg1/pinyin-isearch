@@ -61,7 +61,6 @@
 
 (require 'pinyin-isearch-loaders)
 
-;; (declare-function string-replace "subr" (from-string to-string in-string)) ; to suppress warning
 (declare-function pinyin-isearch-loaders-load-chinese-sisheng "pinyin-isearch-loaders") ; load sisheng variables
 
 (defvar pinyin-isearch-strict) ; "Located in `pinyin-isearch'."
@@ -286,12 +285,10 @@ Uses functions: `pinyin-isearch-pinyin--get-position-first-syllable',
 (defvar-local pinyin-isearch-pinyin--saved-strict nil
   "For `pinyin-isearch-pinyin-regexp-function'.")
 
-(defun pinyin-isearch-pinyin-regexp-function (string &optional lax)
+(defun pinyin-isearch-pinyin-regexp-function (string &optional _lax)
   "Replacement for function `isearch-regexp-function'.
 Optional argument LAX not used.
 Argument STRING is query."
-  (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
-
   ;; check that pinyin-isearch-strict did not changed
   (when (not (eq pinyin-isearch-pinyin--saved-strict pinyin-isearch-strict))
     (setq pinyin-isearch-pinyin--saved-query nil)

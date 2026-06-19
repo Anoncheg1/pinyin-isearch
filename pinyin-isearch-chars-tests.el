@@ -36,15 +36,15 @@
 
 
 (pinyin-isearch-chars-load) ; activate pinyin-isearch-chars
-(defvar pinyin-isearch-strict nil)
+(setq pinyin-isearch-strict nil)
 
-(ert-deftest pinyin-isearch-chars--rules-to-first-syllable-letters ()
+(ert-deftest test-pinyin-isearch-chars--rules-to-first-syllable-letters ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-chars--rules-to-first-syllable-letters '(("a" "阿啊呵腌嗄锕吖") ("ai" "爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹"))) '(("ai" ("ai")) ("a" ("ai" "a")))))
     )
 )
 
-(ert-deftest pinyin-isearch-chars--get-syllables-by-prefix ()
+(ert-deftest test-pinyin-isearch-chars--get-syllables-by-prefix ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-chars--get-syllables-by-prefix "a") '("ao" "ang" "an" "ai" "a") ))
     (should (equal (pinyin-isearch-chars--get-syllables-by-prefix ">") '(">") ))
@@ -53,7 +53,7 @@
     )
 )
 
-(ert-deftest pinyin-isearch-chars--pinyin-to-hieroglyphs ()
+(ert-deftest test-pinyin-isearch-chars--pinyin-to-hieroglyphs ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-chars--pinyin-to-hieroglyphs "a") "阿啊呵腌嗄锕吖"))
     (should (equal (pinyin-isearch-chars--pinyin-to-hieroglyphs "g") "g"))
@@ -63,7 +63,7 @@
     )
 )
 
-(ert-deftest pinyin-isearch-chars--recursion ()
+(ert-deftest test-pinyin-isearch-chars--recursion ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-chars--recursion "a>") '((("a") (">"))) ))
     (should (equal (pinyin-isearch-chars--recursion "a>.") '((("a") (">") ("."))) ))
@@ -86,7 +86,7 @@
     )
 )
 
-(ert-deftest pinyin-isearch-chars--filter-full-variants ()
+(ert-deftest test-pinyin-isearch-chars--filter-full-variants ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-chars--filter-full-variants 'pinyin-isearch-chars--pinyin-to-hieroglyphs
                                                          '((("na") ("i")))) '((("na") ("i"))) ))
@@ -111,7 +111,7 @@
 ;;     )
 ;; )
 
-(ert-deftest pinyin-isearch-chars--convert-to-hieroglyphs ()
+(ert-deftest test-pinyin-isearch-chars--convert-to-hieroglyphs ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-chars--convert-to-hieroglyphs '((("zu") ("hna")))) '((("组足族祖租阻卒诅俎镞菹") ("hna"))) ))
     (should (equal (pinyin-isearch-chars--convert-to-hieroglyphs '((("gg")))) '((("gg"))) ))
@@ -121,7 +121,7 @@
     )
 )
 
-(ert-deftest pinyin-isearch-chars--regex-concat-hieroglyphs ()
+(ert-deftest test-pinyin-isearch-chars--regex-concat-hieroglyphs ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-chars--regex-concat-hieroglyphs '(("阿啊呵腌嗄锕吖") ("嗯唔") (">."))) "[阿啊呵腌嗄锕吖][嗯唔][>.]"))
     (should (equal (pinyin-isearch-chars--regex-concat-hieroglyphs '(("gg"))) "[gg]")) ; no marker
@@ -137,7 +137,7 @@
 )
 
 
-(ert-deftest pinyin-isearch-chars-regexp-function ()
+(ert-deftest test-pinyin-isearch-chars-regexp-function ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-chars-regexp-function "nai") "\\([嗯唔][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]\\|[乃奶奈耐氖艿鼐佴萘柰]\\)"))
     (should (equal (pinyin-isearch-chars-regexp-function "ggg") "ggg"))
@@ -167,7 +167,7 @@
     )
 )
 
-(ert-deftest pinyin-isearch-chars-strict-regexp-function ()
+(ert-deftest test-pinyin-isearch-chars-strict-regexp-function ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-chars-strict-regexp-function "gg") "$^"))
     (should (equal (pinyin-isearch-chars-strict-regexp-function ".") "[．。・¨…∵∴°⊙]"))
