@@ -70,7 +70,6 @@
 (declare-function pinyin-isearch-pinyin-regexp-function "pinyin-isearch-pinyin" (string &optional lax))
 (declare-function pinyin-isearch-chars-regexp-function "pinyin-isearch-chars" (string &optional lax))
 (declare-function pinyin-isearch-chars-strict-regexp-function "pinyin-isearch-chars" (string &optional lax))
-(declare-function pinyin-isearch-chars-strict-regexp-function "pinyin-isearch-chars" (string &optional lax))
 (declare-function pinyin-isearch-chars-load "pinyin-isearch-chars")
 (declare-function pinyin-isearch-pinyin-load "pinyin-isearch-pinyin")
 (declare-function isearch-toggle-strict "pinyin-isearch")
@@ -121,49 +120,61 @@ Disable for native isearch behavior."
 
 ;; -=-= fns
 
+;; (defun pinyin-isearch-both-regexp-function (string &optional lax)
+;;   "Replacement for function `isearch-regexp-function'.
+;; Concat pinyin and Chinese characters regex as alternation.
+;; Argument STRING is a query string.
+;; Optional argument LAX for isearch special cases."
+;;   (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
+;;   (let* ((psr (pinyin-isearch-pinyin-regexp-function string))
+;;         (hsr (pinyin-isearch-chars-regexp-function string))
+;;         (p (string-prefix-p "\\(" psr))
+;;         (h (string-prefix-p "\\(" hsr)))
+;;     (cond
+;;      ;; 1 nil
+;;      ((equal hsr "$^") psr)
+;;      ;; nil 1
+;;      ((equal psr "$^") hsr)
+;;      ;; ? == ?
+;;      ((equal psr hsr) psr)
+;;      ;; 1 1
+;;      ((and p h)
+;;       (concat (substring psr 0 -3) ;; skip \\)
+;;               "\\|"
+;;               (substring hsr 3) ;; skip \\(
+;;               ))
+;;      ;; 1 0
+;;      ((and p (not h))
+;;       (concat (substring psr 0 -3) ;; skip \\)
+;;               "\\|"
+;;               hsr
+;;               "\\)"))
+;;      ;; 0 1
+;;      ((and p (not h))
+;;       (concat "\\("
+;;               psr
+;;               "\\|"
+;;               (substring hsr 3) ;; skip \\(
+;;               "\\)"))
+;;      ;; 0 0
+;;      ((not (and p h))
+;;       (concat "\\("
+;;               psr
+;;               "\\|"
+;;               hsr
+;;               "\\)")))))
+
 (defun pinyin-isearch-both-regexp-function (string &optional lax)
-  "Replacement for function `isearch-regexp-function'.
-Concat pinyin and Chinese characters regex as alternation.
-Argument STRING is a query string.
-Optional argument LAX for isearch special cases."
-  (setq lax lax) ; suppers Warning: Unused lexical argument `lax'
+  "Concat pinyin and Chinese chars regex as alternation for isearch."
+  (ignore lax)
   (let* ((psr (pinyin-isearch-pinyin-regexp-function string))
-        (hsr (pinyin-isearch-chars-regexp-function string))
-        (p (string-prefix-p "\\(" psr))
-        (h (string-prefix-p "\\(" hsr)))
+         (hsr (pinyin-isearch-chars-regexp-function string)))
     (cond
-     ;; 1 nil
      ((equal hsr "$^") psr)
-     ;; nil 1
      ((equal psr "$^") hsr)
-     ;; ? == ?
      ((equal psr hsr) psr)
-     ;; 1 1
-     ((and p h)
-      (concat (substring psr 0 -3) ;; skip \\)
-              "\\|"
-              (substring hsr 3) ;; skip \\(
-              ))
-     ;; 1 0
-     ((and p (not h))
-      (concat (substring psr 0 -3) ;; skip \\)
-              "\\|"
-              hsr
-              "\\)"))
-     ;; 0 1
-     ((and p (not h))
-      (concat "\\("
-              psr
-              "\\|"
-              (substring hsr 3) ;; skip \\(
-              "\\)"))
-     ;; 0 0
-     ((not (and p h))
-      (concat "\\("
-              psr
-              "\\|"
-              hsr
-              "\\)")))))
+     (t
+      (concat "\\(" psr "\\|" hsr "\\)")))))
 
 (defun pinyin-isearch--set-isearch ()
   "Help subfunction to replace isearch functions.
