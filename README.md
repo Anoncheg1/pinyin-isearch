@@ -1,6 +1,6 @@
-![build](https://github.com/Anoncheg1/pinyin-isearch/workflows/test/badge.svg?event=push)
+![build](https://github.com/Anoncheg1/pinyin-isearch/workflows/melpazoid/badge.svg)
 [![MELPA](https://melpa.org/packages/pinyin-isearch-badge.svg)](http://melpa.org/#/pinyin-isearch)
-![build](https://github.com/Anoncheg1/pinyin-isearch/workflows/test/badge.svg?event=release)
+![build](https://github.com/Anoncheg1/pinyin-isearch/workflows/melpazoid-release/badge.svg)
 [![MELPA Stable](https://stable.melpa.org/packages/pinyin-isearch-badge.svg)](https://stable.melpa.org/#/pinyin-isearch)
 
 Tested with Emacs 29.3
