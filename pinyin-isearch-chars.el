@@ -165,72 +165,113 @@ Argument SYL syllable of toneless pinyin."
         (regexp-quote syl)))))
 
 
+;; (defun pinyin-isearch-chars--recursion (st)
+;;   "Split string to variants of splits to pinyin syllables.
+;; Return variants of separateion (variant1 variant2), where
+;; variant1 is a list of variants of hieroglyphs
+
+;; \((hv1 hv2 hv3) (hv1 hv3...) ...)  what inside: 1) variants of
+;; disassembly 2) hieroglyphs 3) variants of hieroglyphs.
+;; Variants of hieroglyphs used for final syllable when we try to guess
+;; that hieroglyphs begining we have.
+
+;; Steps:
+;; 1. in loop find syllables in 0-6 first letters.
+;; 2. recursive call for right (left) part
+;; In 1. if it is last letters than we use hungry search
+;; 3. add syllable to every variant of right part at level 2)
+;; 4. concat all found variants of dissasembly at level 3)
+
+;; Global variable `pinyin-isearch-strict' strict last syllable to
+;; only one variant of syllable and only full ony.  And don't allow
+;; pinyin characters at the end that was not found in syllables.
+
+;; Argument ST user input string for isearch search."
+;;   (let* ((len_max (length st)) ; all len
+;;         (len (if  (<= len_max 6) len_max 6)) ; 0-6 len
+;;         (pos 1)
+;;         (first-chars) ; per loop
+;;         (syllables) ; per loop
+;;         (finals)) ; accamulate found variants of disassembly by first found syllable
+;;     (while (<= pos len)
+;;       (setq first-chars (substring st 0 pos))
+;;       ;; - - find syllables for the first part - -
+;;       (if (and (eq pos len_max) (not pinyin-isearch-strict)) ; last while
+;;           ;; if last letters we find uncompleted syllables
+;;           (setq syllables (pinyin-isearch-chars--get-syllables-by-prefix first-chars))
+;;         ;; else if it is not last symbols we find only full one syllable
+;;         (progn
+;;           (setq syllables (copy-sequence (assoc-string first-chars pinyin-isearch-chars--py-punct-rules))) ; copy to prevent destruction. TODO: make as variable
+;;           (if syllables (setq syllables (list (car syllables))) )))
+
+;;       (when syllables ; variants of one hierogliph
+;;         (let ((fin)) ; current part of finals - ((( )))
+;;           ;; recurse call for left letters:
+;;           (if (> (- len_max pos) 0)
+;;               ;; when there is left characters - we do recursive call. Syllables is one.
+;;               (let* ((left-let (substring st pos len_max))
+;;                      (left-rec (pinyin-isearch-chars--recursion left-let))) ; ((( ))) - result of recursion
+;;                 (if left-rec
+;;                     (setq fin (mapcar (lambda (x) (cons syllables x)) left-rec))))
+;;             ;; else - add only syllable as a single hieroglyph - no left was. Syllables is many
+;;             (setq fin (list (list syllables) ))) ; end of if
+;;           (setq finals (cons fin finals)))) ; end of when and let
+
+;;       (setq pos (1+ pos)) ; pos+=1
+;;       ) ; end of while
+;;     (if (null finals)
+;;         ;; 1) variants of disassembly 2) variant 3) hieroglyph
+;;         ;; we add marker to tag that it is not a syllable
+;;         (if pinyin-isearch-strict
+;;             nil
+;;           ;; else
+;;           (list (list (list (concat pinyin-isearch-chars--non-syllable-marker-string st)) )))
+;;       ;; else
+;;       (setq finals (nreverse finals)) ; reverse
+;;       (apply #'append finals)) ; flatten by one level
+;;     )) ; end of let*
+
+
 (defun pinyin-isearch-chars--recursion (st)
-  "Split string to variants of splits to pinyin syllables.
-Return variants of separateion (variant1 variant2), where
-variant1 is a list of variants of hieroglyphs
+  "Split ST into all valid pinyin syllable variants for isearch.
 
-\((hv1 hv2 hv3) (hv1 hv3...) ...)  what inside: 1) variants of
-disassembly 2) hieroglyphs 3) variants of hieroglyphs.
-Variants of hieroglyphs used for final syllable when we try to guess
-that hieroglyphs begining we have.
-
-Steps:
-1. in loop find syllables in 0-6 first letters.
-2. recursive call for right (left) part
-In 1. if it is last letters than we use hungry search
-3. add syllable to every variant of right part at level 2)
-4. concat all found variants of dissasembly at level 3)
-
-Global variable `pinyin-isearch-strict' strict last syllable to
-only one variant of syllable and only full ony.  And don't allow
-pinyin characters at the end that was not found in syllables.
-
-Argument ST user input string for isearch search."
-  (let* ((len_max (length st)) ; all len
-        (len (if  (<= len_max 6) len_max 6)) ; 0-6 len
-        (pos 1)
-        (first-chars) ; per loop
-        (syllables) ; per loop
-        (finals)) ; accamulate found variants of disassembly by first found syllable
-    (while (<= pos len)
-      (setq first-chars (substring st 0 pos))
-      ;; - - find syllables for the first part - -
-      (if (and (eq pos len_max) (not pinyin-isearch-strict)) ; last while
-          ;; if last letters we find uncompleted syllables
-          (setq syllables (pinyin-isearch-chars--get-syllables-by-prefix first-chars))
-        ;; else if it is not last symbols we find only full one syllable
-        (progn
-          (setq syllables (copy-sequence (assoc-string first-chars pinyin-isearch-chars--py-punct-rules))) ; copy to prevent destruction. TODO: make as variable
-          (if syllables (setq syllables (list (car syllables))) )))
-
-      (when syllables ; variants of one hierogliph
-        (let ((fin)) ; current part of finals - ((( )))
-          ;; recurse call for left letters:
-          (if (> (- len_max pos) 0)
-              ;; when there is left characters - we do recursive call. Syllables is one.
-              (let* ((left-let (substring st pos len_max))
-                     (left-rec (pinyin-isearch-chars--recursion left-let))) ; ((( ))) - result of recursion
-                (if left-rec
-                    (setq fin (mapcar (lambda (x) (cons syllables x)) left-rec))))
-            ;; else - add only syllable as a single hieroglyph - no left was. Syllables is many
-            (setq fin (list (list syllables) ))) ; end of if
-          (setq finals (cons fin finals)))) ; end of when and let
-
-      (setq pos (1+ pos)) ; pos+=1
-      ) ; end of while
-    (if (null finals)
-        ;; 1) variants of disassembly 2) variant 3) hieroglyph
-        ;; we add marker to tag that it is not a syllable
-        (if pinyin-isearch-strict
-            nil
-          ;; else
-          (list (list (list (concat pinyin-isearch-chars--non-syllable-marker-string st)) )))
-      ;; else
-      (setq finals (nreverse finals)) ; reverse
-      (apply #'append finals)) ; flatten by one level
-    )) ; end of let*
-
+Return list of variants: each variant is a list of syllable lists.
+Handles strict/non-strict mode and incomplete last syllables.
+Uses globals:
+  - pinyin-isearch-strict
+  - pinyin-isearch-chars--py-punct-rules
+  - pinyin-isearch-chars--get-syllables-by-prefix
+  - pinyin-isearch-chars--non-syllable-marker-string"
+  (let* ((results '())
+         (maxlen (min (length st) 6)))
+    (when (> (length st) 0)
+      ;; Try every possible split
+      (dotimes (pos maxlen)
+        (let* ((end (1+ pos))
+               (prefix (substring st 0 end))
+               (syllables
+                ;; Last syllable and strictness matters
+                (if (and (= end (length st)) (not pinyin-isearch-strict))
+                    (pinyin-isearch-chars--get-syllables-by-prefix prefix)
+                  (let ((found (assoc-string prefix pinyin-isearch-chars--py-punct-rules)))
+                    (if found (list (car found))))))
+               (rest (substring st end)))
+          (when syllables
+            ;; Recursively process the remainder, build all combinations
+            (if (> (length rest) 0)
+                (let ((rest-variants (pinyin-isearch-chars--recursion rest)))
+                  (dolist (variant rest-variants)
+                    (push (cons syllables variant) results)))
+              ;; If nothing remains, this syllable starts a variant
+              (push (list syllables) results))))))
+    ;; If nothing valid found, handle marker or strict nil result
+    (cond
+     ((null results)
+      (if pinyin-isearch-strict
+          nil
+        (list (list (list (concat pinyin-isearch-chars--non-syllable-marker-string st))))))
+     (t
+      (nreverse results)))))
 
 (defun pinyin-isearch-chars--filter-full-variants (f l)
   "Filter variants that has unfinished letters at the end.

@@ -38,7 +38,7 @@ $(PACKAGE_LINT_MARKER):
 
 # .PHONY: clean checkdoc lint package install compile test
 
-ci: test checkdoc lint
+ci: test checkdoc lint compile
 # clean package install compile
 
 # package:
@@ -48,9 +48,9 @@ ci: test checkdoc lint
 # 	@echo "Installing..."
 # 	$(EASK) install
 
-# compile:
-# 	@echo "Compiling..."
-# 	$(EASK) compile
+compile:
+	@echo "Compiling..."
+	$(EASK) compile
 
 test:
 	@echo "\nMakefine 1) Testing...\n"
@@ -58,7 +58,7 @@ test:
 
 checkdoc: $(PACKAGE_LINT_MARKER)
 	@echo "\nMakefine 2) Run checkdoc...\n"
-	$(EASK) lint checkdoc  2>&1
+	$(EASK) lint checkdoc 2>&1
 
 # https://emacs-eask.github.io/Getting-Started/Commands-and-options/#-eask-lint-package
 
@@ -69,7 +69,7 @@ checkdoc: $(PACKAGE_LINT_MARKER)
 
 lint: $(PACKAGE_LINT_MARKER)
 	@echo "\nMakefine 3) Run package-lint...\n"
-	$(EASK) lint package  2>&1
+	$(EASK) lint package 2>&1
 
 # clean:
 # 	$(EASK) clean all

@@ -29,6 +29,10 @@ echo '# ----- batch-byte-compile -------'
 
 echo '# ----- package-lint ---------'
 # require 'package-lint
+if ! "$EMACS" --batch \
+       --eval "(unless (require 'package-lint nil t) (princ \"ERROR: package-lint not installed!\n\") (kill-emacs 1))"; then
+  exit 1
+fi
 "$EMACS" --quick -batch \
          --eval "(setq package-lint-main-file \"pinyin-isearch.el\")" \
          --eval "(let ((default-directory  \"~/.emacs.d/elpa/\")) (normal-top-level-add-subdirs-to-load-path))" \
