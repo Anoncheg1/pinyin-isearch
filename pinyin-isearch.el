@@ -116,12 +116,11 @@ Disable for native isearch behavior."
 
 ;; -=-= fns
 
-(defun pinyin-isearch-both-regexp-function (string &optional lax)
+(defun pinyin-isearch-both-regexp-function (string &optional _lax)
   "Concat pinyin and Chinese chars regex as alternation for isearch.
 Replacement for function `isearch-regexp-function'.
 Argument STRING is a query string.
 Optional argument LAX for isearch special cases."
-  (ignore lax)
   (let* ((psr (pinyin-isearch-pinyin-regexp-function string))
          (hsr (pinyin-isearch-chars-regexp-function string)))
     (cond

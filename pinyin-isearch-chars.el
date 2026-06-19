@@ -354,7 +354,7 @@ Optional argument LAX (not used) used for isearch special cases."
                (pinyin-isearch-chars--recursion string))))))))
   pinyin-isearch-chars--saved-regex)
 
-(defun pinyin-isearch-chars-strict-regexp-function (string &optional _lax)
+(defun pinyin-isearch-chars-strict-regexp-function (string &optional lax)
   "Function `isearch-regexp-function' with strict mode.
 This version of function set `pinyin-isearch-strict' enabled for
 time of call.  Argument STRING isearch user input string of
