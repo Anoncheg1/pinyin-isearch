@@ -3,10 +3,9 @@
 ![build](https://github.com/Anoncheg1/pinyin-isearch/workflows/melpazoid-release/badge.svg)
 [![MELPA Stable](https://stable.melpa.org/packages/pinyin-isearch-badge.svg)](https://stable.melpa.org/#/pinyin-isearch)
 
-Tested with Emacs 29.3
+Eng | [中文](./README_zh.md)
 
-# pinyin-isearch
-Emacs package for toneless pinyin search in pinyin and Chinese characters.
+# pinyin-isearch - Emacs package for toneless pinyin search in pinyin and Chinese characters.
 
 Allow to search with pinyin without diacritical marks in pinyin text. With few characters you will find all variants.
 
