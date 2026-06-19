@@ -178,6 +178,7 @@ and global variable `pinyin-isearch-pinyin-syllable-table'."
     (cons ret vowels)))
 
 
+
 (defun pinyin-isearch-pinyin--vowels-to-regex (vowels)
   "Used for accurate apply regex to the first syllable of toneless pinyin.
 Convert (u o) to
@@ -205,6 +206,7 @@ normal vowels."
     (car (cdr (assoc-string (car vowels) pinyin-isearch-pinyin-vowel-table)))))
 
 
+
 (defun pinyin-isearch-pinyin--make-syllable-to-regex (syllable d-vowels)
   "Convert SYLLABLE \"zhuo\" to \"zh([]\|[])\".
 Applyed to the first syllable to create accurate regex.
@@ -221,32 +223,48 @@ Argument D-VOWELS result of function
       (string-replace vowels-conc replacement syllable))))
 
 
-(defun pinyin-isearch-pinyin--brute-replace (st &optional &key normal)
-  "Replace every vowels in ST with wide range regex.
-if NORMAL add normal to regex."
-  (let* (
-         ;; ignore white spaces if query is more than 2 characters
-         (st (if (> (length st) 1)
-                 ;; then - insert whitespaces between every character
-                 (concat (substring st 0 1)
-                         (mapconcat (lambda (x) (concat "\\s-*" x))
-                                    (cdr (split-string st "" t))
-                                    nil))
-               ;; else
-               st)))
-    ;; ignore tones, based on lisp/leim/quail/sisheng.el
-    (if normal
-        (dolist ( c (split-string "aeiou" "" t))
-          (let ((vowel-list-regex
-                 (car (cdr (assoc-string c pinyin-isearch-pinyin-vowel-table-normal))) ))
-            (setq st (string-replace c vowel-list-regex st))))
-      ;; else (not used now)
-      (dolist ( c (split-string "aeiou" "" t))
-          (let ((vowel-list-regex
-                 (car (cdr (assoc-string c pinyin-isearch-pinyin-vowel-table))) ))
-            (setq st (string-replace c vowel-list-regex st)))))
-    st))
+;; (defun pinyin-isearch-pinyin--brute-replace (st &optional &key normal)
+;;   "Replace every vowels in ST with wide range regex.
+;; if NORMAL add normal to regex."
+;;   (let* (
+;;          ;; ignore white spaces if query is more than 2 characters
+;;          (st (if (> (length st) 1)
+;;                  ;; then - insert whitespaces between every character
+;;                  (concat (substring st 0 1)
+;;                          (mapconcat (lambda (x) (concat "\\s-*" x))
+;;                                     (cdr (split-string st "" t))
+;;                                     nil))
+;;                ;; else
+;;                st)))
+;;     ;; ignore tones, based on lisp/leim/quail/sisheng.el
+;;     (if normal
+;;         (dolist ( c (split-string "aeiou" "" t))
+;;           (let ((vowel-list-regex
+;;                  (car (cdr (assoc-string c pinyin-isearch-pinyin-vowel-table-normal))) ))
+;;             (setq st (string-replace c vowel-list-regex st))))
+;;       ;; else (not used now)
+;;       (dolist ( c (split-string "aeiou" "" t))
+;;           (let ((vowel-list-regex
+;;                  (car (cdr (assoc-string c pinyin-isearch-pinyin-vowel-table))) ))
+;;             (setq st (string-replace c vowel-list-regex st)))))
+;;     st))
 
+
+(defun pinyin-isearch-pinyin--brute-replace (st &optional &key normal)
+  "Optimized: Replace all vowels in ST with regex expansion.
+Handling whitespace in one pass."
+  (let ((vowel-table (if normal pinyin-isearch-pinyin-vowel-table-normal
+                       pinyin-isearch-pinyin-vowel-table)))
+    (apply #'concat
+           (cl-loop for idx from 0 below (length st)
+                    collect
+                    (let* ((c (substring st idx (1+ idx)))
+                           (is-vowel (assoc c vowel-table)))
+                      (concat
+                       (when (and (> idx 0)) "\\s-*") ; whitespace between chars
+                       (if is-vowel
+                           (cadr is-vowel)
+                         c)))))))
 
 (defun pinyin-isearch-pinyin-regexp-f (string)
   "Replacement for function `isearch-regexp-function'.
