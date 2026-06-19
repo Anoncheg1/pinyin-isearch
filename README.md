@@ -41,7 +41,7 @@ pinyin-isearch.el
 # Installation
 ## from MELPA
 
-1) add to ~.emacs~
+1) Add to `~/.emacs`
 
 ```elisp
 (require 'package)
@@ -50,12 +50,12 @@ pinyin-isearch.el
 (package-initialize)
 ```
 
-2) Install via ~M-x package-install RET cui RET~ or ~M-x package-list-packages~
+2) Install via `M-x package-install RET cui RET~ or ~M-x package-list-packages`
 
 ## from GitHub or Codeberg
-1) git clone https://repo/user/pinyin-isearch
+1) `git clone https://repo/user/pinyin-isearch`
 
-2) Add to ~/.emacs
+2) Add to `~/.emacs`
 
 ```elisp
 (add-to-list 'load-path "/path-to/pinyin-isearch/")
@@ -77,7 +77,8 @@ You can set this mode by default per file with:
 ```;-*- mode: pinyin-isearch; -*-```
 
 # Configuration
-M-x customize-group pinyin-isearch
+
+`M-x customize-group pinyin-isearch`
 
 # Todo
 - Upperacase for pinyin.
