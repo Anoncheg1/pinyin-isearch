@@ -17,6 +17,11 @@ echo '# ----- ert -------'
 "$EMACS" --quick -batch -l ert -l pinyin-isearch-loaders.el -l \
          pinyin-isearch-chars.el -l pinyin-isearch-chars-tests.el -f \
          ert-run-tests-batch-and-exit
+
+"$EMACS" --quick -batch -l ert -l pinyin-isearch-loaders.el  -l pinyin-isearch-chars.el -l pinyin-isearch-pinyin.el \
+         -l pinyin-isearch.el \
+         -l pinyin-isearch-main-tests.el -f ert-run-tests-batch-and-exit
+
 echo '# ----- batch-byte-compile -------'
 "$EMACS" --quick -batch \
          -l pinyin-isearch-loaders.el \
