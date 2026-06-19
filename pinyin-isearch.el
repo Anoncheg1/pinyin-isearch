@@ -61,7 +61,7 @@
 ;; It is possible to adopt this code to many other languages.
 
 ;;; Code:
-
+(require 'isearch)
 (require 'cl-lib); (require 'cl-macs) ; Warning: the function ‘cl-callf’ is not known to be defined.
 (require 'pinyin-isearch-pinyin)
 (require 'pinyin-isearch-chars)
