@@ -6,6 +6,10 @@
 ;; Keywords: chinese, pinyin, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 1.6.9
+;; Package-Requires: ((emacs "28.1"))
+;; SPDX-License-Identifier: AGPL-3.0-or-later
+
+;;; License
 
 ;; This file is not part of GNU Emacs.
 
@@ -252,7 +256,8 @@ Argument D-VOWELS result of function
 
 (defun pinyin-isearch-pinyin--brute-replace (st &optional &key normal)
   "Optimized: Replace all vowels in ST with regex expansion.
-Handling whitespace in one pass."
+Handling whitespace in one pass.
+If optional argument NORMAL is non-nil add character without tones."
   (let ((vowel-table (if normal pinyin-isearch-pinyin-vowel-table-normal
                        pinyin-isearch-pinyin-vowel-table)))
     (apply #'concat

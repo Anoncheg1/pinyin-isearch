@@ -6,6 +6,10 @@
 ;; Keywords: chinese, pinyin, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 1.6.9
+;; Package-Requires: ((emacs "28.1"))
+;; SPDX-License-Identifier: AGPL-3.0-or-later
+
+;;; License
 
 ;; This file is not part of GNU Emacs.
 
@@ -238,10 +242,10 @@ Argument SYL syllable of toneless pinyin."
 Return list of variants: each variant is a list of syllable lists.
 Handles strict/non-strict mode and incomplete last syllables.
 Uses globals:
-  - pinyin-isearch-strict
-  - pinyin-isearch-chars--py-punct-rules
-  - pinyin-isearch-chars--get-syllables-by-prefix
-  - pinyin-isearch-chars--non-syllable-marker-string"
+  - `pinyin-isearch-strict'
+  - `pinyin-isearch-chars--py-punct-rules'
+  - `pinyin-isearch-chars--get-syllables-by-prefix'
+  - `pinyin-isearch-chars--non-syllable-marker-string'"
   (let* ((results '())
          (maxlen (min (length st) 6)))
     (when (> (length st) 0)
