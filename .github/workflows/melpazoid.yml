@@ -74,8 +74,10 @@ jobs:
           [ $? -ne 0 ] && { echo "Make test command failed, failing workflow"; exit 1; }
           make checkdoc
           [ $? -ne 0 ] && { echo "Make checkdoc command failed, failing workflow"; exit 1; }
-          make lint
-          [ $? -ne 0 ] && { echo "Make lint command failed, failing workflow"; exit 1; }
+          make lint |& tee output.log # always exit with 1 error code
+          if grep -q '[0-9] issue found:' output.log ; then
+            echo "Error detected, failing workflow" ; exit 1
+          fi
 
       - name: Melpazoid check
         env:

@@ -6,7 +6,6 @@
 ;; Keywords: chinese, pinyin, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 1.6.9
-;; Package-Requires: ((emacs "28.1"))
 ;; SPDX-License-Identifier: AGPL-3.0-or-later
 
 ;;; License
