@@ -125,6 +125,7 @@ Argument RULES argument of funcion `quail-define-rules'."
 (defun pinyin-isearch-chars-load ()
   "Prepare variables from `pinyin-isearch-loaders'."
   (when (null pinyin-isearch-chars--first-syllable-letters)
+    (message "loading")
     (setq pinyin-isearch-chars--py-rules (pinyin-isearch-loaders--py-rules-loader))
     (setq pinyin-isearch-chars--punct-rules
           (pinyin-isearch-loaders--punct-quail-filter
