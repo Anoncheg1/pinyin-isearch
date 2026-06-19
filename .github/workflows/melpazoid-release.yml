@@ -20,6 +20,8 @@ jobs:
 
     runs-on: ubuntu-latest  # , macos-latest-large, windows-latest - github waiting is too large
 
+    timeout-minutes: 15
+
     strategy:
       fail-fast: false
       matrix:
@@ -32,16 +34,13 @@ jobs:
           # - 27.2
           - 28.1
           # - 28.2
-          # - 29.1
+          - 29.1
           # - 29.2
           # - 29.3
-          # - 29.4
+          - 29.4
           - 30.1
           - release-snapshot
-        experimental: [false]
-        include:
-          - emacs_version: snapshot
-            experimental: true
+
     steps:
       - name: Install Emacs
         uses: purcell/setup-emacs@master

@@ -60,7 +60,7 @@ pinyin-isearch.el
 ```elisp
 (add-to-list 'load-path "/path-to/pinyin-isearch/")
 (require 'pinyin-isearch)
-(pinyin-isearch--activate) ;; force loading (optional) before mode
+(pinyin-isearch--load) ;; force loading (optional) before mode
 ```
 
 # Usage
