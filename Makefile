@@ -69,7 +69,7 @@ checkdoc: $(PACKAGE_LINT_MARKER)
 
 lint: $(PACKAGE_LINT_MARKER)
 	@echo "\nMakefine 3) Run package-lint...\n"
-	$(EASK) lint package 2>&1
+	$(EASK) --verbose 5 lint package 2>&1
 
 # clean:
 # 	$(EASK) clean all
