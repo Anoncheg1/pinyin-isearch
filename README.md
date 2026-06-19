@@ -39,13 +39,28 @@ pinyin-isearch.el
 - tone or diacritical mark required only in first syllable in text: Zhēn de ma
 
 # Installation
-copy file to ~/.emacs.d/contrib/pinyin-isearch.el
+## from MELPA
 
-add to ~/.emacs
+1) add to ~.emacs~
 
 ```elisp
-(add-to-list 'load-path "~/.emacs.d/contrib/")
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+(package-initialize)
+```
+
+2) Install via ~M-x package-install RET cui RET~ or ~M-x package-list-packages~
+
+## from GitHub or Codeberg
+1) git clone https://repo/user/pinyin-isearch
+
+2) Add to ~/.emacs
+
+```elisp
+(add-to-list 'load-path "/path-to/pinyin-isearch/")
 (require 'pinyin-isearch)
+(pinyin-isearch--activate) ;; force loading (optional) before mode
 ```
 
 # Usage
