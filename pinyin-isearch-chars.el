@@ -66,6 +66,8 @@
 
 (defcustom pinyin-isearch-chars-fallback t
   "Non-nil means add full query string as a regex variant.
+But only if pinyin cant be interpreted as any characters (before even
+ search).
 If there is undecoded letters at the end after dissasembling."
   :local t
   :type 'boolean

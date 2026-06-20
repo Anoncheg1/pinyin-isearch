@@ -49,7 +49,7 @@
 ;; or
 ;; C-s M-s p/h/s - to activate (p)inyin or (h) Chonese characters (s)trict
 ;; Chinese characters search submode.
-;; or
+;; or without activation of minor mode
 ;; M-x pinyin-isearch-forward/backward
 ;;
 ;; Customization:
@@ -60,9 +60,38 @@
 ;; easily) and uses it's translation table (named Quail map).
 ;; It is possible to adopt this code to many other languages.
 
+;; Search variants:
+
+;; By default active search for both pinyin and chinese characters
+;;  with fallback to normal characters. Fallback works for characters
+;;  after pinyin or chinese, not from fist one.
+
+;;;; Other packages:
+
+;; - Modern navigation in major modes https://github.com/Anoncheg1/firstly-search
+;; - Ediff no 3-th window	https://github.com/Anoncheg1/ediffnw
+;; - Dired history		https://github.com/Anoncheg1/dired-hist
+;; - Selected window contrast	https://github.com/Anoncheg1/selected-window-contrast
+;; - Copy link to clipboard	https://github.com/Anoncheg1/emacs-org-links
+;; - Solution for "callback hell"	https://github.com/Anoncheg1/emacs-async1
+;; - Restore buffer state	https://github.com/Anoncheg1/emacs-unmodified-buffer1
+;; - outline.el usage		https://github.com/Anoncheg1/emacs-outline-it
+;; - Dates for Org-mode headers	https://github.com/Anoncheg1/emacs-org-history
+;; - Call LLMs and agents from Org-mode cui blocks https://github.com/Anoncheg1/emacs-cui
+
+;;;; Donate:
+
+;; - BTC (Bitcoin) address: 1CcDWSQ2vgqv5LxZuWaHGW52B9fkT5io25
+;; - USDT (Tether) address: TVoXfYMkVYLnQZV3mGZ6GvmumuBfGsZzsN
+;; - TON (Telegram) address: UQC8rjJFCHQkfdp7KmCkTZCb5dGzLFYe2TzsiZpfsnyTFt9D
+
+;;;; TODO:
+;; - fallback to latin search in pinyin or chinese characters was not
+;;  found.
+
 ;;; Code:
 (require 'isearch)
-(require 'cl-lib); (require 'cl-macs) ; Warning: the function ‘cl-callf’ is not known to be defined.
+(require 'cl-lib) ; (require 'cl-macs) ; Warning: the function ‘cl-callf’ is not known to be defined.
 (require 'pinyin-isearch-pinyin)
 (require 'pinyin-isearch-chars)
 
@@ -77,10 +106,16 @@
   :group 'pinyin-isearch)
 
 (defcustom pinyin-isearch-strict nil
-  "Non-nil means Enforce to search only pinyin and Chinese characters.
-isearch will not fallback to find normal latin text if pinyin was
-not found.  Configure `pinyin-isearch-mode' and pinyin isearch
-submode also."
+  "Non-nil means Enforce to always search only pinyin and Chinese characters.
+isearch will not fallback to find normal latin text after first
+ characters.  Configure `pinyin-isearch-mode' and pinyin isearch submode
+ also."
+  :local t
+  :type 'boolean
+  :group 'pinyin-isearch)
+
+(defcustom pinyin-isearch-full-fallback nil
+  "Non-nil means search for normal latin at the same time."
   :local t
   :type 'boolean
   :group 'pinyin-isearch)
@@ -118,6 +153,7 @@ Disable for native isearch behavior."
 
 (defun pinyin-isearch-both-regexp-function (string &optional _lax)
   "Concat pinyin and Chinese chars regex as alternation for isearch.
+Main function.
 Replacement for function `isearch-regexp-function'.
 Argument STRING is a query string.
 Optional argument LAX for isearch special cases."
@@ -153,7 +189,7 @@ Used in functions `pinyin-isearch-forward' and
            (or
             (eq isearch-regexp-function #'pinyin-isearch-pinyin-regexp-function)
             (eq isearch-regexp-function #'pinyin-isearch-chars-regexp-function)
-            (eq isearch-regexp-function #'pinyin-isearch-chars-strict-regexp-function)
+            (eq isearch-regexp-function #'pinyin-isearch-chars-strict-regexp-function) ; TODO
             (eq isearch-regexp-function #'pinyin-isearch-both-regexp-function)))
       (let ((key (this-single-command-keys)))
         (when (and isearch-success
@@ -171,30 +207,32 @@ Used in functions `pinyin-isearch-forward' and
 
 ;; -=-= ------------ interface with isearch and user --------------
 
-;; ;;;###autoload
+;;;###autoload
 (defun pinyin-isearch-forward (&optional regexp-p no-recursive-edit)
   "Do incremental search forward.
 Optional argument REGEXP-P see original function `isearch-forward'.
 Optional argument NO-RECURSIVE-EDIT see original function `isearch-forward'."
   (interactive "P\np")
-  (pinyin-isearch--load)
+  (pinyin-isearch--load) ; lazy loading, for usage without minor mode
   (isearch-mode t regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch)))
 
+
+;;;###autoload
 (defun pinyin-isearch-backward (&optional regexp-p no-recursive-edit)
   "Do incremental search backward.
 Optional argument REGEXP-P see original function `isearch-backward'.
 Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
   (interactive "P\np")
-  (pinyin-isearch--load)
+  (pinyin-isearch--load) ; lazy loading, for usage without minor mode
   (isearch-mode nil regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch)))
 
-;; 1. Generate the toggles globally (Emacs automatically binds them to M-s p, M-s h, M-s s)
+;; Generate the toggles globally (Emacs automatically binds them to M-s p, M-s h, M-s s)
 (isearch-define-mode-toggle "pinyin" "p" pinyin-isearch-pinyin-regexp-function
-  "Turning on pinyin search turns off normal mode.")
+  "Turning on pinyin search (P), turns off normal mode.")
 (isearch-define-mode-toggle "characters" "h" pinyin-isearch-chars-regexp-function
-  "Turning on characters search turns off normal mode.")
+  "Turning on characters search (H), turns off normal mode.")
 (isearch-define-mode-toggle "strict" "s" pinyin-isearch-chars-strict-regexp-function
-  "Turning on strict characters search turns off normal mode.")
+  "Turning on strict characters search (HS), turns off normal mode.")
 
 (put #'pinyin-isearch-pinyin-regexp-function #'isearch-message-prefix "[Pinyin-P] ")
 (put #'pinyin-isearch-chars-regexp-function #'isearch-message-prefix "[Pinyin-H] ")

@@ -136,6 +136,18 @@
     )
 )
 
+;; (with-temp-buffer
+;;   (let ((pinyin-isearch-strict nil)
+;;         (pinyin-isearch-chars-fallback t))
+;;     (pinyin-isearch-chars-regexp-function "taskana")))
+
+;; (with-temp-buffer
+;;   (let ((pinyin-isearch-strict nil)
+;;         (pinyin-isearch-chars-fallback nil))
+;;     (pinyin-isearch-chars-regexp-function "nih")))
+
+
+;; (pinyin-isearch-chars-regexp-function "nih")
 
 (ert-deftest test-pinyin-isearch-chars-regexp-function ()
   (with-temp-buffer
@@ -147,6 +159,7 @@
     (should (equal (pinyin-isearch-chars-regexp-function "lu") "[落罗络洛逻裸骆萝螺锣箩摞烙捋珞骡猡镙椤倮蠃荦瘰泺漯脶硌雒论轮伦沦仑抡囵纶略掠锊乱卵峦挛孪栾銮娈滦鸾脔律旅绿率虑履屡侣缕驴吕榈滤捋铝褛闾膂氯稆路陆录卢露鲁炉鹿碌庐芦噜颅禄辘卤虏麓泸赂漉戮簏轳鹭掳潞鲈撸栌垆胪蓼渌鸬逯璐辂橹镥舻氇]"))
     (should (equal (pinyin-isearch-chars-regexp-function "nui") "\\(nui\\|[嗯唔]ui\\|[女钕恧衄怒努奴弩驽胬孥]i\\)")) ; "\\([嗯唔]ui\\|[女钕恧衄怒努奴弩驽胬孥]i\\)"
     ;; check for change of `pinyin-isearch-strict':
+    ;; ! sk at the end, because there is no characters starting with sk !
     (should (equal (pinyin-isearch-chars-regexp-function "task") "\\(task\\|[他她它踏塔塌榻嗒蹋沓遢挞鳎闼铊趿漯溻獭]sk\\)"))
     (setq pinyin-isearch-strict t)
     (should (equal (pinyin-isearch-chars-regexp-function "task") "$^"))
@@ -158,14 +171,19 @@
     (should (equal (pinyin-isearch-chars-regexp-function "lu") "[律旅绿率虑履屡侣缕驴吕榈滤捋铝褛闾膂氯稆路陆录卢露鲁炉鹿碌庐芦噜颅禄辘卤虏麓泸赂漉戮簏轳鹭掳潞鲈撸栌垆胪蓼渌鸬逯璐辂橹镥舻氇]"))
     (should (equal (pinyin-isearch-chars-regexp-function "nui") "$^"))
     (should (equal (pinyin-isearch-chars-regexp-function "nuai") "[女钕恧衄怒努奴弩驽胬孥][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]"))
+
     (setq pinyin-isearch-strict nil)
     ;; test fallback
     (setq pinyin-isearch-chars-fallback nil)
     (should (equal (pinyin-isearch-chars-regexp-function "task") "[他她它踏塔塌榻嗒蹋沓遢挞鳎闼铊趿漯溻獭]sk"))
     (setq pinyin-isearch-chars-fallback t)
     (should (equal (pinyin-isearch-chars-regexp-function "task") "\\(task\\|[他她它踏塔塌榻嗒蹋沓遢挞鳎闼铊趿漯溻獭]sk\\)"))
+    (setq pinyin-isearch-strict t)
+    (should (equal (pinyin-isearch-chars-regexp-function "task") "$^"))
     )
 )
+
+
 
 (ert-deftest test-pinyin-isearch-chars-strict-regexp-function ()
   (with-temp-buffer
