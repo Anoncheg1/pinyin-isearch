@@ -64,6 +64,8 @@
 
 (defvar pinyin-isearch-strict) ; (require 'pinyin-isearch)
 
+(defvar pinyin-isearch-full-fallback) : ; (require 'pinyin-isearch)
+
 (defcustom pinyin-isearch-chars-fallback t
   "Non-nil means add full query string as a regex variant.
 But only if pinyin cant be interpreted as any characters (before even
@@ -180,11 +182,114 @@ Argument SYL syllable of toneless pinyin."
 ;; only one variant of syllable and only full ony.  And don't allow
 ;; pinyin characters at the end that was not found in syllables.
 
+;; Not whis function dont use `pinyin-isearch-chars-fallback'.
+;; Make it - If `pinyin-isearch-chars-fallback' is t and final characters of ST pinyin is not full character we add it as a variant with or without full chinese characters pinyin.
+;; this function  for call (pinyin-isearch-chars--recursion "nih")))) ; return:((("ni") ("huo" "hun" "hui" "huang" "huan" "huai" "hua" "hu" "hou" "hong" "heng" "hen" ...)))
+;; Make it to return: ((("ni") ("h" "huo" "hun" "hui" "huang" "huan" "huai" "hua" "hu" "hou" "hong" "heng" "hen" ...)))
+;; with "h" as a variant.
+;; for call (pinyin-isearch-chars--recursion "n")))) ; it should return: ((("n" "nuo" "nue" "nuan" "nu" "nou" "nong" "niu" "ning" "nin" "nie" "niao" "niang" ...)))
+;; with "n" as a variant.
+;; (defun pinyin-isearch-chars--recursion (st)
+;;   "Split ST into all valid pinyin syllable variants for isearch.
+;; Return list of variants: each variant is a list of syllable lists.
+;; Handles strict/non-strict mode and incomplete last syllables.
+;; Uses globals:
+;;   - `pinyin-isearch-strict'
+;;   - `pinyin-isearch-chars--py-punct-rules'
+;;   - `pinyin-isearch-chars--get-syllables-by-prefix'
+;;   - `pinyin-isearch-chars--non-syllable-marker-string'"
+;;   (let* ((results '())
+;;          (maxlen (min (length st) 6)))
+;;     (when (> (length st) 0)
+;;       ;; Try every possible split
+;;       (dotimes (pos maxlen)
+;;         (let* ((end (1+ pos))
+;;                (prefix (substring st 0 end))
+;;                (syllables
+;;                 ;; Last syllable and strictness matters
+;;                 (if (and (= end (length st)) (not pinyin-isearch-strict))
+;;                     (pinyin-isearch-chars--get-syllables-by-prefix prefix)
+;;                   (let ((found (assoc-string prefix pinyin-isearch-chars--py-punct-rules)))
+;;                     (if found (list (car found))))))
+;;                (rest (substring st end)))
+;;           (when syllables
+;;             ;; Recursively process the remainder, build all combinations
+;;             (if (> (length rest) 0)
+;;                 (let ((rest-variants (pinyin-isearch-chars--recursion rest)))
+;;                   (dolist (variant rest-variants)
+;;                     (push (cons syllables variant) results)))
+;;               ;; If nothing remains, this syllable starts a variant
+;;               (push (list syllables) results))))))
+;;     ;; If nothing valid found, handle marker or strict nil result
+;;     (cond
+;;      ((null results)
+;;       (if pinyin-isearch-strict
+;;           nil
+;;         (list (list (list (concat pinyin-isearch-chars--non-syllable-marker-string st))))))
+;;      (t
+;;       (nreverse results)))))
+
+;; (defun pinyin-isearch-chars--recursion (st)
+;;   "Split ST into all valid pinyin syllable variants for isearch.
+;; Return list of variants: each variant is a list of syllable lists.
+;; If `pinyin-isearch-chars-fallback' is t and the final syllable is incomplete,
+;; add its raw form as variant alongside completions.
+;; Requires:
+;;   - `pinyin-isearch-strict'
+;;   - `pinyin-isearch-chars--py-punct-rules'
+;;   - `pinyin-isearch-chars--get-syllables-by-prefix'
+;;   - `pinyin-isearch-chars--non-syllable-marker-string'
+;;   - `pinyin-isearch-chars-fallback'"
+;;   (let* ((results '())
+;;          (maxlen (min (length st) 6)))
+;;     (when (> (length st) 0)
+;;       ;; Try every possible split
+;;       (dotimes (pos maxlen)
+;;         (let* ((end (1+ pos))
+;;                (prefix (substring st 0 end))
+;;                (syllables
+;;                 (if (and (= end (length st)) (not pinyin-isearch-strict))
+;;                     (pinyin-isearch-chars--get-syllables-by-prefix prefix)
+;;                   (let ((found (assoc-string prefix pinyin-isearch-chars--py-punct-rules)))
+;;                     (if found (list (car found))))))
+;;                (rest (substring st end)))
+;;           (when syllables
+;;             (if (> (length rest) 0)
+;;                 (let ((rest-variants (pinyin-isearch-chars--recursion rest)))
+;;                   (dolist (variant rest-variants)
+;;                     (push (cons syllables variant) results)))
+;;               ;; Nothing remains, this syllable starts a variant
+;;               (push (list syllables) results))))))
+
+;;     ;; Fallback for incomplete last syllable
+;;     (let* ((last-syllable (and results (car (car (last results)))))
+;;            (incomplete-last
+;;             (and
+;;              pinyin-isearch-chars-fallback
+;;              ;; The search string didn't match any full syllable
+;;              (or (null last-syllable) (not (assoc-string st pinyin-isearch-chars--py-punct-rules)))))
+;;            (fallback-variant (and incomplete-last (list (list st)))))
+;;       (cond
+;;        ((null results)
+;;         (if pinyin-isearch-strict
+;;             nil
+;;           (list (list (list (concat pinyin-isearch-chars--non-syllable-marker-string st))))))
+;;        (t
+;;         (nreverse
+;;          (if fallback-variant
+;;              (cons fallback-variant results)
+;;            results)))))))
+
+;; good working
 (defun pinyin-isearch-chars--recursion (st)
   "Split ST into all valid pinyin syllable variants for isearch.
-
+Split ST into all valid pinyin syllable variants for isearch.
 Return list of variants: each variant is a list of syllable lists.
+
+If `pinyin-isearch-chars-fallback' is t and the final syllable is incomplete,
+add the partial syllable as the first element in the last syllables list.
 Handles strict/non-strict mode and incomplete last syllables.
+
 Uses globals:
   - `pinyin-isearch-strict'
   - `pinyin-isearch-chars--py-punct-rules'
@@ -198,28 +303,112 @@ Uses globals:
         (let* ((end (1+ pos))
                (prefix (substring st 0 end))
                (syllables
-                ;; Last syllable and strictness matters
                 (if (and (= end (length st)) (not pinyin-isearch-strict))
                     (pinyin-isearch-chars--get-syllables-by-prefix prefix)
                   (let ((found (assoc-string prefix pinyin-isearch-chars--py-punct-rules)))
                     (if found (list (car found))))))
                (rest (substring st end)))
           (when syllables
-            ;; Recursively process the remainder, build all combinations
             (if (> (length rest) 0)
-                (let ((rest-variants (pinyin-isearch-chars--recursion rest)))
-                  (dolist (variant rest-variants)
-                    (push (cons syllables variant) results)))
-              ;; If nothing remains, this syllable starts a variant
+                ;; Recursively process the remainder
+                (dolist (variant (pinyin-isearch-chars--recursion rest))
+                  (push (cons syllables variant) results))
+              ;; No remainder, start a variant
               (push (list syllables) results))))))
-    ;; If nothing valid found, handle marker or strict nil result
+
+    ;; Fallback: merge partial syllable to front of last syllable list in last variant
     (cond
      ((null results)
       (if pinyin-isearch-strict
           nil
         (list (list (list (concat pinyin-isearch-chars--non-syllable-marker-string st))))))
      (t
-      (nreverse results)))))
+      ;; Only apply if fallback is enabled, incomplete, and last syllable list is at the end
+      (let* ((last-variant (car (last results)))
+             (last-syllables (car (last last-variant)))
+             ;; Is incomplete, i.e. `st` is not a full syllable in rules
+             (partial
+              (and pinyin-isearch-chars-fallback
+                   (> (length st) 0)
+                   ;; Check for incomplete last syllable
+                   (not (assoc-string st pinyin-isearch-chars--py-punct-rules)))))
+        (if (and partial last-syllables)
+            ;; Insert partial in the front of the last syllable list
+            (append
+             (butlast results 1)
+             (list
+              (append
+               (butlast last-variant 1)
+               (list (cons st last-syllables)))))
+          (nreverse results)))))))
+
+;; (defun pinyin-isearch-chars--recursion (st)
+;;   "Split ST into all valid pinyin syllable variants for isearch.
+;; Split ST into all valid pinyin syllable variants for isearch.
+;; Return list of variants: each variant is a list of syllable lists.
+
+;; If `pinyin-isearch-chars-fallback' is t and the final syllable is incomplete,
+;; add the partial syllable as the first element in the last syllables list.
+;; Handles strict/non-strict mode and incomplete last syllables.
+
+;; Uses globals:
+;;   - `pinyin-isearch-strict'
+;;   - `pinyin-isearch-chars--py-punct-rules'
+;;   - `pinyin-isearch-chars--get-syllables-by-prefix'
+;;   - `pinyin-isearch-chars--non-syllable-marker-string'"
+;;   (let* ((results '())
+;;          (maxlen (min (length st) 6)))
+;;     (when (> (length st) 0)
+;;       ;; Try every possible split
+;;       (dotimes (pos maxlen)
+;;         (let* ((end (1+ pos))
+;;                (prefix (substring st 0 end))
+;;                (syllables
+;;                 (if (and (= end (length st)) (not pinyin-isearch-strict))
+;;                     (pinyin-isearch-chars--get-syllables-by-prefix prefix)
+;;                   (let ((found (assoc-string prefix pinyin-isearch-chars--py-punct-rules)))
+;;                     (if found (list (car found))))))
+;;                (rest (substring st end)))
+;;           (when syllables
+;;             (if (> (length rest) 0)
+;;                 ;; Recursively process the remainder
+;;                 (dolist (variant (pinyin-isearch-chars--recursion rest))
+;;                   (push (cons syllables variant) results))
+;;               ;; No remainder, start a variant
+;;               (push (list syllables) results))))))
+
+;;     ;; Fallback: merge partial syllable to front of last syllable list in last variant
+;;     (let ((result
+;;            (cond
+;;             ((null results)
+;;              (if pinyin-isearch-strict
+;;                  nil
+;;                (list (list (list (concat pinyin-isearch-chars--non-syllable-marker-string st))))))
+;;             (t
+;;              ;; Only apply if fallback is enabled, incomplete, and last syllable list is at the end
+;;              (when  pinyin-isearch-full-fallback
+;;                (push (list (list st)) results))
+
+;;              (let* ((last-variant (car (last results)))
+;;                     (last-syllables (car (last last-variant)))
+;;                     ;; Is incomplete, i.e. `st` is not a full syllable in rules
+;;                     (partial
+;;                      (and pinyin-isearch-chars-fallback
+;;                           (> (length st) 0)
+;;                           (not (assoc-string st pinyin-isearch-chars--py-punct-rules)))))
+;;                (if (and partial last-syllables)
+;;                    ;; Insert partial in the front of the last syllable list
+;;                    (append
+;;                     (butlast results 1)
+;;                     (list
+;;                      (append
+;;                       (butlast last-variant 1)
+;;                       (list (cons st last-syllables)))))
+;;                  (nreverse results)))))))
+;;       ;; PATCH: Always add a variant of full input ST if non-empty
+;;       ;; (when (and (> (length st) 0) pinyin-isearch-full-fallback)
+;;       ;;   (setq result (append result (list (list (list st))))))
+;;       result)))
 
 (defun pinyin-isearch-chars--filter-full-variants (f l)
   "Filter variants that has unfinished letters at the end.
@@ -257,6 +446,41 @@ Argument LVAR dissasembled variants of characters for query."
             (setq lvar (cons (list (list (concat pinyin-isearch-chars--non-syllable-marker-string string))) lvar)))))
   lvar)
 
+(defun pinyin-isearch-chars--add-full-fallback (string lvar)
+  "Add full string to desiassembled variants.
+If at the end of query there is unconvertable letters.  Global
+variable `pinyin-isearch-strict' is used here.  Argument STRING
+original request to add for fallback when strict mode is not
+activated.
+Argument LVAR dissasembled variants of characters for query."
+  (when (and (not (string-empty-p string))
+             pinyin-isearch-full-fallback
+             (not pinyin-isearch-strict))
+    ;; (setq lvar (append lvar (list (list string))))
+    (push (mapcar #'list (mapcar #'char-to-string (string-to-list string)))
+          lvar))
+    lvar)
+
+;; (defun pinyin-isearch-chars--add-fallback (string lvar)
+;;   "Add full string to desiassembled variants. Argument STRING original request, LVAR variants."
+;;   ;; original fallback logic
+;;   (if (and (not (string-empty-p string))
+;;            pinyin-isearch-chars-fallback
+;;            (not pinyin-isearch-strict)
+;;            (or (> (length lvar) 1) (> (length (car lvar)) 1)))
+;;       (let ((la (car (car (last (car (last lvar)))))))
+;;         (if (eq (elt la 0) pinyin-isearch-chars--non-syllable-marker-number)
+;;             ;; add full string (marked) to result list as another variant.
+;;             (setq lvar (cons (list (list (concat pinyin-isearch-chars--non-syllable-marker-string string))) lvar)))))
+;;   ;; PATCH: unconditionally add full input variant if string is not empty
+;;   (when (and (not (string-empty-p string))
+;;              pinyin-isearch-full-fallback)
+;;     ;; (setq lvar (append lvar (list (list string))))
+;;     (push  (mapcar #'list (mapcar #'char-to-string (string-to-list string)))
+;;           lvar)
+;;     )
+;;   lvar)
+
 (defun pinyin-isearch-chars--maptree (f l)
   "Apply map to every leaf of a list.
 Argument F function that will be applyed to leafs.
@@ -273,24 +497,54 @@ Argument LIST-OF-VARIANTS list that is result of function
 `pinyin-isearch-chars--recursion'."
   (pinyin-isearch-chars--maptree #'pinyin-isearch-chars--pinyin-to-hieroglyphs list-of-variants))
 
+;; (defun pinyin-isearch-chars--regex-concat-hieroglyphs (l)
+;;   "昂肮盎 to [昂肮盎] and concat such strings.
+;; This is done for every variant of syllable.
+;; Argument L list of form ((\"gg\"))."
+;;   (mapconcat (lambda (x)
+;;                ;; apply to every ("sd" "sd") or ("sd")
+;;                (let ((cx (car x)))
+;;                  (if (or (eq (length x) 1))
+;;                      (if  ; first character equel ""
+;;                          (eq (elt cx 0) pinyin-isearch-chars--non-syllable-marker-number)
+;;                          (substring cx 1) ; delete first character
+;;                        ;; else
+;;                        (concat "[" cx "]"))
+;;                    ;; else ("sd" "sd")
+;;                    (concat "[" (apply #'concat x) "]"))))
+;;              l nil))
+
 (defun pinyin-isearch-chars--regex-concat-hieroglyphs (l)
-  "昂肮盎 to [昂肮盎] and concat such strings.
+  "Concatenate hieroglyphs for a regex.
+If all are single-character, just concatenate.
+Else, wrap entries in [].  Handles special marker.
+Convert 昂肮盎 to [昂肮盎] and concat such strings.
 This is done for every variant of syllable.
 Argument L list of form ((\"gg\"))."
-  (mapconcat (lambda (x)
-               ;; apply to every ("sd" "sd") or ("sd")
-               (let ((cx (car x)))
-                 (if (or (eq (length x) 1))
-                     (if  ; first character equel ""
-                         (eq (elt cx 0) pinyin-isearch-chars--non-syllable-marker-number)
-                         (substring cx 1) ; delete first character
-                       ;; else
-                       (concat "[" cx "]"))
-                   ;; else ("sd" "sd")
-                   (concat "[" (apply #'concat x) "]"))))
-             l nil))
+  (if (cl-every (lambda (x)
+                  (and (stringp (car x))
+                       (= (length (car x)) 1)))
+                l)
+      ;; All single chars: just join
+      (mapconcat (lambda (x) (car x)) l "")
+    ;; Some are not, handle individually
+    (mapconcat
+     (lambda (x)
+       (let ((cx (car x)))
+         (cond
+          ;; Special marker handling (as in your original code)
+          ((and (stringp cx)
+                (> (length cx) 0)
+                (eq (elt cx 0) pinyin-isearch-chars--non-syllable-marker-number))
+           (substring cx 1)) ; drops first char (marker)
+          ;; Multichar string: wrap in []
+          ((and (stringp cx) (> (length cx) 1))
+           (concat "[" cx "]"))
+          ;; Single char, in non-homogenous input: wrap in []
+          (t (concat "[" cx "]")))))
+     l "")))
 
-(defun pinyin-isearch-chars--concat-variants (sac)
+(defun pinyin-isearch-chars--concat-variants (sac) ; Problem is here it filter "h"
 "Create regex alternation for dissasemble variants.
 Argument SAC is splitted-and-converted variants."
   (if (> (length sac) 1)
@@ -300,62 +554,66 @@ Argument SAC is splitted-and-converted variants."
     (pinyin-isearch-chars--regex-concat-hieroglyphs (car sac))))
 
 
-(defvar-local pinyin-isearch-chars--saved-query nil
+(defvar-local pinyin-isearch-chars--cached-query nil
   "For `pinyin-isearch-chars-regexp-function'.")
-(defvar-local pinyin-isearch-chars--saved-regex nil
+(defvar-local pinyin-isearch-chars--cached-regex nil
   "For `pinyin-isearch-chars-regexp-function'.")
 (defvar-local pinyin-isearch-chars--strict-flag nil
   "Non-nil means values saved for `pinyin-isearch-chars-regexp-function'.")
 (defvar-local pinyin-isearch-chars--fallback-flag nil
   "Non-nil means values saved for `pinyin-isearch-chars-regexp-function'.")
-;; (defvar-local pinyin-isearch-chars--saved-query-s nil
-;;   "For `pinyin-isearch-chars-strict-regexp-function'.")
-;; (defvar-local pinyin-isearch-chars--saved-regex-s nil
-;;   "For `pinyin-isearch-chars-strict-regexp-function'.")
 
 
-(defmacro pinyin-isearch-chars--impossible-regex (variable)
-  "Replace string with impossible regex to abort isearch.
-Didn't find better approach yet.
-Argument VARIABLE variable with string."
-  `(if (equal ,variable "")
-          "$^"
-        ;; else
-        ,variable)) ; impossible regex - to abort search
+;; (defmacro pinyin-isearch-chars--impossible-regex (variable)
+;;   "Replace string with impossible regex to abort isearch.
+;; Didn't find better approach yet.
+;; Argument VARIABLE variable with string."
+;;   `(if (equal ,variable "")
+;;           "$^"
+;;         ;; else
+;;         ,variable)) ; impossible regex - to abort search
 
 
 (defun pinyin-isearch-chars-regexp-function (string &optional _lax)
   "Replacement for function `isearch-regexp-function'.
+Input - pinyin, output - regex for isearch.
 If Variable `pinyin-isearch-strict' is set it uses strict version.
-How it works, in step:
- 1) split to parts according to pinyin.
+Step:
+1) split to parts according to pinyin.
 2) filter variants that do not endings without pinyin.
 3) convert every syllable to hierogliphs.
 4) surround variants of syllables with [], concat hieroglyphs and
 concat variants with \\|.
 Argument STRING isearch user input string of query.
 Optional argument LAX (not used) used for isearch special cases."
+  (unless pinyin-isearch-chars--first-syllable-letters
+    (user-error "Pinyin-isearch, (pinyin-isearch-chars-load) was not called"))
   ;; create references to saved values, if next call will be the same.
   (when (or (not (eq pinyin-isearch-chars--strict-flag pinyin-isearch-strict))
             (not (eq pinyin-isearch-chars--fallback-flag pinyin-isearch-chars-fallback)))
-      (setq pinyin-isearch-chars--saved-query nil
-            pinyin-isearch-chars--saved-regex nil))
+    (setq pinyin-isearch-chars--cached-query nil
+          pinyin-isearch-chars--cached-regex nil))
 
-  (when (not (equal string pinyin-isearch-chars--saved-query))
-    (setq pinyin-isearch-chars--saved-query string)
-    (setq pinyin-isearch-chars--saved-regex
-          (pinyin-isearch-chars--impossible-regex
-           (pinyin-isearch-chars--concat-variants
+  (when (not (string-equal string pinyin-isearch-chars--cached-query))
+    (setq pinyin-isearch-chars--cached-query string)
+    (setq pinyin-isearch-chars--strict-flag pinyin-isearch-strict)
+    (setq pinyin-isearch-chars--fallback-flag pinyin-isearch-chars-fallback)
+    (setq pinyin-isearch-chars--cached-regex
+          (pinyin-isearch-chars--concat-variants
+           (pinyin-isearch-chars--add-full-fallback
+            string
             ;; splitted and converted after it:
             (pinyin-isearch-chars--convert-to-hieroglyphs
              (pinyin-isearch-chars--add-fallback
               string
               ;; apply filter
-              (pinyin-isearch-chars--filter-full-variants
+              (pinyin-isearch-chars--filter-full-variants ; 2) Filter variants that has unfinished letters at the end.
                #'pinyin-isearch-chars--pinyin-to-hieroglyphs
                ;; split to variants
-               (pinyin-isearch-chars--recursion string))))))))
-  pinyin-isearch-chars--saved-regex)
+               (pinyin-isearch-chars--recursion string))))))) ; 1) split
+    (when (string-empty-p pinyin-isearch-chars--cached-regex)
+      (setq pinyin-isearch-chars--cached-regex "$^")))
+  pinyin-isearch-chars--cached-regex)
 
 (defun pinyin-isearch-chars-strict-regexp-function (string &optional lax)
   "Function `isearch-regexp-function' with strict mode.

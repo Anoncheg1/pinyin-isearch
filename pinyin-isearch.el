@@ -114,7 +114,7 @@ isearch will not fallback to find normal latin text after first
   :type 'boolean
   :group 'pinyin-isearch)
 
-(defcustom pinyin-isearch-full-fallback nil
+(defcustom pinyin-isearch-full-fallback t
   "Non-nil means search for normal latin at the same time."
   :local t
   :type 'boolean
@@ -158,12 +158,16 @@ Replacement for function `isearch-regexp-function'.
 Argument STRING is a query string.
 Optional argument LAX for isearch special cases."
   (let* ((psr (pinyin-isearch-pinyin-regexp-function string))
-         (hsr (pinyin-isearch-chars-regexp-function string)))
+         (hsr (let ((pinyin-isearch-full-fallback nil))
+                (pinyin-isearch-chars-regexp-function string))))
+    ;; (print (list "hsr" hsr))
+    ;; (print (list "psr" psr))
     (cond
      ((equal hsr "$^") psr)
      ((equal psr "$^") hsr)
      ((equal psr hsr) psr)
      (t
+      ;; (print (list "here" (concat "\\(" psr "\\|" hsr "\\)")))
       (concat "\\(" psr "\\|" hsr "\\)")))))
 
 (defun pinyin-isearch--set-isearch ()

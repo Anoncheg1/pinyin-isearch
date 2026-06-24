@@ -29,7 +29,9 @@
 (require 'ert)
 (require 'pinyin-isearch-pinyin)
 
-(defvar pinyin-isearch-strict nil)
+(defvar pinyin-isearch-strict nil) ; as in pinyin-isearch.el
+(defvar pinyin-isearch-full-fallback t) ; as in pinyin-isearch.el
+
 
 (pinyin-isearch-pinyin-load) ; activate pinyin-isearch-pinyin
 
@@ -43,7 +45,11 @@
 
 (ert-deftest test-pinyin-isearch-pinyin--vowels-to-regex ()
   (with-temp-buffer
+    (setq-local pinyin-isearch-full-fallback nil)
     (should (equal (pinyin-isearch-pinyin--vowels-to-regex '("u" "o")) "\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)"))
+    (setq-local pinyin-isearch-full-fallback t)
+    (should (equal (pinyin-isearch-pinyin--vowels-to-regex '("u")) "[uūúǔùǖǘǚǜ]"))
+    (setq-local pinyin-isearch-full-fallback nil)
     (should (equal (pinyin-isearch-pinyin--vowels-to-regex '("u")) "[ūúǔùǖǘǚǜ]"))
     (should (equal (pinyin-isearch-pinyin--vowels-to-regex '("u" "ue")) "\\([ūúǔùǖǘǚǜ]\\s-*e\\|ü[ēéěè]\\)"))
     )
@@ -64,7 +70,11 @@
 
 (ert-deftest test-pinyin-isearch-pinyin--make-syllable-to-regex ()
   (with-temp-buffer
+    (setq-local pinyin-isearch-full-fallback nil)
     (should (equal (pinyin-isearch-pinyin--make-syllable-to-regex "zuo" '(3 "u" "o")) "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)"))
+    (setq-local pinyin-isearch-full-fallback t)
+    (should (equal (pinyin-isearch-pinyin--make-syllable-to-regex "zuo" '(3 "u" "o")) "z\\([uūúǔùǖǘǚǜ]\\s-*o\\|u[oōóǒò]\\)"))
+    (setq-local pinyin-isearch-full-fallback nil)
     (should (equal (pinyin-isearch-pinyin--make-syllable-to-regex "zu" '(2 "u")) "z[ūúǔùǖǘǚǜ]"))
     (should (equal (pinyin-isearch-pinyin--make-syllable-to-regex "nue" '(3 "u" "ue")) "n\\([ūúǔùǖǘǚǜ]\\s-*e\\|ü[ēéěè]\\)"))
     (should (equal (pinyin-isearch-pinyin--make-syllable-to-regex "nue" '(nil)) "nue"))
@@ -79,21 +89,27 @@
     (should (equal (pinyin-isearch-pinyin--brute-replace "zenme") "z\\s-*[ēéěè]\\s-*n\\s-*m\\s-*[ēéěè]"))
     (should (equal (pinyin-isearch-pinyin--brute-replace "zenme" :normal t) "z\\s-*[eēéěè]\\s-*n\\s-*m\\s-*[eēéěè]"))
     (should (equal (pinyin-isearch-pinyin--brute-replace "oshenme" :normal t) "[oōóǒò]\\s-*s\\s-*h\\s-*[eēéěè]\\s-*n\\s-*m\\s-*[eēéěè]"))
-
     )
 )
 
 (ert-deftest test-pinyin-isearch-pinyin-regexp-function ()
   (with-temp-buffer
     ;; (pinyin-isearch-mode)
+    (setq-local pinyin-isearch-full-fallback nil)
     (should (equal (pinyin-isearch-pinyin-regexp-function "") ""))
     (should (equal (pinyin-isearch-pinyin-regexp-function "n") "n"))
-    (should (equal (pinyin-isearch-pinyin-regexp-function "nu") "n[ūúǔùǖǘǚǜ]"))
-    (should (equal (pinyin-isearch-pinyin-regexp-function "nu") "n[ūúǔùǖǘǚǜ]"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "ssd") "ssd"))
-    (should (equal (pinyin-isearch-pinyin-regexp-function "n") "n"))
+    (should (equal (pinyin-isearch-pinyin-regexp-function "nu") "n[ūúǔùǖǘǚǜ]"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "me") "m[ēéěè]"))
+    (setq-local pinyin-isearch-full-fallback t)
+    (should (equal (pinyin-isearch-pinyin-regexp-function "nu") "n[uūúǔùǖǘǚǜ]"))
+    (should (equal (pinyin-isearch-pinyin-regexp-function "me") "m[eēéěè]"))
+
+    (should (equal (pinyin-isearch-pinyin-regexp-function "zuo") "z\\([uūúǔùǖǘǚǜ]\\s-*o\\|u[oōóǒò]\\)"))
+    (setq-local pinyin-isearch-full-fallback nil)
+    (setq-local pinyin-isearch-pinyin--cached-query nil) ; reset cache
     (should (equal (pinyin-isearch-pinyin-regexp-function "zuo") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)"))
+
     (should (equal (pinyin-isearch-pinyin-regexp-function "zuozuo") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)\\s-*z\\s-*[uūúǔùǖǘǚǜ]\\s-*[oōóǒò]"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "zuo me") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)\\s-* \\s-*m\\s-*[eēéěè]"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "zuome") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)\\s-*m\\s-*[eēéěè]"))
@@ -107,7 +123,6 @@
     (should (equal (pinyin-isearch-pinyin-regexp-function "hi") "hi"))
     (setq pinyin-isearch-strict t)
     (should (equal (pinyin-isearch-pinyin-regexp-function "hi") nil))
-    (setq pinyin-isearch-strict nil)
     )
 )
 

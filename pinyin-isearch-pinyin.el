@@ -65,6 +65,8 @@
 
 (defvar pinyin-isearch-strict) ; "Located in `pinyin-isearch'."
 
+(defvar pinyin-isearch-full-fallback) ; "Located in `pinyin-isearch.el'."
+
 ;; from package `pinyin-isearch-loaders'
 (defvar sisheng-regexp) ; "Located in quail/sisheng."
 
@@ -187,25 +189,32 @@ Convert (u o) to
 \"\\([ūúǔùǖǘǚǜ][oōóǒò]\\|[uūúǔùǖǘǚǜ][ōóǒò]\\)\"
 and (u) to \"[ūúǔùǖǘǚǜ]\".  Uses tables:
 `pinyin-isearch-pinyin-vowel-table',
-`pinyin-isearch-pinyin-vowel-table-normal'.  Argument VOWELS list of
-normal vowels."
-  (if (eq (length vowels) 2)
-      (if  (not (member "ue" vowels))
-          (let* ((pin-vowels (mapcar (lambda (x)
-                                       (assoc-string x pinyin-isearch-pinyin-vowel-table)) vowels))
-                 (pin-vowels1 (car (cdr (car pin-vowels))))
-                 (pin-vowels2 (car (cdr (car (cdr pin-vowels))))))
-            (concat "\\(" pin-vowels1 "\\s-*" (car (cdr vowels))
-                    "\\|" (car vowels) pin-vowels2 "\\)"))
-        ;; ("u" "ue") case
-        ;; (print (cdr (assoc-string "ue" pinyin-isearch-pinyin-vowel-table)))
-        (let ((p1  (concat (car (cdr (assoc-string "u" pinyin-isearch-pinyin-vowel-table))) "\\s-*e")) ; [ūúǔùǖǘǚǜ]e
-              (p2 (car (cdr (assoc-string "ue" pinyin-isearch-pinyin-vowel-table))))  ; "ü[ēéěè]"
-              )
-          (concat "\\(" p1 "\\|" p2 "\\)") ; "\\([ūúǔùǖǘǚǜ]e\\|ü[ēéěè]\\)"
-          ))
-    ;; else if one vowel
-    (car (cdr (assoc-string (car vowels) pinyin-isearch-pinyin-vowel-table)))))
+`pinyin-isearch-pinyin-vowel-table-normal'.
+If pinyin-isearch-full-fallback use
+ pinyin-isearch-pinyin-vowel-table-normal to match pinyin without tones.
+Argument VOWELS list of normal vowels."
+  (let ((vowel-table (if (and (not pinyin-isearch-strict)
+                              pinyin-isearch-full-fallback)
+                         pinyin-isearch-pinyin-vowel-table-normal
+                       ;; else
+                       pinyin-isearch-pinyin-vowel-table)))
+    (if (eq (length vowels) 2)
+        (if  (not (member "ue" vowels))
+            (let* ((pin-vowels (mapcar (lambda (x)
+                                         (assoc-string x vowel-table)) vowels))
+                   (pin-vowels1 (car (cdr (car pin-vowels))))
+                   (pin-vowels2 (car (cdr (car (cdr pin-vowels))))))
+              (concat "\\(" pin-vowels1 "\\s-*" (car (cdr vowels))
+                      "\\|" (car vowels) pin-vowels2 "\\)"))
+          ;; ("u" "ue") case
+          ;; (print (cdr (assoc-string "ue" vowel-table)))
+          (let ((p1  (concat (car (cdr (assoc-string "u" vowel-table))) "\\s-*e")) ; [ūúǔùǖǘǚǜ]e
+                (p2 (car (cdr (assoc-string "ue" vowel-table))))  ; "ü[ēéěè]"
+                )
+            (concat "\\(" p1 "\\|" p2 "\\)") ; "\\([ūúǔùǖǘǚǜ]e\\|ü[ēéěè]\\)"
+            ))
+      ;; else if one vowel
+      (car (cdr (assoc-string (car vowels) vowel-table))))))
 
 
 
@@ -242,9 +251,9 @@ If optional argument NORMAL is non-nil add character without tones."
                            (cadr is-vowel)
                          c)))))))
 
-(defun pinyin-isearch-pinyin-regexp-f (string)
-  "Replacement for function `isearch-regexp-function'.
-Main function to convert query STRING to regex for isearch.
+(defun pinyin-isearch-pinyin-regexp-sub (string)
+  "Convert query STRING to regex for isearch.
+Called from `pinyin-isearch-pinyin-regexp-function'.
 Uses functions: `pinyin-isearch-pinyin--get-position-first-syllable',
 `pinyin-isearch-pinyin--make-syllable-to-regex',
 `pinyin-isearch-pinyin--brute-replace'."
@@ -253,7 +262,7 @@ Uses functions: `pinyin-isearch-pinyin--get-position-first-syllable',
          ;; save length
          (len (length st))
          ;; get the first longest syllable
-         (first-syllable-stat (if (> (length st) 1)
+         (first-syllable-stat (if (> len 1)
                                   (pinyin-isearch-pinyin--get-position-first-syllable st)
                                 ;; else
                                 '(nil)))
@@ -270,7 +279,7 @@ Uses functions: `pinyin-isearch-pinyin--get-position-first-syllable',
                            ;; process others
                            (concat "\\s-*" (pinyin-isearch-pinyin--brute-replace
                                             (substring st first-syllable-pos len)
-                                            :normal t))
+                                            :normal t)) ; :normal t is requred for normal search for simplification of algorithm above
                          ;; else
                          nil)))
           (concat first-syllable others))
@@ -278,30 +287,33 @@ Uses functions: `pinyin-isearch-pinyin--get-position-first-syllable',
       (if (not pinyin-isearch-strict) st)))) ; if not strict search for original text
 
 
-(defvar-local pinyin-isearch-pinyin--saved-query nil
+(defvar-local pinyin-isearch-pinyin--cached-query nil
   "For `pinyin-isearch-pinyin-regexp-function'.")
-(defvar-local pinyin-isearch-pinyin--saved-regex nil
+(defvar-local pinyin-isearch-pinyin--cached-regex nil
   "For `pinyin-isearch-pinyin-regexp-function'.")
-(defvar-local pinyin-isearch-pinyin--saved-strict nil
+(defvar-local pinyin-isearch-pinyin--cached-strict nil
   "For `pinyin-isearch-pinyin-regexp-function'.")
 
-(defun pinyin-isearch-pinyin-regexp-function (string &optional _lax)
+(defun pinyin-isearch-pinyin-regexp-function (string &optional _lax) ;TODO: make it support pinyin-isearch-full-fallback
   "Replacement for function `isearch-regexp-function'.
 Optional argument LAX not used.
 Argument STRING is query."
+  ;; (print (list "pinyin" string))
+  (unless pinyin-isearch-pinyin-syllable-table
+    (user-error "(pinyin-isearch-pinyin-load) was not called"))
   ;; check that pinyin-isearch-strict did not changed
-  (when (not (eq pinyin-isearch-pinyin--saved-strict pinyin-isearch-strict))
-    (setq pinyin-isearch-pinyin--saved-query nil)
-    (setq pinyin-isearch-pinyin--saved-regex nil)
-    (setq pinyin-isearch-pinyin--saved-strict pinyin-isearch-strict))
+  (when (not (eq pinyin-isearch-pinyin--cached-strict pinyin-isearch-strict))
+    (setq pinyin-isearch-pinyin--cached-query nil)
+    (setq pinyin-isearch-pinyin--cached-regex nil)
+    (setq pinyin-isearch-pinyin--cached-strict pinyin-isearch-strict))
   ;; this check required for speed optimization for isearch repeated calls
-  (if (equal string pinyin-isearch-pinyin--saved-query)
-      pinyin-isearch-pinyin--saved-regex
-    ;; else
-    (progn
-      (setq pinyin-isearch-pinyin--saved-query string)
-      (setq pinyin-isearch-pinyin--saved-regex
-            (pinyin-isearch-pinyin-regexp-f string)))))
+  (when (not (string-equal string pinyin-isearch-pinyin--cached-query))
+    ;; (print (list "pinyin N1" string))
+    (setq pinyin-isearch-pinyin--cached-query string)
+    (setq pinyin-isearch-pinyin--cached-regex
+          (pinyin-isearch-pinyin-regexp-sub string)))
+
+  pinyin-isearch-pinyin--cached-regex)
 
 (provide 'pinyin-isearch-pinyin)
 ;;; pinyin-isearch-pinyin.el ends here
