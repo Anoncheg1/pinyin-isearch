@@ -12,6 +12,8 @@ Allow to search with pinyin without diacritical marks in pinyin text. With few c
 Emacs Isearch "submode" that replace isearch-regexp-function to generate regex for search.
 
 For example: to find "Shànghǎi" and "上海" in text you just type: ``` C-s shanghai ```.
+
+Now we match chinese characters exactly, for example if you type "y"  ....
 # Files
 ```text
 pinyin-isearch.el
@@ -59,7 +61,7 @@ pinyin-isearch.el
 ```elisp
 (add-to-list 'load-path "/path-to/pinyin-isearch/")
 (require 'pinyin-isearch)
-(pinyin-isearch--load) ;; force loading (optional) before mode
+(pinyin-isearch-load) ;; force loading (optional) before mode
 ```
 
 # Usage

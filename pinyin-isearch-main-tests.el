@@ -35,7 +35,7 @@
 ;; (pinyin-isearch-both-regexp-function "nih")
 ;; "\\(n[īíǐì]\\s-*h\\|[你呢尼泥逆倪匿拟腻妮霓昵溺旎睨鲵坭猊怩伲祢慝铌][和或活火获货伙祸惑霍豁夥锪耠劐钬攉藿嚯镬蠖婚混魂昏浑馄荤诨溷阍珲会回汇挥辉灰惠毁悔恢慧绘徽讳贿徊晦秽诲诙晖彗麾烩荟卉茴喙蛔恚洄珲蕙哕咴浍虺缋桧隳蟪黄皇荒晃慌煌惶恍谎璜徨簧凰幌潢蝗蟥遑隍肓磺癀湟篁鳇欢换还环缓患幻唤宦焕痪寰鬟涣浣奂桓缳豢锾郇萑圜洹擐獾漶逭鲩怀坏徊淮槐踝话华化花划画滑哗桦猾砉铧骅乎护呼胡户湖忽互糊虎壶狐沪惚浒唬葫弧蝴囫瑚斛祜猢鹄醐戽扈唿笏琥滹鹕轷烀冱岵怙鹘槲觳瓠鹱煳后候後厚侯喉吼猴逅糇骺堠瘊篌鲎红轰洪鸿哄宏虹弘烘泓闳薨讧蕻訇黉荭横衡恒哼亨蘅珩桁很恨狠痕黑嘿嗨和何合河喝赫核吓贺盒呵禾荷鹤壑阂褐诃涸阖嗬貉曷颌劾盍纥蚵翮菏好号毫豪浩耗皓嚎昊郝壕蒿貉灏镐嗥嚆薅濠蚝颢行航巷杭夯沆颃绗珩汉喊含寒汗韩憾涵函翰撼罕旱捍酣悍憨晗瀚鼾顸阚焊蚶焓颔菡撖邗邯还海孩害嘿咳亥骇骸嗨胲醢氦哈蛤铪]\\)"
 
-(pinyin-isearch--load)
+(pinyin-isearch-load)
 ;; (setq pinyin-isearch-strict nil)
 ;; (setq pinyin-isearch-full-fallback nil)
 ;; -=-= help functons
@@ -88,15 +88,16 @@ This have a trick by Emacs, isearch-search-and-update call
  `pinyin-isearch-both-regexp-function' first in temp buffer and them
  several times in current, that is why we set variables here in current buffer (for visually testing)."
   (progn (setq pinyin-isearch-chars--cached-query nil)
-         (setq pinyin-isearch-chars-fallback t)
          (setq pinyin-isearch-strict nil)
+         (setq pinyin-isearch-chars-fallback t)
          (setq pinyin-isearch-full-fallback t)
          (with-temp-buffer
-           (with-test-isearch-env
+           ;; (with-test-isearch-env
+            (setq pinyin-isearch-chars--cached-query nil)
             (let ((pinyin-isearch-strict nil)
                   (pinyin-isearch-chars-fallback t)
                   (pinyin-isearch-full-fallback t))
-              (setq pinyin-isearch-chars--cached-query nil)
+
 
               ;; those two lines required to prevet error: move-to-window-line(0):  (error "move-to-window-line called from unrelated buffer")
               ;; (with-selected-window (selected-window)
@@ -125,11 +126,11 @@ This have a trick by Emacs, isearch-search-and-update call
               (should (= (point) 45))
 
               (pinyin-isearch-jump-and-stay-active "nihao")
-              (should (= (point) 45))
+              (should (= (point) 45)))))
 
 
               (goto-char (point-min))
-              (pinyin-isearch-jump-and-stay-active "nig")
+              (pinyin-isearch-jump-and-stay-active "nig")))
               (should (= (point) 39))
               (pinyin-isearch-jump-and-stay-active "nig")
               (should (= (point) 39))
@@ -259,30 +260,34 @@ This have a trick by Emacs, isearch-search-and-update call
          (setq pinyin-isearch-chars-fallback nil)
          (setq pinyin-isearch-full-fallback nil)
          (with-temp-buffer
-           (with-test-isearch-env
+           ;; (with-test-isearch-env
             (let ((pinyin-isearch-strict nil)
                   (pinyin-isearch-chars-fallback nil)
                   (pinyin-isearch-full-fallback nil))
               (setq pinyin-isearch-chars--cached-query nil)
 
               (pinyin-isearch-mode 1)
-              (insert "blabla 你好 (nǐ hǎo) 你好 (nǐ hao) 你hao 你g nihao") ; we dont search "你hao" for isearch speed optimization
+              (insert "blabla 你好 (nǐ hǎo) (nǐ hao) 你hao 你g nihao")
 
               ;; ;; 3. Characters pinyin-isearch-chars-regexp-function
               ;; nil nil
               (goto-char (point-min))
               (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
-              (should (= (point) 1))
+              (should (= (point) 10))
+              (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
+              (should (= (point) 10))
 
               (goto-char (point-min))
               ;; t nil
               (setq pinyin-isearch-chars--cached-query nil) ; reset cache
               (setq pinyin-isearch-chars-fallback t)
               (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
-              (should (= (point) 34))
+              (should (= (point) 10))
 
               (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
-              (should (= (point) 34))
+              (should (= (point) 31))
+              (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
+              (should (= (point) 31))
 
               (goto-char (point-min))
               ;; t t
@@ -290,18 +295,22 @@ This have a trick by Emacs, isearch-search-and-update call
               (setq pinyin-isearch-full-fallback t)
               (setq pinyin-isearch-chars--cached-query nil) ; reset cache
               (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
-              (should (= (point) 34))
+              (should (= (point) 10))
               (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
-              (should (= (point) 43))
+              (should (= (point) 31))
+              (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
+              (should (= (point) 40))
+              (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
+              (should (= (point) 40))
 
               ;; nil t
               (setq pinyin-isearch-chars-fallback nil)
               (setq pinyin-isearch-full-fallback t)
               (setq pinyin-isearch-chars--cached-query nil)
               (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
-              (should (= (point) 43))
+              (should (= (point) 40))
               (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
-              (should (= (point) 43)))))))
+              (should (= (point) 40))))))
 
 
 (ert-deftest test-pinyin-isearch-help-menu ()

@@ -52,7 +52,7 @@ pinyin-isearch.el
 ```elisp
 (add-to-list 'load-path "/path-to/pinyin-isearch/")
 (require 'pinyin-isearch)
-(pinyin-isearch--load) ;; （可选）提前加载
+(pinyin-isearch-load) ;; （可选）提前加载
 ```
 
 # 用法

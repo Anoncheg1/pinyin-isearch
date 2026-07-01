@@ -40,7 +40,7 @@
 ;; Configuration in ~/.emacs or ~/.emacs.d/init.el:
 
 ;; (require 'pinyin-isearch)
-;; (pinyin-isearch--load) ; force loading (optional) before mode
+;; (pinyin-isearch-load) ; force loading (optional) before mode
 
 ;;;; Usage:
 
@@ -105,17 +105,18 @@
   "Fuzzy Matching by pinyin."
   :group 'pinyin-isearch)
 
+;; Todo, check pinyin completion
 (defcustom pinyin-isearch-strict nil
-  "Non-nil means Enforce to always search only pinyin and Chinese characters.
-isearch will not fallback to find normal latin text after first
- characters.  Configure `pinyin-isearch-mode' and pinyin isearch submode
- also."
+  "Non-nil means prohibit adding to search all possible completion.
+By default we are looking for all characters and pinyin syllables that
+ start with typed by user first part of syllable."
   :local t
   :type 'boolean
   :group 'pinyin-isearch)
 
 (defcustom pinyin-isearch-full-fallback t
-  "Non-nil means search for normal latin at the same time."
+  "Non-nil means search for normal latin at the same time.
+Used in `pinyin-isearch-chars--concat-variants'."
   :local t
   :type 'boolean
   :group 'pinyin-isearch)
@@ -160,8 +161,8 @@ Optional argument LAX for isearch special cases."
   (let* ((psr (pinyin-isearch-pinyin-regexp-function string))
          (hsr (let ((pinyin-isearch-full-fallback nil))
                 (pinyin-isearch-chars-regexp-function string))))
-    ;; (print (list "hsr" hsr))
-    ;; (print (list "psr" psr))
+    (print (list "hsr" hsr))
+    (print (list "psr" psr))
     (cond
      ((equal hsr "$^") psr)
      ((equal psr "$^") hsr)
@@ -201,7 +202,7 @@ Used in functions `pinyin-isearch-forward' and
           (goto-char isearch-opoint)
           (setq isearch-adjusted t)))))
 
-(defun pinyin-isearch--load ()
+(defun pinyin-isearch-load ()
   "Load and activate modules and hooks used by all."
   (unless (and pinyin-isearch-chars--first-syllable-letters ; for speed
                pinyin-isearch-pinyin-syllable-table)
@@ -217,7 +218,7 @@ Used in functions `pinyin-isearch-forward' and
 Optional argument REGEXP-P see original function `isearch-forward'.
 Optional argument NO-RECURSIVE-EDIT see original function `isearch-forward'."
   (interactive "P\np")
-  (pinyin-isearch--load) ; lazy loading, for usage without minor mode
+  (pinyin-isearch-load) ; lazy loading, for usage without minor mode
   (isearch-mode t regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch)))
 
 
@@ -227,7 +228,7 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-forward'."
 Optional argument REGEXP-P see original function `isearch-backward'.
 Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
   (interactive "P\np")
-  (pinyin-isearch--load) ; lazy loading, for usage without minor mode
+  (pinyin-isearch-load) ; lazy loading, for usage without minor mode
   (isearch-mode nil regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch)))
 
 ;; Generate the toggles globally (Emacs automatically binds them to M-s p, M-s h, M-s s)
@@ -277,7 +278,7 @@ normal search.
   ;; Manage the hooks cleanly
   (if pinyin-isearch-mode
       (progn
-        (pinyin-isearch--load)
+        (pinyin-isearch-load)
         ;; used in all modes
         (add-hook 'pre-command-hook #'pinyin-isearch--pinyin-fix-jumping-advice nil t))
     ;; else
