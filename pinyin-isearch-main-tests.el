@@ -92,7 +92,7 @@ This have a trick by Emacs, isearch-search-and-update call
          (setq pinyin-isearch-chars-fallback t)
          (setq pinyin-isearch-full-fallback t)
          (with-temp-buffer
-           ;; (with-test-isearch-env
+           (with-test-isearch-env
             (setq pinyin-isearch-chars--cached-query nil)
             (let ((pinyin-isearch-strict nil)
                   (pinyin-isearch-chars-fallback t)
@@ -123,19 +123,21 @@ This have a trick by Emacs, isearch-search-and-update call
               (should (= (point) 30))
 
               (pinyin-isearch-jump-and-stay-active "nihao")
-              (should (= (point) 45))
+              (should (= (point) 36))
 
               (pinyin-isearch-jump-and-stay-active "nihao")
-              (should (= (point) 45)))))
+              (should (= (point) 45))
 
 
               (goto-char (point-min))
-              (pinyin-isearch-jump-and-stay-active "nig")))
+              (pinyin-isearch-jump-and-stay-active "nig")
               (should (= (point) 39))
               (pinyin-isearch-jump-and-stay-active "nig")
               (should (= (point) 39))
 
               (goto-char (point-min))
+              (pinyin-isearch-jump-and-stay-active "blabla") ; should match 你hao also!
+              (should (= (point) 7))
               (pinyin-isearch-jump-and-stay-active "blabla") ; should match 你hao also!
               (should (= (point) 7)))))))
 
@@ -185,16 +187,74 @@ This have a trick by Emacs, isearch-search-and-update call
               (should (= (point) 30))
 
               (pinyin-isearch-jump-and-stay-active "nihao")
-              (should (= (point) 30))
+              (should (= (point) 36))
+
+              (pinyin-isearch-jump-and-stay-active "nihao")
+              (should (= (point) 36))
 
 
               (goto-char (point-min))
               (pinyin-isearch-jump-and-stay-active "nig")
+              (should (= (point) 39))
+              (pinyin-isearch-jump-and-stay-active "nig")
+              (should (= (point) 39))
+
+              (goto-char (point-min))
+              (pinyin-isearch-jump-and-stay-active "blabla")
               (should (= (point) 1))
+              ;; (pinyin-isearch-jump-and-stay-active "blabla")
+              ;; (should (= (point) 7))
+              )))))
+
+(ert-deftest test-pinyin-isearch-main3-strict-no-fallback ()
+  "."
+  (progn (setq pinyin-isearch-chars--cached-query nil)
+         (setq pinyin-isearch-strict nil)
+         (setq pinyin-isearch-chars-fallback nil)
+         (setq pinyin-isearch-full-fallback nil)
+         (with-temp-buffer
+           (with-test-isearch-env
+            (setq pinyin-isearch-chars--cached-query nil)
+            (let ((pinyin-isearch-strict nil)
+                  (pinyin-isearch-chars-fallback nil)
+                  (pinyin-isearch-full-fallback nil))
+
+
+              ;; those two lines required to prevet error: move-to-window-line(0):  (error "move-to-window-line called from unrelated buffer")
+              ;; (with-selected-window (selected-window)
+              ;;   (set-window-buffer nil (current-buffer)))
+              ;; Activate the minor mode
+              (pinyin-isearch-mode 1)
+              (insert "blabla 你好 (nǐ hǎo) 你好 (nǐ hao) 你hao 你g nihao") ; we dont search "你hao" for isearch speed optimization
+
+
+              ;; 1. Both pinyin-isearch-both-regexp-function
+              (goto-char (point-min))
+              (pinyin-isearch-jump-and-stay-active "nihao") ; should match 你hao also!
+              (should (= (point) 10))
+
+              (pinyin-isearch-jump-and-stay-active "nihao")
+              (should (= (point) 18))
+
+              (pinyin-isearch-jump-and-stay-active "nihao")
+              (should (= (point) 22))
+
+              (pinyin-isearch-jump-and-stay-active "nihao")
+              (should (= (point) 30))
+
+              (pinyin-isearch-jump-and-stay-active "nihao")
+              (should (= (point) 30))
+
+
+
+              (goto-char (point-min))
+              (pinyin-isearch-jump-and-stay-active "nig")
+              (should (= (point) 1)) ; not found
 
               (goto-char (point-min))
               (pinyin-isearch-jump-and-stay-active "blabla") ; should match 你hao also!
-              (should (= (point) 1)))))))
+              (should (= (point) 1))
+              )))))
 
 
 
@@ -221,18 +281,27 @@ This have a trick by Emacs, isearch-search-and-update call
               ;;   (set-window-buffer nil (current-buffer)))
               ;; Activate the minor mode
               (pinyin-isearch-mode 1)
-              (insert "blabla 你好 (nǐ hǎo) 你好 (nǐ hao) 你hao 你g nihao") ; we dont search "你hao" for isearch speed optimization
+              (insert " blabla 你好 (nǐ hǎo) 你好 (nǐ hao) 你hao 你g nihao") ; we dont search "你hao" for isearch speed optimization
 
               ;; 2. Pinyin pinyin-isearch-pinyin-regexp-function
               (goto-char (point-min))
               (pinyin-isearch-jump-and-stay-active "nihao" #'pinyin-isearch-pinyin-regexp-function)
-              (should (= (point) 18))
+              (should (= (point) 19))
 
               (pinyin-isearch-jump-and-stay-active "nihao" #'pinyin-isearch-pinyin-regexp-function)
-              (should (= (point) 30))
+              (should (= (point) 31))
 
               (pinyin-isearch-jump-and-stay-active "nihao" #'pinyin-isearch-pinyin-regexp-function)
-              (should (= (point) 30))
+              (should (= (point) 31))
+
+              (goto-char (point-min))
+              (pinyin-isearch-jump-and-stay-active "nig" #'pinyin-isearch-pinyin-regexp-function)
+              (should (= (point) 1)) ; not found
+
+              (goto-char (point-min))
+              (pinyin-isearch-jump-and-stay-active "blabla" #'pinyin-isearch-pinyin-regexp-function)
+              (should (= (point) 1)) ; not found
+
 
               ;; (goto-char (point-min))
               ;; (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)))
@@ -241,13 +310,28 @@ This have a trick by Emacs, isearch-search-and-update call
               (goto-char (point-min))
 
               (pinyin-isearch-jump-and-stay-active "nihao" #'pinyin-isearch-chars-regexp-function)
-              (should (= (point) 10))
+              (should (= (point) 11))
 
               (pinyin-isearch-jump-and-stay-active "nihao" #'pinyin-isearch-chars-regexp-function)
-              (should (= (point) 22))
+              (should (= (point) 23))
 
               (pinyin-isearch-jump-and-stay-active "nihao" #'pinyin-isearch-chars-regexp-function)
-              (should (= (point) 22)))))))
+              (should (= (point) 37))
+
+              (pinyin-isearch-jump-and-stay-active "nihao" #'pinyin-isearch-chars-regexp-function)
+              (should (= (point) 37))
+
+              (goto-char (point-min))
+              (pinyin-isearch-jump-and-stay-active "nig" #'pinyin-isearch-chars-regexp-function)
+              (should (= (point) 40))
+              (pinyin-isearch-jump-and-stay-active "nig" #'pinyin-isearch-chars-regexp-function)
+              (should (= (point) 40))
+
+              (goto-char (point-min))
+              (pinyin-isearch-jump-and-stay-active "blabla" #'pinyin-isearch-chars-regexp-function)
+              (should (= (point) 1)) ; not found
+
+              )))))
 
 
 (ert-deftest test-pinyin-isearch-main-character-no-fallback ()
@@ -260,7 +344,7 @@ This have a trick by Emacs, isearch-search-and-update call
          (setq pinyin-isearch-chars-fallback nil)
          (setq pinyin-isearch-full-fallback nil)
          (with-temp-buffer
-           ;; (with-test-isearch-env
+           (with-test-isearch-env
             (let ((pinyin-isearch-strict nil)
                   (pinyin-isearch-chars-fallback nil)
                   (pinyin-isearch-full-fallback nil))
@@ -310,7 +394,7 @@ This have a trick by Emacs, isearch-search-and-update call
               (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
               (should (= (point) 40))
               (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
-              (should (= (point) 40))))))
+              (should (= (point) 40)))))))
 
 
 (ert-deftest test-pinyin-isearch-help-menu ()

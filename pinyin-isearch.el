@@ -115,7 +115,12 @@ By default we are looking for all characters and pinyin syllables that
   :group 'pinyin-isearch)
 
 (defcustom pinyin-isearch-full-fallback t
-  "Non-nil means search for normal latin at the same time.
+  "Non-nil means search for normal normal latin letters also.
+For mandaring characters, wif non-nil we always search for full latin
+ input.
+For pinyin search this means we use latin symbols in regex for vowels to
+ search for letters without diacritical mark tones. If is nil and
+ syllable was not found pinyin search dont look for latin string.
 Used in `pinyin-isearch-chars--concat-variants'."
   :local t
   :type 'boolean
@@ -161,8 +166,8 @@ Optional argument LAX for isearch special cases."
   (let* ((psr (pinyin-isearch-pinyin-regexp-function string))
          (hsr (let ((pinyin-isearch-full-fallback nil))
                 (pinyin-isearch-chars-regexp-function string))))
-    (print (list "hsr" hsr))
-    (print (list "psr" psr))
+    ;; (print (list "hsr" hsr))
+    ;; (print (list "psr" psr))
     (cond
      ((equal hsr "$^") psr)
      ((equal psr "$^") hsr)

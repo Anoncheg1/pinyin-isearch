@@ -96,12 +96,16 @@
   (with-temp-buffer
     ;; (pinyin-isearch-mode)
     (setq-local pinyin-isearch-full-fallback nil)
-    (should (equal (pinyin-isearch-pinyin-regexp-function "") ""))
-    (should (equal (pinyin-isearch-pinyin-regexp-function "n") "n"))
-    (should (equal (pinyin-isearch-pinyin-regexp-function "ssd") "ssd"))
+    (setq-local pinyin-isearch-strict nil)
+    (should (equal (pinyin-isearch-pinyin-regexp-function "") "$^"))
+    (should (equal (pinyin-isearch-pinyin-regexp-function "n") "$^"))
+    (should (equal (pinyin-isearch-pinyin-regexp-function "ssd") "$^"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "nu") "n[ūúǔùǖǘǚǜ]"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "me") "m[ēéěè]"))
+    (should (equal (pinyin-isearch-pinyin-regexp-function "bla") "$^"))
     (setq-local pinyin-isearch-full-fallback t)
+    (should (equal (pinyin-isearch-pinyin-regexp-function "") "$^"))
+    (should (equal (pinyin-isearch-pinyin-regexp-function "ssd") "ssd"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "nu") "n[uūúǔùǖǘǚǜ]"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "me") "m[eēéěè]"))
 
@@ -109,7 +113,7 @@
     (setq-local pinyin-isearch-full-fallback nil)
     (setq-local pinyin-isearch-pinyin--cached-query nil) ; reset cache
     (should (equal (pinyin-isearch-pinyin-regexp-function "zuo") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)"))
-
+    (setq-local pinyin-isearch-strict t)
     (should (equal (pinyin-isearch-pinyin-regexp-function "zuozuo") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)\\s-*z\\s-*[uūúǔùǖǘǚǜ]\\s-*[oōóǒò]"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "zuo me") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)\\s-* \\s-*m\\s-*[eēéěè]"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "zuome") "z\\([ūúǔùǖǘǚǜ]\\s-*o\\|u[ōóǒò]\\)\\s-*m\\s-*[eēéěè]"))
@@ -119,10 +123,10 @@
     (should (equal (pinyin-isearch-pinyin-regexp-function "nue") "n\\([ūúǔùǖǘǚǜ]\\s-*e\\|ü[ēéěè]\\)"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "pin") "p[īíǐì]\\s-*n"))
     (should (equal (pinyin-isearch-pinyin-regexp-function "jiaoshenme") "j\\([īíǐì]\\s-*a\\|i[āáǎà]\\)\\s-*[oōóǒò]\\s-*s\\s-*h\\s-*[eēéěè]\\s-*n\\s-*m\\s-*[eēéěè]"))
-    (setq pinyin-isearch-strict nil) ; default
-    (should (equal (pinyin-isearch-pinyin-regexp-function "hi") "hi"))
-    (setq pinyin-isearch-strict t)
-    (should (equal (pinyin-isearch-pinyin-regexp-function "hi") nil))
+    (setq-local pinyin-isearch-strict nil) ; default
+    (should (equal (pinyin-isearch-pinyin-regexp-function "hi") "$^"))
+    (setq-local pinyin-isearch-strict t)
+    (should (equal (pinyin-isearch-pinyin-regexp-function "hi") "$^"))
     )
 )
 

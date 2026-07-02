@@ -66,6 +66,7 @@
 (defvar pinyin-isearch-strict) ; "Located in `pinyin-isearch'."
 
 (defvar pinyin-isearch-full-fallback) ; "Located in `pinyin-isearch.el'."
+;; used in `pinyin-isearch-pinyin--vowels-to-regex' for vowels
 
 ;; from package `pinyin-isearch-loaders'
 (defvar sisheng-regexp) ; "Located in quail/sisheng."
@@ -257,7 +258,6 @@ Called from `pinyin-isearch-pinyin-regexp-function'.
 Uses functions: `pinyin-isearch-pinyin--get-position-first-syllable',
 `pinyin-isearch-pinyin--make-syllable-to-regex',
 `pinyin-isearch-pinyin--brute-replace'."
-
   (let* ((st (regexp-quote string))
          ;; save length
          (len (length st))
@@ -282,9 +282,17 @@ Uses functions: `pinyin-isearch-pinyin--get-position-first-syllable',
                                             :normal t)) ; :normal t is requred for normal search for simplification of algorithm above
                          ;; else
                          nil)))
+
+
           (concat first-syllable others))
-      ;; else - no syllable found
-      (if (not pinyin-isearch-strict) st)))) ; if not strict search for original text
+      ;; else - no syllable found - fallback to input string
+      ;; (print (list "wtf4")
+      (if (or (not pinyin-isearch-full-fallback)
+              pinyin-isearch-strict
+              (string-empty-p string))
+          "$^"
+        ;; else
+        st)))) ; if not strict search for original text
 
 
 (defvar-local pinyin-isearch-pinyin--cached-query nil
@@ -293,25 +301,24 @@ Uses functions: `pinyin-isearch-pinyin--get-position-first-syllable',
   "For `pinyin-isearch-pinyin-regexp-function'.")
 (defvar-local pinyin-isearch-pinyin--cached-strict nil
   "For `pinyin-isearch-pinyin-regexp-function'.")
+(defvar-local pinyin-isearch-pinyin--cached-full-fallback nil
+  "For `pinyin-isearch-pinyin-regexp-function'.")
 
 (defun pinyin-isearch-pinyin-regexp-function (string &optional _lax) ;TODO: make it support pinyin-isearch-full-fallback
   "Replacement for function `isearch-regexp-function'.
 Optional argument LAX not used.
 Argument STRING is query."
-  ;; (print (list "pinyin" string))
   (unless pinyin-isearch-pinyin-syllable-table
     (user-error "(pinyin-isearch-pinyin-load) was not called"))
-  ;; check that pinyin-isearch-strict did not changed
-  (when (not (eq pinyin-isearch-pinyin--cached-strict pinyin-isearch-strict))
-    (setq pinyin-isearch-pinyin--cached-query nil)
-    (setq pinyin-isearch-pinyin--cached-regex nil)
-    (setq pinyin-isearch-pinyin--cached-strict pinyin-isearch-strict))
-  ;; this check required for speed optimization for isearch repeated calls
-  (when (not (string-equal string pinyin-isearch-pinyin--cached-query))
-    ;; (print (list "pinyin N1" string))
+
+  ;; check if match cached one
+  (when (or (not (eq pinyin-isearch-pinyin--cached-strict pinyin-isearch-strict))
+            (not (eq pinyin-isearch-pinyin--cached-full-fallback pinyin-isearch-full-fallback))
+            (not (string-equal string pinyin-isearch-pinyin--cached-query)))
+
     (setq pinyin-isearch-pinyin--cached-query string)
     (setq pinyin-isearch-pinyin--cached-regex
-          (pinyin-isearch-pinyin-regexp-sub string)))
+          (pinyin-isearch-pinyin-regexp-sub string))) ; MAIN call
 
   pinyin-isearch-pinyin--cached-regex)
 
