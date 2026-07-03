@@ -109,26 +109,35 @@
 
 
 (defun pinyin-isearch-pinyin--sisheng-to-normal (syllable)
-  "Convert \"zhuō\" SYLLABLE to \"zhuo\".
-Used to create list pinyin-isearch-pinyin-syllable-table from original
-sisheng."
-  (string-match sisheng-regexp syllable)
-  (let* (;; fin vowel
-        (vowel-match (downcase (match-string 0 syllable)))
-        (vowel-list (cdr (assoc-string vowel-match sisheng-vowel-table)))
-        (base-key (nth 0 vowel-list)))
-    ;; case for üē and ǖ and ū
-    (if (equal base-key "v")
-        (setq base-key "u")
-      ;; else
-      (if (equal base-key "ve")
-          (setq base-key "ue" )))
-    ;; fix for sisheng, we don't need "v"
-    (replace-match base-key nil nil syllable)))
+  "Fix tones in syllable with `sisheng-regexp' and `sisheng-vowel-table'.
+Used to create list `pinyin-isearch-pinyin-syllable-table' from original
+ sisheng.
+Given a syllable like \"zhuō\" (with tone marks) returns \"zhuo\",
+ suitable for pinyin input searches.  Handles special cases where 'ü' or
+ 'ü' with tone marks appear (such as \"lüè\"), converting those to
+ \"lue\".  If no tone marked vowel is detected, returns the input
+ unchanged.
+SYLLABLE: String representing a pinyin syllable, possibly with tone
+ marks.
+Requires `sisheng-regexp' and `sisheng-vowel-table' to be defined."
+  ;; Try to match tone-marked vowel in the syllable
+  (if (string-match sisheng-regexp syllable)
+      (let* ((matched-vowel (downcase (match-string 0 syllable)))
+             ;; Lookup normalized vowel in table
+             (vowel-list (cdr (assoc-string matched-vowel sisheng-vowel-table)))
+             (base-vowel (when vowel-list (nth 0 vowel-list))))
+        ;; Special handling for 'v' and 've' which represent 'ü' and 'üe'
+        (cond
+         ((equal base-vowel "v") (setq base-vowel "u"))
+         ((equal base-vowel "ve") (setq base-vowel "ue")))
+        ;; Replace matched vowel with normalized vowel, return new syllable
+        (replace-match base-vowel nil nil syllable))
+    ;; If no tone-marked vowel, return input unchanged
+    syllable))
 
 
 (defvar pinyin-isearch-pinyin-syllable-table nil
-"Initialize syllable's table ((\"zhuo\" . \"zhuō\")...).")
+  "Initialize syllable's table ((\"zhuo\" . \"zhuō\")...).")
 
 (defun pinyin-isearch-pinyin-load ()
   "Initialize variable `pinyin-isearch-pinyin-syllable-table'."

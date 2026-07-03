@@ -86,7 +86,6 @@
       (setq pinyin-isearch-strict t) ; working
       (setq pinyin-isearch-chars-fallback nil)
       (setq pinyin-isearch-chars--cached-query nil)
-      ;; (print (pinyin-isearch-chars--recursion "nunu")))
       (should (equal (pinyin-isearch-chars--recursion "i") nil))
       (should (equal (pinyin-isearch-chars--recursion "nunu") '((("nu") ("nu")))))
       (should (not (pinyin-isearch-chars--recursion "gni"))) ; should return nil
@@ -96,15 +95,12 @@
       (setq pinyin-isearch-strict nil)
       (setq pinyin-isearch-chars-fallback nil)
       (setq pinyin-isearch-chars--cached-query nil)
-      ;; (print (pinyin-isearch-chars--recursion "") nil))
-      ;; (pinyin-isearch-chars--recursion "nunu")
       (should (equal (pinyin-isearch-chars--recursion "nug") '((("nu") ("guo" "gun" "gui" "guang" "guan" "guai" "gua" "gu" "gou" "gong" "geng" "gen" "gei" "ge" "gao" "gang" "gan" "gai" "ga")))))
       (should (equal (pinyin-isearch-chars--recursion "i") nil))
       (should (equal (pinyin-isearch-chars--recursion "") nil))
       (should (equal (pinyin-isearch-chars--recursion nil) nil))
       (should (equal (pinyin-isearch-chars--recursion "g") '((("guo" "gun" "gui" "guang" "guan" "guai" "gua" "gu" "gou" "gong" "geng" "gen" "gei" "ge" "gao" "gang" "gan" "gai" "ga")))))
       (should (equal (pinyin-isearch-chars--recursion "nuii") nil))
-      ;; (should (equal (pinyin-isearch-chars--recursion "nunu") '((("nu") ("nu")))))
       (should (equal (pinyin-isearch-chars--recursion "nunu") '((("nu") ("nuo" "nue" "nuan" "nu")))))
       (should (equal (pinyin-isearch-chars--recursion "a&&") nil ))
       )
@@ -113,14 +109,10 @@
       (setq pinyin-isearch-strict nil)
       (setq pinyin-isearch-chars-fallback t)
       (setq pinyin-isearch-chars--cached-query nil)
-      ;; (print (pinyin-isearch-chars--recursion "nunu")))
       (should (equal (pinyin-isearch-chars--recursion "") nil))
       (should (equal (pinyin-isearch-chars--recursion "i") '((("\34i")))))
       (should (equal (pinyin-isearch-chars--recursion nil) nil))
-      ;; (pinyin-isearch-chars--recursion "nunu"))
-      ;; (should (equal (pinyin-isearch-chars--recursion "nunu") '((("n") ("\34unu")) (("nu") ("n") ("\34u")) (("nu") ("nuo" "nue" "nuan" "nu")) (("\34nunu")))))
       (should (equal (pinyin-isearch-chars--recursion "nunu") '((("nu") ("n") ("\34u")) (("nu") ("nuo" "nue" "nuan" "nu")) (("nu") ("\34nu")) (("n") ("\34unu")))))
-
       (should (equal (pinyin-isearch-chars--recursion "nig") '((("ni") ("guo" "gun" "gui" "guang" "guan" "guai" "gua" "gu" "gou" "gong" "geng" "gen" "gei" "ge" "gao" "gang" "gan" "gai" "ga")) (("ni") ("\34g")) (("n") ("\34ig")))))
       (should (equal (pinyin-isearch-chars--recursion "a>") '((("a") (">")) (("a") ("\34>")))))
       (should (equal (pinyin-isearch-chars--recursion "nuii")  '((("nu") ("\34ii")) (("n") ("\34uii")))))
@@ -135,8 +127,6 @@
       (should (equal (pinyin-isearch-chars--recursion "zu.na") '((("zu") (".") ("\34na")) (("zu") (".") ("nao" "nang" "nan" "nai" "na")) (("zu") (".") ("n") ("ao" "ang" "an" "ai" "a")) (("zu") (".") ("n") ("\34a")) (("zu") ("\34.na"))) ))
       (should (equal (pinyin-isearch-chars--recursion "nai") '((("nai")) (("na") ("\34i")) (("n") ("a") ("\34i")) (("n") ("ai")) (("n") ("\34ai"))) ))
       )
-
-
 
     (with-temp-buffer
       (setq pinyin-isearch-strict t)
@@ -208,30 +198,13 @@
       (should (equal (pinyin-isearch-chars--filter-full-variants 'pinyin-isearch-chars--pinyin-to-hieroglyphs
                                                                  '((("n") ("a") ("i")) (("n") ("ai")) (("na") ("i")) (("nai"))))
                      '((("n") ("ai")) (("nai"))) ))
-
-
       ))
 )
-
-;; (ert-deftest pinyin-isearch-chars--filter-full-variants-and-characters ()
-;;   (with-temp-buffer
-;;     (should (equal (pinyin-isearch-chars--filter-full-variants-and-characters 'pinyin-isearch-chars--pinyin-to-hieroglyphs
-;;                                                          '((("na") ("i")))) nil ))
-;;     (should (equal (pinyin-isearch-chars--filter-full-variants-and-characters 'pinyin-isearch-chars--pinyin-to-hieroglyphs
-;;                                                          '((("n") ("a") ("i")) (("n") ("ai")) (("na") ("i")) (("nai"))))
-;;             '((("n") ("ai")) (("nai"))) ))
-;;     (should (equal (pinyin-isearch-chars--filter-full-variants-and-characters 'pinyin-isearch-chars--pinyin-to-hieroglyphs
-;;                                                                         '((("zu") ("a") ("n") ("ai")) (("zu") ("a") ("nao" "nang" "nan" "nai" "na")) (("zu") ("an") ("ao" "ang" "an" "ai" "a")) (("zuan") ("ao" "ang" "an" "ai" "a"))))
-;;                    '((("zu") ("a") ("n") ("ai"))) ))
-;;     )
-;; )
 
 (ert-deftest test-pinyin-isearch-chars--convert-to-hieroglyphs ()
   (with-temp-buffer
     (let ((pinyin-isearch-strict nil))
       (should (equal (pinyin-isearch-chars--convert-to-hieroglyphs '((("n")))) '((("嗯唔"))) ))
-      ;; (pinyin-isearch-chars--convert-to-hieroglyphs '((("ni"))))))
-
       (should (equal (pinyin-isearch-chars--convert-to-hieroglyphs '((("zu") ("hna")))) '((("组足族祖租阻卒诅俎镞菹") ("hna"))) ))
       (should (equal (pinyin-isearch-chars--convert-to-hieroglyphs '((("gg")))) '((("gg"))) ))
       (should (equal (pinyin-isearch-chars--convert-to-hieroglyphs '(((".")))) '((("．\\.。・¨…∵∴°⊙"))) ))
@@ -242,8 +215,6 @@
 
 (ert-deftest test-pinyin-isearch-chars--regex-concat-hieroglyphs ()
   (with-temp-buffer
-    ;; (let ((pinyin-isearch-strict nil))
-    ;; (test-pinyin-isearch-chars--get-vars)
     (should (equal (pinyin-isearch-chars--regex-concat-hieroglyphs '(("阿啊呵腌嗄锕吖") ("嗯唔") (">."))) "[阿啊呵腌嗄锕吖][嗯唔][>.]"))
     (should (equal (pinyin-isearch-chars--regex-concat-hieroglyphs '(("gg"))) "[gg]")) ; no marker
     (should (equal (pinyin-isearch-chars--regex-concat-hieroglyphs
@@ -256,8 +227,6 @@
                    "[诺挪懦糯喏搦傩锘虐疟暖女钕恧衄怒努奴弩驽胬孥]暖"))
     (should (equal (pinyin-isearch-chars--regex-concat-hieroglyphs
                     (list (list "诺挪懦糯喏搦傩锘" "虐疟" "暖" "女钕恧衄怒努奴弩驽胬孥") (list (concat pinyin-isearch-chars--non-syllable-marker-string "g")))) "[诺挪懦糯喏搦傩锘虐疟暖女钕恧衄怒努奴弩驽胬孥]g"))
-
-    ;; (let ((pinyin-isearch-chars--non-syllable-marker-number ?\x1c))
     (should (equal (pinyin-isearch-chars--regex-concat-hieroglyphs '(("昂") ("肮") ("盎"))) "昂肮盎"))
     (should (equal (pinyin-isearch-chars--regex-concat-hieroglyphs '(("昂肮"))) "[昂肮]"))
     (should (equal (pinyin-isearch-chars--regex-concat-hieroglyphs '(("昂" "肮"))) "[昂肮]"))
@@ -301,63 +270,6 @@
       )))))
 
 
-
-
-;; (pinyin-isearch-chars--regex-concat-hieroglyphs '(("虐疟" "暖")))
-
-;; (with-temp-buffer
-;;   (let ((pinyin-isearch-strict nil)
-;;         (pinyin-isearch-chars-fallback t))
-;;     (pinyin-isearch-chars-regexp-function "task")))
-;; (pinyin-isearch-pinyin-load)
-;; (with-temp-buffer
-;;   (let ((pinyin-isearch-strict nil)
-;;         (pinyin-isearch-chars-fallback t)
-;;         (pinyin-isearch-full-fallback t))
-;;     ;; (pinyin-isearch-pinyin-regexp-function "nihao")))
-;;     (print (pinyin-isearch-both-regexp-function "nihao"))))
-;;     (print (pinyin-isearch-chars-regexp-function "nihao"))))
-;;     (pinyin-isearch-chars--concat-variants
-;;     (pinyin-isearch-chars--add-full-fallback
-;;      "nihao"
-;;     (pinyin-isearch-chars--convert-to-hieroglyphs
-;;             (pinyin-isearch-chars--add-fallback
-;;              "nihao"
-;;              ;; apply filter
-;;              (pinyin-isearch-chars--filter-full-variants ; 2) Filter variants that has unfinished letters at the end.
-;;               #'pinyin-isearch-chars--pinyin-to-hieroglyphs
-;;               ;; split to variants
-;;               (pinyin-isearch-chars--recursion "nihao"))))))))
-    ;; (print (pinyin-isearch-chars--concat-variants
-    ;;         (pinyin-isearch-chars--convert-to-hieroglyphs
-    ;;         (pinyin-isearch-chars--add-fallback
-    ;;          "nihao"
-    ;;          ;; apply filter
-    ;;          (pinyin-isearch-chars--filter-full-variants ; 2) Filter variants that has unfinished letters at the end.
-    ;;           #'pinyin-isearch-chars--pinyin-to-hieroglyphs
-    ;;           ;; split to variants
-    ;;           (pinyin-isearch-chars--recursion "nihao"))))))))
-    ;; (print (pinyin-isearch-chars--add-fallback
-    ;;          "nihao"
-    ;;          ;; apply filter
-    ;;          (pinyin-isearch-chars--filter-full-variants ; 2) Filter variants that has unfinished letters at the end.
-    ;;           #'pinyin-isearch-chars--pinyin-to-hieroglyphs
-    ;;           ;; split to variants
-    ;;           (pinyin-isearch-chars--recursion "nihao"))))))
-    ;; (print (pinyin-isearch-chars--filter-full-variants
-    ;;           #'pinyin-isearch-chars--pinyin-to-hieroglyphs
-    ;;           ;; split to variants
-    ;;           (pinyin-isearch-chars--recursion "nihao"))))) ; ((("ni") ("huo" "hun" "hui" "huang" "huan" "huai" "hua" "hu" "hou" "hong" "heng" "hen" ...)))
-    ;; (print (pinyin-isearch-chars--recursion "nihao"))))
-    ;; (print (pinyin-isearch-both-regexp-function "nihao"))))
-    ;; (print (pinyin-isearch-chars--recursion "nih"))))
-    ;; (pinyin-isearch-chars-regexp-function "nih")))
-    ;; (pinyin-isearch-chars-regexp-function "nih"))) ; TODO: should end with "h"
-
-;; "[你呢尼泥逆倪匿拟腻妮霓昵溺旎睨鲵坭猊怩伲祢慝铌]
-;; [和或活火获货伙祸惑霍豁夥锪耠劐钬攉藿嚯镬蠖婚混魂昏浑馄荤诨溷阍珲会回汇挥辉灰惠毁悔恢慧绘徽讳贿徊晦秽诲诙晖彗麾烩荟卉茴喙蛔恚洄珲蕙哕咴浍虺缋桧隳蟪黄皇荒晃慌煌惶恍谎璜徨簧凰幌潢蝗蟥遑隍肓磺癀湟篁鳇欢换还环缓患幻唤宦焕痪寰鬟涣浣奂桓缳豢锾郇萑圜洹擐獾漶逭鲩怀坏徊淮槐踝话华化花划画滑哗桦猾砉铧骅乎护呼胡户湖忽互糊虎壶狐沪惚浒唬葫弧蝴囫瑚斛祜猢鹄醐戽扈唿笏琥滹鹕轷烀冱岵怙鹘槲觳瓠鹱煳后候後厚侯喉吼猴逅糇骺堠瘊篌鲎红轰洪鸿哄宏虹弘烘泓闳薨讧蕻訇黉荭横衡恒哼亨蘅珩桁很恨狠痕黑嘿嗨和何合河喝赫核吓贺盒呵禾荷鹤壑阂褐诃涸阖嗬貉曷颌劾盍纥蚵翮菏好号毫豪浩耗皓嚎昊郝壕蒿貉灏镐嗥嚆薅濠蚝颢行航巷杭夯沆颃绗珩汉喊含寒汗韩憾涵函翰撼罕旱捍酣悍憨晗瀚鼾顸阚焊蚶焓颔菡撖邗邯还海孩害嘿咳亥骇骸嗨胲醢氦哈蛤铪]"
-;; (pinyin-isearch-chars-regexp-function "nih")
-
 ;; -=-= maptree
 
 (ert-deftest test-pinyin-isearch-chars--maptree ()
@@ -391,12 +303,9 @@
     (setq pinyin-isearch-full-fallback nil)
     (setq pinyin-isearch-chars--cached-query nil)
     (should (equal (pinyin-isearch-chars--concat-variants
-                    ;; (pinyin-isearch-chars--add-full-fallback
                     "i"
                     (pinyin-isearch-chars--maptree ;; 2) convert-to-hieroglyphs - for nil return nil, or '((("嗯唔")))
                      #'pinyin-isearch-chars--pinyin-to-hieroglyphs
-                     ;; (pinyin-isearch-chars--filter-full-variants ; 2) Filter variants that has unfinished letters at the end.
-                     ;;  #'pinyin-isearch-chars--pinyin-to-hieroglyphs
                      (pinyin-isearch-chars--recursion "i") ;; 1) split - may return nil
                      )) "$^"))
     (should (equal (pinyin-isearch-chars-regexp-function "i") "$^"))
@@ -411,26 +320,18 @@
                    "\\(a\\|[奥澳傲熬敖凹袄懊坳嗷拗鏖骜鳌翱岙廒遨獒聱媪螯鏊昂肮盎安案按暗岸俺谙黯鞍氨庵桉鹌胺铵揞犴埯爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹阿啊呵腌嗄锕吖]\\)"))
     (should (equal (pinyin-isearch-chars--maptree ;; 2) convert-to-hieroglyphs - for nil return nil, or '((("嗯唔")))
                      #'pinyin-isearch-chars--pinyin-to-hieroglyphs
-                     ;; (pinyin-isearch-chars--filter-full-variants ; 2) Filter variants that has unfinished letters at the end.
-                     ;;  #'pinyin-isearch-chars--pinyin-to-hieroglyphs
                      (pinyin-isearch-chars--recursion "a") ;; 1) split - may return nil
                      )
                    '((("奥澳傲熬敖凹袄懊坳嗷拗鏖骜鳌翱岙廒遨獒聱媪螯鏊" "昂肮盎" "安案按暗岸俺谙黯鞍氨庵桉鹌胺铵揞犴埯" "爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹" "阿啊呵腌嗄锕吖")))))
 
     (should (equal
              (pinyin-isearch-chars--concat-variants
-              ;; (pinyin-isearch-chars--concat-variants
               "i"
               (pinyin-isearch-chars--maptree ;; 2) convert-to-hieroglyphs - for nil return nil, or '((("嗯唔")))
                #'pinyin-isearch-chars--pinyin-to-hieroglyphs
-               ;; (pinyin-isearch-chars--filter-full-variants ; 2) Filter variants that has unfinished letters at the end.
-               ;;  #'pinyin-isearch-chars--pinyin-to-hieroglyphs
                (pinyin-isearch-chars--recursion "i") ;; 1) split - may return nil
                ))
              "i"))
-
-
-
     )
 
   (with-temp-buffer
@@ -444,12 +345,9 @@
               (pinyin-isearch-chars--recursion "i") ;; 1) split - may return nil
               ) nil))
     (should (equal (pinyin-isearch-chars--concat-variants
-                    ;; (pinyin-isearch-chars--add-full-fallback
                     "i"
                     (pinyin-isearch-chars--maptree ;; 2) convert-to-hieroglyphs - for nil return nil, or '((("嗯唔")))
                      #'pinyin-isearch-chars--pinyin-to-hieroglyphs
-                     ;; (pinyin-isearch-chars--filter-full-variants ; 2) Filter variants that has unfinished letters at the end.
-                     ;;  #'pinyin-isearch-chars--pinyin-to-hieroglyphs
                      (pinyin-isearch-chars--recursion "i") ;; 1) split - may return nil
                      )) "$^"))
     (should (equal (pinyin-isearch-chars-regexp-function "i") "$^"))
@@ -460,7 +358,6 @@
     (should (equal (pinyin-isearch-chars-regexp-function "nig") "[你呢尼泥逆倪匿拟腻妮霓昵溺旎睨鲵坭猊怩伲祢慝铌][国过果锅郭裹帼蝈聒馘掴埚虢呙崞猓椁蜾滚棍鲧绲磙辊衮规归贵鬼桂跪柜轨瑰诡刽龟硅闺皈傀癸圭晷簋妫鲑匦庋宄炔刿桧炅鳜广光逛犷咣胱桄关观管官馆惯冠贯罐灌棺莞倌纶掼盥涫鳏鹳怪乖拐掴挂瓜刮寡呱褂卦剐鸹栝胍诖故古顾股鼓姑骨固孤谷估雇辜咕沽箍菇汩轱锢蛊梏鸪毂鹄臌瞽罟钴觚鹘菰蛄嘏诂崮酤牿牯痼鲴够购构狗沟勾苟钩觏篝垢佝岣诟鞲笱枸遘媾缑彀工公共供功攻宫贡恭巩躬龚弓拱肱汞蚣珙觥更耿耕颈庚羹梗哽赓鲠埂绠根跟亘艮哏茛给个革各歌格哥戈隔葛割阁胳搁疙咯鸽嗝骼颌屹搿膈镉纥袼仡鬲塥圪哿舸铬硌虼高告稿搞糕膏皋羔睾槁藁缟篙镐诰槔杲郜锆刚港钢岗纲缸扛杠冈肛罡戆筻感干敢赶甘肝杆尴赣橄竿秆擀坩苷柑泔矸澉疳酐淦绀旰改该概盖丐钙赅溉垓陔戤咖尬嘎噶轧伽旮钆尕尜]"))
 
 
-    ;; (should (equal (pinyin-isearch-chars-regexp-function "nuii") "\\([嗯唔]uii\\|[女钕恧衄怒努奴弩驽胬孥]ii\\)"))
     (should (equal (pinyin-isearch-chars-regexp-function "a>") "[阿啊呵腌嗄锕吖][＞〉》≯≥]"))
     (should (equal (pinyin-isearch-chars-regexp-function "nai") "\\([乃奶奈耐氖艿鼐佴萘柰]\\|[嗯唔][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]\\)"))
     (should (equal (pinyin-isearch-chars-regexp-function "n") "[诺挪懦糯喏搦傩锘虐疟暖女钕恧衄怒努奴弩驽胬孥耨农弄浓侬哝脓牛纽扭妞钮拗忸狃宁凝拧泞咛狞柠佞聍苎甯您恁捏涅聂孽蹑嗫啮镊镍乜陧颞臬蘖鸟尿袅嬲茑脲娘酿年念廿粘碾捻蔫撵拈黏鲶鲇辇埝你呢尼泥逆倪匿拟腻妮霓昵溺旎睨鲵坭猊怩伲祢慝铌嗯唔能嫩恁内馁呢讷脑闹恼挠瑙淖呶猱铙孬硇蛲垴囊囔馕攮曩难南男楠喃囡囝腩蝻赧乃奶奈耐氖艿鼐佴萘柰那拿呢哪纳娜呐捺钠镎肭衲嗯唔]"))
@@ -480,9 +377,6 @@
     (setq pinyin-isearch-chars-fallback nil)
     (setq pinyin-isearch-chars--cached-query nil)
     (setq pinyin-isearch-full-fallback nil)
-    ;; (pinyin-isearch-chars-regexp-function "gni"))
-    ;; (pinyin-isearch-chars-regexp-function "lu"))
-
     (should (equal (pinyin-isearch-chars-regexp-function "nuii") "$^"))
     (should (equal (pinyin-isearch-chars-regexp-function "task") "$^"))
     (should (equal (pinyin-isearch-chars-regexp-function "gg") "$^"))
@@ -494,14 +388,12 @@
     (should (equal (pinyin-isearch-chars-regexp-function "nuai") "[女钕恧衄怒努奴弩驽胬孥][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]"))
     )
 
-
     (with-temp-buffer
       (setq pinyin-isearch-strict nil)
       (setq pinyin-isearch-chars-fallback t)
       (setq pinyin-isearch-full-fallback t)
       (setq pinyin-isearch-chars--cached-query nil)
       (pinyin-isearch-chars-regexp-function "i") ; TODO! we need "\34^$"
-      ;; (pinyin-isearch-chars-regexp-function "nuii"))
       (should (equal (pinyin-isearch-chars-regexp-function "i") "i"))
       (should (equal (pinyin-isearch-chars-regexp-function ".") "\\(.\\|[．\\.。・¨…∵∴°⊙]\\)"))
       (should (equal (pinyin-isearch-chars-regexp-function "nig")

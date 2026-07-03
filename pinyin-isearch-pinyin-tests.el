@@ -131,20 +131,28 @@
 )
 
 
-;; (ert-deftest pinyin--sisheng-to-normal ()
-;;   (with-temp-buffer
-;;     (pinyin-isearch-mode)
-;;     (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "nüē") "nue"))
-;;     )
-;; )
+(ert-deftest test-pinyin-isearch--sisheng-to-normal ()
+    (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "nüē") "nue"))
+    (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "zhuō") "zhuo"))
+    ;; (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "lüè") "lue"))
+    (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "fā") "fa"))
+    ;; (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "dì") "di"))
+    ;; (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "gǒu") "gou"))
+    (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "zao") "zao"))
+    (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "lve") "lve"))
+    ;; (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "lǜ") "lu"))
+    ;; (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "lü") "lu"))
+    ;; (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "nǚ") "nu"))
+    (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "huā") "hua"))
+    ;; (should (equal (pinyin-isearch-pinyin--sisheng-to-normal "guǒ") "guo"))
+    )
+
 ;; test
-;; (print (pinyin-isearch-pinyin--get-position-first-syllable "bian")) ; bi or an or bian? "bī" "ān" "biān" ;; "b\\([īíǐì][āáǎà]\\|i[āáǎà]\\|[īíǐì]a\\)n"
-;; (print (pinyin-isearch-pinyin--get-position-first-syllable "bian")) ; bi or bian? "bī" "biān" ;; "b\\(i[āáǎà]\\|[īíǐì]a\\)n"
-;; "b([īíǐì][āáǎà]|i[āáǎà]|[īíǐì]a)n"
-;; "b\\([īíǐì][āáǎà]\\|i[āáǎà]\\|[īíǐì]a\\)n"
-;; (ert-run-tests-interactively "pinyin--prepare-query")
-;; (ert-run-tests-interactively "pinyin--sisheng-to-normal")
-;; (ert-run-tests-interactively "pinyin--prepare-query2")
+(ert-deftest test-pinyin-isearch--get-position-first-syllable ()
+  (should (equal (pinyin-isearch-pinyin--get-position-first-syllable "ngigni") '(nil)))
+  (should (equal (pinyin-isearch-pinyin--get-position-first-syllable "niggni") '(2 "i")))
+  (should (equal (pinyin-isearch-pinyin--get-position-first-syllable "bian") '(4 "i" "a")))
+  )
 
 (provide 'pinyin-isearch-pinyin-tests)
 ;;; pinyin-isearch-pinyin-tests.el ends here

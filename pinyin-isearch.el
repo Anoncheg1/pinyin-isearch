@@ -171,7 +171,8 @@ Optional argument LAX for isearch special cases."
       (concat "\\(" psr "\\|" hsr "\\)")))))
 
 (defun pinyin-isearch-both-strinct-regexp-function (string &optional lax)
-  "Strict variant of `pinyin-isearch-both-regexp-function'."
+  "Strict variant of `pinyin-isearch-both-regexp-function'.
+Argument STRING is a query string, LAX is not used."
   (let ((pinyin-isearch-strict t)
         (pinyin-isearch-chars-fallback nil)
         (pinyin-isearch-full-fallback nil))
@@ -224,10 +225,11 @@ Used in functions `pinyin-isearch-forward' and
 ;;;###autoload
 (defun pinyin-isearch-forward (&optional regexp-p no-recursive-edit)
   "Do incremental search forward.
+If called with a universal argument (C-u), falls back to standard
+ `isearch-forward'.
 Optional argument REGEXP-P see original function `isearch-forward'.
-Optional argument NO-RECURSIVE-EDIT see original function `isearch-forward'.
-If called with a universal argument (C-u), falls back to standard `isearch-forward'.
-Otherwise, uses custom pinyin isearch."
+Optional argument NO-RECURSIVE-EDIT see original function
+ `isearch-forward'."
   (interactive "P\np")
   (if current-prefix-arg
       ;; If C-u was pressed, run standard isearch
@@ -239,6 +241,8 @@ Otherwise, uses custom pinyin isearch."
 ;;;###autoload
 (defun pinyin-isearch-backward (&optional regexp-p no-recursive-edit)
   "Do incremental search backward.
+If called with a universal argument (C-u), falls back to standard
+ `isearch-backward'.
 Optional argument REGEXP-P see original function `isearch-backward'.
 Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
   (interactive "P\np")
