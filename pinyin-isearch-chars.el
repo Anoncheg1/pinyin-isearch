@@ -57,7 +57,9 @@
 
 (require 'pinyin-isearch-loaders) ; for pinyin-isearch-loaders--py-punct-rules
 
-(require 'cl-extra)
+(require 'cl-extra) ; for `cl-some'
+
+(require 'subr-x) ; for 28.1 and `string-join'
 
 (defgroup pinyin-isearch nil
   "Pinyin-isearch customization."
@@ -163,18 +165,8 @@ Argument SYL syllable of toneless pinyin."
         (regexp-quote syl)))))
 
 
-;; Old docstring:
-;;   "Split string to variants of splits to pinyin syllables.
-;; Return variants of separateion (variant1 variant2), where
-;; variant1 is a list of variants of hieroglyphs
 
-;; \((hv1 hv2 hv3) (hv1 hv3...) ...)  what inside: 1) variants of
-;; disassembly 2) hieroglyphs 3) variants of hieroglyphs.
-;; Variants of hieroglyphs used for final syllable when we try to guess
-;; that hieroglyphs begining we have.
-
-
-(defun recursion-core (st)
+(defun pinyin-isearch-chars--recursion-core (st)
   "Split string ST recursively into all valid pinyin syllable combinations.
 For each prefix (up to 6 characters), checks if it is a valid pinyin
  syllable or punctuation.
@@ -199,7 +191,7 @@ Returns a list of lists, each representing one possible syllable split
                ((zerop (length rest))
                 (push (list sylls) results))
                (t
-                (let ((rest-variants (recursion-core rest)))
+                (let ((rest-variants (pinyin-isearch-chars--recursion-core rest)))
                   (when pinyin-isearch-chars-fallback
                     (push (list sylls (list (concat pinyin-isearch-chars--non-syllable-marker-string rest))) results))
                   (dolist (variant rest-variants)
@@ -208,9 +200,10 @@ Returns a list of lists, each representing one possible syllable split
 
 (defun pinyin-isearch-chars--recursion (st)
   "Return all valid pinyin splits (and fallback variants) for string ST.
-Recursively splits ST into syllable lists using `recursion-core`.  If no
- valid split and fallback is enabled, returns fallback variant prefixed
- with marker.
+Recursively splits ST into syllable lists using
+ `pinyin-isearch-chars--recursion-core'.  If no valid split and fallback
+ is enabled, returns fallback variant prefixed with marker.
+
 Uses variables:
   - `pinyin-isearch-strict'
   - `pinyin-isearch-chars--py-punct-rules'
@@ -222,7 +215,7 @@ Full fallback added only if no syllable was found with
 if no syllable found but fallback is t
 Returns a list of list of syllable lists or
  nil if ST cannot be split and fallback is disabled."
-  (let ((results (recursion-core st)))
+  (let ((results (pinyin-isearch-chars--recursion-core st)))
     (cond
      ((and (not results)
            (not pinyin-isearch-strict)
@@ -253,10 +246,9 @@ Argument LVAR dissasembled variants of characters for query."
 ;; replaced by logic in `pinyin-isearch-chars--concat-variants'.
 (defun pinyin-isearch-chars--add-full-fallback (string lvar)
   "Add full string to desiassembled variants.
-If at the end of query there is unconvertable letters.  Global
-variable `pinyin-isearch-strict' is used here.  Argument STRING
-original request to add for fallback when strict mode is not
-activated.
+If at the end of query there is unconvertable letters.  Global variable
+ `pinyin-isearch-strict' is used here.  Argument STRING original request
+ to add for fallback when strict mode is not activated.
 Argument LVAR dissasembled variants of characters for query."
   (when (and (not (string-empty-p string))
              pinyin-isearch-full-fallback

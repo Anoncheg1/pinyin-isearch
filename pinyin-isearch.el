@@ -226,8 +226,10 @@ Used in functions `pinyin-isearch-forward' and
 ;;;###autoload
 (defun pinyin-isearch-forward (&optional regexp-p no-recursive-edit)
   "Do incremental search forward.
-If called with a universal argument (C-u), falls back to standard
- `isearch-forward'.
+
+If called with a universal argument, falls back to standard
+ function `isearch-forward'.
+
 Optional argument REGEXP-P see original function `isearch-forward'.
 Optional argument NO-RECURSIVE-EDIT see original function
  `isearch-forward'."
@@ -242,8 +244,8 @@ Optional argument NO-RECURSIVE-EDIT see original function
 ;;;###autoload
 (defun pinyin-isearch-backward (&optional regexp-p no-recursive-edit)
   "Do incremental search backward.
-If called with a universal argument (C-u), falls back to standard
- `isearch-backward'.
+If called with a universal argument, falls back to standard
+ function `isearch-backward'.
 Optional argument REGEXP-P see original function `isearch-backward'.
 Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
   (interactive "P\np")

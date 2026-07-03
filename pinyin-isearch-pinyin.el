@@ -66,6 +66,8 @@
 
 (require 'cl-lib)
 
+(require 'subr-x) ; for 28.1 and `string-empty-p'
+
 (declare-function pinyin-isearch-loaders-load-chinese-sisheng "pinyin-isearch-loaders") ; load sisheng variables
 
 (defvar pinyin-isearch-strict) ; "Located in `pinyin-isearch'."

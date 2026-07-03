@@ -36,7 +36,7 @@
 ;;; Code:
 
 ;; ---------- tools -------------------
-(require 'seq)
+(require 'seq) ; for `seq-filter'
 
 (defvar pinyin-isearch-loaders--rules nil "Used in advice.")
 
