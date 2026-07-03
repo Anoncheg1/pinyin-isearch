@@ -150,16 +150,16 @@
       ;; STRICT: Only exact matches, fallback disabled
       (setq pinyin-isearch-strict t)
       (setq pinyin-isearch-chars-fallback nil)
-      (should (equal (recursion "nunu") '((("nu") ("nu")))))
-      (should (equal (recursion "cccc") nil))
-      (should (equal (recursion "a>.") '((("a") (">") ("."))))))
+      (should (equal (pinyin-isearch-chars--recursion "nunu") '((("nu") ("nu")))))
+      (should (equal (pinyin-isearch-chars--recursion "cccc") nil))
+      (should (equal (pinyin-isearch-chars--recursion "a>.") '((("a") (">") ("."))))))
 
     (with-temp-buffer
       ;; STRICT: fallback enabled
       (setq pinyin-isearch-strict t)
       (setq pinyin-isearch-chars-fallback t)
-      (should (equal (recursion "a>.") '((("a") (">") ("\34.")) (("a") (">") (".")) (("a") ("\34>.")))))
-      (should (equal (recursion "cccc") nil)))
+      (should (equal (pinyin-isearch-chars--recursion "a>.") '((("a") (">") ("\34.")) (("a") (">") (".")) (("a") ("\34>.")))))
+      (should (equal (pinyin-isearch-chars--recursion "cccc") nil)))
 
     (with-temp-buffer
       ;; NON-STRICT: fallback disabled
@@ -167,23 +167,23 @@
       (setq pinyin-isearch-chars-fallback nil)
       (should
        (equal
-        (recursion "nug")
+        (pinyin-isearch-chars--recursion "nug")
         '((("nu") ("guo" "gun" "gui" "guang" "guan" "guai" "gua" "gu" "gou" "gong" "geng" "gen" "gei" "ge" "gao" "gang" "gan" "gai" "ga")))))
-      (should (equal (recursion "") nil)))
+      (should (equal (pinyin-isearch-chars--recursion "") nil)))
 
     (with-temp-buffer
       ;; NON-STRICT: fallback enabled
       (setq pinyin-isearch-strict nil)
       (setq pinyin-isearch-chars-fallback t)
-      (should (equal (recursion "cccc") '((("\34cccc")))))
+      (should (equal (pinyin-isearch-chars--recursion "cccc") '((("\34cccc")))))
       (should (equal
-               (recursion "nunu")
+               (pinyin-isearch-chars--recursion "nunu")
                '((("nu") ("n") ("\34u"))
                  (("nu") ("nuo" "nue" "nuan" "nu"))
                  (("nu") ("\34nu"))
                  (("n") ("\34unu")))))
       (should (equal
-               (recursion "nig")
+               (pinyin-isearch-chars--recursion "nig")
                '((("ni") ("guo" "gun" "gui" "guang" "guan" "guai" "gua" "gu" "gou" "gong" "geng" "gen" "gei" "ge" "gao" "gang" "gan" "gai" "ga"))
                  (("ni") ("\34g"))
                  (("n") ("\34ig")))))))
