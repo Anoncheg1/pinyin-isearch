@@ -26,8 +26,8 @@
 
 ;;; Code:
 
-(require 'ert)
 (require 'pinyin-isearch-chars)
+(require 'ert)
 
 
 (pinyin-isearch-chars-load)
@@ -189,17 +189,17 @@
                  (("n") ("\34ig")))))))
   )
 
-
-(ert-deftest test-pinyin-isearch-chars--filter-full-variants ()
-  (with-temp-buffer
-    (let ((pinyin-isearch-strict nil))
-      (should (equal (pinyin-isearch-chars--filter-full-variants 'pinyin-isearch-chars--pinyin-to-hieroglyphs
-                                                                 '((("na") ("i")))) '((("na") ("i"))) ))
-      (should (equal (pinyin-isearch-chars--filter-full-variants 'pinyin-isearch-chars--pinyin-to-hieroglyphs
-                                                                 '((("n") ("a") ("i")) (("n") ("ai")) (("na") ("i")) (("nai"))))
-                     '((("n") ("ai")) (("nai"))) ))
-      ))
-)
+;; not used
+;; (ert-deftest test-pinyin-isearch-chars--filter-full-variants ()
+;;   (with-temp-buffer
+;;     (let ((pinyin-isearch-strict nil))
+;;       (should (equal (pinyin-isearch-chars--filter-full-variants 'pinyin-isearch-chars--pinyin-to-hieroglyphs
+;;                                                                  '((("na") ("i")))) '((("na") ("i"))) ))
+;;       (should (equal (pinyin-isearch-chars--filter-full-variants 'pinyin-isearch-chars--pinyin-to-hieroglyphs
+;;                                                                  '((("n") ("a") ("i")) (("n") ("ai")) (("na") ("i")) (("nai"))))
+;;                      '((("n") ("ai")) (("nai"))) ))
+;;       ))
+;; )
 
 (ert-deftest test-pinyin-isearch-chars--convert-to-hieroglyphs ()
   (with-temp-buffer

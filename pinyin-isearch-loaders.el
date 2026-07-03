@@ -36,6 +36,7 @@
 ;;; Code:
 
 ;; ---------- tools -------------------
+(require 'seq)
 
 (defvar pinyin-isearch-loaders--rules nil "Used in advice.")
 
@@ -75,7 +76,7 @@ Argument QUAIL-FILE \"quail/PY.el\" for example."
 
 (defun pinyin-isearch-loaders--punct-quail-filter (rules)
   "Load RULES for single letters of punctuations."
-   (seq-filter (lambda (x) (= (length (car x)) 1)) rules))
+  (seq-filter (lambda (x) (= (length (car x)) 1)) rules))
 
 
 ;; ---------- load quail/PY.el for chinese hierogliphs ---------

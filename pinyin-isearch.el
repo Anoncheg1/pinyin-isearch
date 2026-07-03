@@ -86,10 +86,11 @@
 ;; - TON (Telegram) address: UQC8rjJFCHQkfdp7KmCkTZCb5dGzLFYe2TzsiZpfsnyTFt9D
 
 ;;; Code:
-(require 'isearch)
-(require 'cl-lib) ; (require 'cl-macs) ; Warning: the function ‘cl-callf’ is not known to be defined.
+
+; (require 'cl-macs) ; Warning: the function ‘cl-callf’ is not known to be defined.
 (require 'pinyin-isearch-pinyin)
 (require 'pinyin-isearch-chars)
+(require 'isearch)
 
 (declare-function pinyin-isearch-pinyin-regexp-function "pinyin-isearch-pinyin" (string &optional lax))
 (declare-function pinyin-isearch-chars-regexp-function "pinyin-isearch-chars" (string &optional lax))

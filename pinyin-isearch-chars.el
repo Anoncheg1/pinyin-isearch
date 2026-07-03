@@ -26,15 +26,14 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; Fuzzy matching by pinyin.
 
-;; Allow to search for both of one of them: Chinese characters by
-;;  typing pinyin text and ignore diacritical tone marks for speed.
+;; Fuzzy matching by pinyin. Allow to search Chinese characters by
+;;  typing pinyin without diacritical tone marks,
+;;  may fallback to normal latin text.
 
 ;; Features:
-;; - white spaces are ignored between syllables,
-;;  but not ignored if in query
-;; - tone required in text only for first syllable: Zhēn de ma
+;; - white spaces are ignored between syllables, but not ignored if in
+;;  query
 ;; - should not conflict with other isearch modes
 ;; - search do not jump down but always begins from start point.
 
@@ -57,6 +56,8 @@
 ;;; Code:
 
 (require 'pinyin-isearch-loaders) ; for pinyin-isearch-loaders--py-punct-rules
+
+(require 'cl-extra)
 
 (defgroup pinyin-isearch nil
   "Pinyin-isearch customization."
@@ -952,24 +953,28 @@ Returns a list of list of syllable lists or
 ;;       ;;   (setq result (append result (list (list (list st))))))
 ;;       result)))
 
-(defun pinyin-isearch-chars--filter-full-variants (f l)
-  "Filter variants that has unfinished letters at the end.
-Variants of disassemble.  Unfinished letters is that we we can
- not guess what Chinese charater it is.  If there is only
- variants with unfinished letters, we don't filter them.
- Function F is a function able convert pinyin to Chinese
- characters.  Steps: 1) filter variants ending with hieroglyphs
- 2) return filtered varians or all if filtered is nil.  Argument
- L is a list of disassemble variants."
-  (or
-   ;; remove all except satisfying IF
-   (seq-filter (lambda (x)
-                 ;; get the last syllable variants
-                 (let ((last (car (nth (1- (length x)) x))))
-                   ;; save which can be converted to Chinese
-                   (if (not (equal (funcall f last) last))
-                       x)))
-               l) l))
+;; ;; not used
+;; (defun pinyin-isearch-chars--filter-full-variants (f l)
+;;   "Filter variants that has unfinished letters at the end.
+;; Variants of disassemble.  Unfinished letters is that we we can
+;;  not guess what Chinese charater it is.  If there is only
+;;  variants with unfinished letters, we don't filter them.
+;;  Function F is a function able convert pinyin to Chinese
+;;  characters.  Steps: 1) filter variants ending with hieroglyphs
+;;  2) return filtered varians or all if filtered is nil.  Argument
+;;  L is a list of disassemble variants."
+;;   (or
+;;    ;; Alternative is `seq-filter'
+;;    (cl-remove-if-not (lambda (x)
+;;                  ;; get the last syllable variants
+;;                  (let* ((last (car (nth (1- (length x)) x)))
+;;                        (cres (funcall f last)))
+;;                    ;; save which can be converted to Chinese, if not equal than it was converted.
+;;                    (and cres ; just in case, but `pinyin-isearch-chars--pinyin-to-hieroglyphs` that is used
+;;                         (not (equal cres last))))) ; result of predicate
+
+;;                l)
+;;    l))
 
 (defun pinyin-isearch-chars--add-fallback (string lvar)
   "Add full string to desiassembled variants.
@@ -1051,10 +1056,18 @@ Argument LVAR dissasembled variants of characters for query."
     (delq nil (mapcar (lambda (x) (pinyin-isearch-chars--tree-remove-leaf leaf x)) l)))
    (t l)))
 
+;; Faster variant:
 (defun pinyin-isearch-chars--is-here-p (orig-str sac)
   "Check that we have any leaf in SAC equal ORIG-STR."
   (cl-some (lambda (x) (when (string-equal x orig-str) t))
             (flatten-tree sac)))
+
+;; ;; Slower variant:
+;; (require 'seq)
+;; (defun pinyin-isearch-chars--is-here-p (orig-str sac)
+;;   "Check that we have any leaf in SAC equal ORIG-STR."
+;;   (seq-some (lambda (x) (string-equal x orig-str))
+;;             (flatten-tree sac)))
 
 ;; (pinyin-isearch-chars--tree-remove-leaf
 ;;  "i"

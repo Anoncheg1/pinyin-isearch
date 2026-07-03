@@ -85,10 +85,10 @@
 (ert-deftest test-pinyin-brute-replace ()
   (with-temp-buffer
     (should (equal (pinyin-isearch-pinyin--brute-replace "zuss") "z\\s-*[ūúǔùǖǘǚǜ]\\s-*s\\s-*s"))
-    (should (equal (pinyin-isearch-pinyin--brute-replace "zuss" :normal t) "z\\s-*[uūúǔùǖǘǚǜ]\\s-*s\\s-*s"))
+    (should (equal (pinyin-isearch-pinyin--brute-replace "zuss" t) "z\\s-*[uūúǔùǖǘǚǜ]\\s-*s\\s-*s"))
     (should (equal (pinyin-isearch-pinyin--brute-replace "zenme") "z\\s-*[ēéěè]\\s-*n\\s-*m\\s-*[ēéěè]"))
-    (should (equal (pinyin-isearch-pinyin--brute-replace "zenme" :normal t) "z\\s-*[eēéěè]\\s-*n\\s-*m\\s-*[eēéěè]"))
-    (should (equal (pinyin-isearch-pinyin--brute-replace "oshenme" :normal t) "[oōóǒò]\\s-*s\\s-*h\\s-*[eēéěè]\\s-*n\\s-*m\\s-*[eēéěè]"))
+    (should (equal (pinyin-isearch-pinyin--brute-replace "zenme" t) "z\\s-*[eēéěè]\\s-*n\\s-*m\\s-*[eēéěè]"))
+    (should (equal (pinyin-isearch-pinyin--brute-replace "oshenme" t) "[oōóǒò]\\s-*s\\s-*h\\s-*[eēéěè]\\s-*n\\s-*m\\s-*[eēéěè]"))
     )
 )
 

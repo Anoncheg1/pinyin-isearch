@@ -25,11 +25,9 @@
 ;; M-x ert RET t RET
 
 ;;; Code:
-
+(require 'pinyin-isearch)
 (require 'ert)
 (require 'isearch)
-(require 'pinyin-isearch)
-
 
 ;; (pinyin-isearch-pinyin-regexp-function "nih")
 ;; (pinyin-isearch-both-regexp-function "nih")
