@@ -123,16 +123,17 @@ Used in `pinyin-isearch-chars--concat-variants'."
   :type 'boolean
   :group 'pinyin-isearch)
 
-(defcustom pinyin-isearch-target 'both
+(defcustom pinyin-isearch-default-mode 'both
   "Select target text in `pinyin-isearch-mode'.
 Whether to search for for pinyin or for Chinese characters or for
 both of them.  Used for mode `pinyin-isearch-mode', and functions
 `pinyin-isearch-forward', `pinyin-isearch-backward'."
   :local t
   :type '(choice (const :tag "Search in both: pinyin and Chinese characters" both)
-                 (const :tag "Search in both: pinyin and Chinese characters strictly" strict)
                  (const :tag "Search in Chinese characters only, same as t" characters)
                  (const :tag "Search in Chinese characters only, same as characters" t)
+                 (const :tag "Search in both: pinyin and Chinese characters strictly" strict-both)
+                 (const :tag "Search in Chinese characters strictly, same as t" strict-characters)
                  (const :tag "Search in pinyin only, same as nil" pinyin)
                  (const :tag "Search in pinyin only, same as pinyin" nil))
   :group 'pinyin-isearch)
@@ -171,7 +172,7 @@ Optional argument LAX for isearch special cases."
      (t
       (concat "\\(" psr "\\|" hsr "\\)")))))
 
-(defun pinyin-isearch-both-strinct-regexp-function (string &optional lax)
+(defun pinyin-isearch-both-strict-regexp-function (string &optional lax)
   "Strict variant of `pinyin-isearch-both-regexp-function'.
 Argument STRING is a query string, LAX is not used."
   (let ((pinyin-isearch-strict t)
@@ -185,18 +186,21 @@ Used in functions `pinyin-isearch-forward' and
 `pinyin-isearch-backward'."
   (cond
    ;; both
-   ((eq pinyin-isearch-target 'both)
+   ((eq pinyin-isearch-default-mode 'both)
     #'pinyin-isearch-both-regexp-function)
    ;; both strictly
-   ((eq pinyin-isearch-target 'strict)
-    #'pinyin-isearch-both-strinct-regexp-function)
+   ((eq pinyin-isearch-default-mode 'strict-both)
+    #'pinyin-isearch-both-strict-regexp-function)
+   ;; both strictly
+   ((eq pinyin-isearch-default-mode 'strict-characters)
+    #'pinyin-isearch-chars-strict-regexp-function)
    ;; hieroglyphs
-   ((or (eq pinyin-isearch-target 'characters)
-        (eq pinyin-isearch-target t))
+   ((or (eq pinyin-isearch-default-mode 'characters)
+        (eq pinyin-isearch-default-mode t))
     #'pinyin-isearch-chars-regexp-function)
    ;; pinyin
-   ((or (eq pinyin-isearch-target 'pinyin)
-        (not pinyin-isearch-target))
+   ((or (eq pinyin-isearch-default-mode 'pinyin)
+        (not pinyin-isearch-default-mode))
     #'pinyin-isearch-pinyin-regexp-function)))
 
 (defun pinyin-isearch--pinyin-fix-jumping-advice ()
@@ -205,8 +209,9 @@ Used in functions `pinyin-isearch-forward' and
            (or
             (eq isearch-regexp-function #'pinyin-isearch-pinyin-regexp-function)
             (eq isearch-regexp-function #'pinyin-isearch-chars-regexp-function)
-            (eq isearch-regexp-function #'pinyin-isearch-chars-strict-regexp-function) ; TODO
-            (eq isearch-regexp-function #'pinyin-isearch-both-regexp-function)))
+            (eq isearch-regexp-function #'pinyin-isearch-chars-strict-regexp-function)
+            (eq isearch-regexp-function #'pinyin-isearch-both-regexp-function)
+            (eq isearch-regexp-function #'pinyin-isearch-both-strict-regexp-function)))
       (let ((key (this-single-command-keys)))
         (when (and isearch-success
                    (eq #'isearch-printing-char (lookup-key isearch-mode-map key nil)))
@@ -263,7 +268,7 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
   "Turning on pinyin search (P).")
 (isearch-define-mode-toggle "characters" "h" pinyin-isearch-chars-regexp-function
   "Turning on characters search (H).")
-(isearch-define-mode-toggle "strict-both" "s" pinyin-isearch-both-strinct-regexp-function
+(isearch-define-mode-toggle "strict-both" "s" pinyin-isearch-both-strict-regexp-function
   "Turning on strict pinyin and characters search (S).")
 (isearch-define-mode-toggle "strict-characters" "u" pinyin-isearch-chars-strict-regexp-function
   "Turning on strict characters search (HS).")
@@ -271,7 +276,7 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
 (put #'pinyin-isearch-both-regexp-function #'isearch-message-prefix "[Pinyin] ")
 (put #'pinyin-isearch-pinyin-regexp-function #'isearch-message-prefix "[Pinyin-P] ")
 (put #'pinyin-isearch-chars-regexp-function #'isearch-message-prefix "[Pinyin-H] ")
-(put #'pinyin-isearch-both-strinct-regexp-function #'isearch-message-prefix "[Pinyin-S] ")
+(put #'pinyin-isearch-both-strict-regexp-function #'isearch-message-prefix "[Pinyin-S] ")
 (put #'pinyin-isearch-chars-strict-regexp-function #'isearch-message-prefix "[Pinyin-HS] ")
 
 (defvar pinyin-isearch-m-s-map
@@ -299,7 +304,9 @@ normal search.
 - M -s p `isearch-toggle-pinyin' to activate pinyin isearch submode.
 - M -s h `isearch-toggle-characters' to activate Chinese characters
  isearch submode.
-- M -s s `isearch-toggle-strict' to activate Chinese and pinying
+- M -s s `isearch-toggle-strict-both' to activate Chinese and pinying
+ characters isearch submode.
+- M -s u `isearch-toggle-strict-characters' to activate strict Chinese
  characters isearch submode.
 - M -s r to activate standard search."
   :lighter " p-isearch" :global nil :group 'isearch

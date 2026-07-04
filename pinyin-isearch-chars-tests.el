@@ -38,7 +38,7 @@
 (defun test-pinyin-isearch-chars--get-vars ()
   (print (list "pinyin-isearch-strict" pinyin-isearch-strict))
   (print (list "pinyin-isearch-full-fallback" pinyin-isearch-full-fallback))
-  (print (list "pinyin-isearch-target" pinyin-isearch-target))
+  (print (list "pinyin-isearch-default-mode" pinyin-isearch-default-mode))
   (print (list "pinyin-isearch-chars-fallback" pinyin-isearch-chars-fallback)))
 
 ;; (with-temp-buffer

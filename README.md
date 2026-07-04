@@ -28,7 +28,7 @@ pinyin-isearch.el
 # Featurs
 - should not conflict with other isearch modes
 - fix isearch jumping without return.
-- fallback to search for normal latin text if strict mode is not enabled.
+- fallback to search for normal latin text by default
 
 ## Features of Chinese characters search
 - search from the first character entered.
@@ -66,9 +66,10 @@ pinyin-isearch.el
 
 # Usage
 After ```C-s/r``` in isearch mode:
-- ```M-s p``` to activate pinyin isearch submode.
-- ```M-s h``` to activate Chinese characters isearch submode.
-- ```M-s s``` to activate strict Chinese characters isearch submode.
+- ```M-s h``` to activate Chinese characters seearch only submode.
+- ```M-s p``` to activate pinyin search only  submode.
+- ```M-s s``` to activate strict pinyin and Chinese characters submode.
+- ```M-s u``` to activate strict Chinese characters isearch submode.
 - ```M-s r``` to activate standard search.
 
 or with M-x ```pinyin-isearch-forward/backward```
@@ -80,6 +81,8 @@ You can set this mode by default per file with:
 # Configuration
 
 `M-x customize-group pinyin-isearch`
+
+Variable `pinyin-isearch-default-mode` used to set default mode for `C-s/r` isearch: pinyin only or Chinese characters only or some strict version.
 
 # Todo
 - Upperacase for pinyin.
