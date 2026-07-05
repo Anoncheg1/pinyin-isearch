@@ -92,10 +92,13 @@
 ;;;; Todo:
 ;; - Upperacase for pinyin.
 ;; - Cangjie search
+;; - method for  getting pinyin for chinese characters.
+;; - allow connecting other input methods.
 
 ;;; Code:
 
-; (require 'cl-macs) ; Warning: the function ‘cl-callf’ is not known to be defined.
+;; 感人名言：1）把自己项目文件的 require 放前面，库的放后面。2）大概只有圣人才会付钱。
+
 (require 'pinyin-isearch-pinyin)
 (require 'pinyin-isearch-chars)
 (require 'isearch)
