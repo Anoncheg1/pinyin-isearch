@@ -41,6 +41,8 @@
 ;; 输入会被转化为类似这样的正则表达式：
 ;; "\\([嗯唔][爱哀挨埃癌]\\|[乃奶奈耐氖艿鼐柰]\\|n\\([ūúǔùǖǘǚǜ]\\s-*e\\|ü[ēéěè]\\)\\)"
 
+;; Based on Emacs "chinese-sisheng", "chinese-py", "chinese-punct".
+
 ;; Configuration in ~/.emacs or ~/.emacs.d/init.el:
 
 ;; (require 'pinyin-isearch)

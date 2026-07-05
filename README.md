@@ -13,6 +13,7 @@ Emacs Isearch "submode" that replace isearch-regexp-function to generate regex f
 
 For example: to find "Shànghǎi" and "上海" in text you just type: ``` C-s shanghai ```.
 
+Based on Emacs "chinese-sisheng", "chinese-py", "chinese-punct".
 
 # Files
 ```text

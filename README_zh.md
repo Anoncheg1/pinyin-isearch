@@ -10,6 +10,8 @@
 
 例如：你想找到 "Shànghǎi" 和 "上海"，只需要输入：``` C-s shanghai ```
 
+基于 Emacs 的 "chinese-sisheng"、"chinese-py"、"chinese-punct"。
+
 # 文件结构
 ```text
 pinyin-isearch.el
