@@ -31,10 +31,14 @@
 
 ;; There are two types of search: for pinyin (pīnyīn) and for Chinese
 ;; characters (汉字) text.
+;; 查找有两种类型：一种是拼音（pīnyīn）查找，另一种是汉字（汉字）查找。
 
 ;; You can use both or select one of them.
+;; 你可以同时使用两种，或者只选一种。
 ;; Pinyin without tones is used for input.
+;; 输入时使用不带声调的拼音。
 ;; Input is transformed to regex expression like:
+;; 输入会被转化为类似这样的正则表达式：
 ;; "\\([嗯唔][爱哀挨埃癌]\\|[乃奶奈耐氖艿鼐柰]\\|n\\([ūúǔùǖǘǚǜ]\\s-*e\\|ü[ēéěè]\\)\\)"
 
 ;; Configuration in ~/.emacs or ~/.emacs.d/init.el:
@@ -50,7 +54,7 @@
 ;; C-s M-s p/h/s - to activate (p)inyin or (h) Chonese characters (s)trict
 ;; C-s M-s F1 - to see all keys
 
-;; Usage without activation of minor mode is possible with:
+;; Usage without activation of minor mode:
 ;; M-x pinyin-isearch-forward/backward
 ;;
 ;; Customization:
@@ -84,6 +88,10 @@
 ;; - BTC (Bitcoin) address: 1CcDWSQ2vgqv5LxZuWaHGW52B9fkT5io25
 ;; - USDT (Tether) address: TVoXfYMkVYLnQZV3mGZ6GvmumuBfGsZzsN
 ;; - TON (Telegram) address: UQC8rjJFCHQkfdp7KmCkTZCb5dGzLFYe2TzsiZpfsnyTFt9D
+
+;;;; Todo:
+;; - Upperacase for pinyin.
+;; - Cangjie search
 
 ;;; Code:
 
@@ -273,11 +281,11 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
 (isearch-define-mode-toggle "strict-characters" "u" pinyin-isearch-chars-strict-regexp-function
   "Turning on strict characters search (HS).")
 
-(put #'pinyin-isearch-both-regexp-function #'isearch-message-prefix "[Pinyin] ")
-(put #'pinyin-isearch-pinyin-regexp-function #'isearch-message-prefix "[Pinyin-P] ")
-(put #'pinyin-isearch-chars-regexp-function #'isearch-message-prefix "[Pinyin-H] ")
-(put #'pinyin-isearch-both-strict-regexp-function #'isearch-message-prefix "[Pinyin-S] ")
-(put #'pinyin-isearch-chars-strict-regexp-function #'isearch-message-prefix "[Pinyin-HS] ")
+(put #'pinyin-isearch-both-regexp-function #'isearch-message-prefix "Pinyin ")
+(put #'pinyin-isearch-pinyin-regexp-function #'isearch-message-prefix "PinyinP ")
+(put #'pinyin-isearch-chars-regexp-function #'isearch-message-prefix "PinyinH ")
+(put #'pinyin-isearch-both-strict-regexp-function #'isearch-message-prefix "PinyinS ")
+(put #'pinyin-isearch-chars-strict-regexp-function #'isearch-message-prefix "PinyinHS ")
 
 (defvar pinyin-isearch-m-s-map
   (let ((map (make-sparse-keymap)))
@@ -308,6 +316,7 @@ normal search.
  characters isearch submode.
 - M -s u `isearch-toggle-strict-characters' to activate strict Chinese
  characters isearch submode.
+- M -s n to activate default pinying-isearch mode.
 - M -s r to activate standard search."
   :lighter " p-isearch" :global nil :group 'isearch
   :keymap (let ((map (make-sparse-keymap)))

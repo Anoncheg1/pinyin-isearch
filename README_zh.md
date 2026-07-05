@@ -3,12 +3,14 @@
 ![build](https://github.com/Anoncheg1/pinyin-isearch/workflows/melpazoid-release/badge.svg)
 [![MELPA Stable](https://stable.melpa.org/packages/pinyin-isearch-badge.svg)](https://stable.melpa.org/#/pinyin-isearch)
 
-# pinyin-isearch - Emacs 里可以用拼音（不带声调）或中文字来查找的插件
+# pinyin-isearch - Emacs 插件：用不带声调的拼音在拼音和汉字中查找
+允许在拼音文本中用不带声调的拼音进行查找。只输入几个字母就能找到全部的变体。
 
-可以用没有声调的拼音来查找拼音或中文。只用很少的字母就能找到所有的写法。
-这个“小功能”会换掉 isearch 里的正则表达式（regexp）生成方法，让你可以更好地查找。
-比如：你想找到 "Shànghǎi" 和 "上海"，只需要输入：``` C-s shanghai ```
-# 文件
+这是 Emacs Isearch 的“子模式”，它会替换 isearch-regexp-function，根据搜索内容自动生成正则表达式。
+
+例如：你想找到 "Shànghǎi" 和 "上海"，只需要输入：``` C-s shanghai ```
+
+# 文件结构
 ```text
 pinyin-isearch.el
  ├─ pinyin-isearch-pinyin.el (→ pinyin-isearch-loaders.el)
@@ -19,24 +21,24 @@ pinyin-isearch.el
 # 演示
 ![Demo](https://codeberg.org/Anoncheg/public-share/raw/branch/main/pinyin-isearch.gif)
 
-# 特点
-- 不会和其它查找功能冲突
-- 修正查找时跳来跳去的问题
-- 如果不开严格模式，还可以用正常英文字母查找
+# 特性
+- 不会与其它 isearch 模式冲突
+- 修复查找时跳跃但未返回的问题
+- 默认支持用普通拉丁字母进行查找
 
-## 查找汉字的特点
-- 从第一个输入的字就开始查找
-- 用英文符号查找中文里的标点：.,[]<>()$-"` 等等
-- 分析所有可能的写法，准确查找到
+## 汉字查找的功能
+- 从第一个输入的字符开始查找
+- 可以用英文符号查找中文标点：.,[]<>()$-"` 等等
+- 准确拆分出所有可能的变体
 
-## 用拼音查找的特点
-- 拼音字母之间的空格会自动忽略
-- 只有第一个音节需要加声调：比如 Zhēn de ma
+## 拼音查找的功能
+- 播音节之间的空格会自动忽略
+- 首音节要求有声调或音标：例如 Zhēn de ma
 
-# 安装
-## 在 MELPA 上安装
+# 安装方法
+## 通过 MELPA 安装
 
-1) 加到 `~/.emacs`
+1) 添加到 `~/.emacs`
 ```elisp
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
@@ -44,11 +46,12 @@ pinyin-isearch.el
 (package-initialize)
 ```
 
-2) 用 `M-x package-install RET cui RET~ 或 ~M-x package-list-packages` 安装
-## 用 GitHub 或 Codeberg 安装
+2) 用 `M-x package-install RET pinyin-isearch RET` 或 `M-x package-list-packages` 安装
+
+## 通过 GitHub 或 Codeberg 安装
 1) `git clone https://repo/user/pinyin-isearch`
 
-2) 在 `~/.emacs` 里加入
+2) 添加到 `~/.emacs`
 ```elisp
 (add-to-list 'load-path "/path-to/pinyin-isearch/")
 (require 'pinyin-isearch)
@@ -56,17 +59,21 @@ pinyin-isearch.el
 ```
 
 # 用法
-在 isearch 查找模式时，按 ```C-s/r``` 后：
-- ```M-s p``` 开启拼音查找
-- ```M-s h``` 开启汉字查找
-- ```M-s s``` 开启严格汉字查找
-- ```M-s r``` 回到普通查找
+在 isearch 模式下（按```C-s/r```后）：
 
-或者用 M-x ```pinyin-isearch-forward/backward```
-你也可以让每个文件默认用这个查找模式，加：
+- ```M-s h``` 只激活汉字查找子模式
+- ```M-s p``` 只激活拼音查找子模式
+- ```M-s s``` 激活严格拼音和汉字查找子模式
+- ```M-s u``` 激活严格汉字查找子模式
+- ```M-s n``` 激活默认 Pinyin-isearch 模式
+- ```M-s r``` 激活标准查找模式
+
+或者使用 M-x ```pinyin-isearch-forward/backward```
+
+你可以设置某个文件默认使用此模式，在文件开头加：
+
 ```;-*- mode: pinyin-isearch; -*-```
 # 设置
-输入 `M-x customize-group pinyin-isearch`
-# 计划
-- 拼音支持大写
-- 支持仓颉查找
+`M-x customize-group pinyin-isearch`
+
+变量 `pinyin-isearch-default-mode` 用于设定 `C-s/r` 查找时的默认模式：只用拼音、只用汉字或严格模式等。

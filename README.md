@@ -13,7 +13,7 @@ Emacs Isearch "submode" that replace isearch-regexp-function to generate regex f
 
 For example: to find "Shànghǎi" and "上海" in text you just type: ``` C-s shanghai ```.
 
-Now we match chinese characters exactly, for example if you type "y"  ....
+
 # Files
 ```text
 pinyin-isearch.el
@@ -70,6 +70,7 @@ After ```C-s/r``` in isearch mode:
 - ```M-s p``` to activate pinyin search only  submode.
 - ```M-s s``` to activate strict pinyin and Chinese characters submode.
 - ```M-s u``` to activate strict Chinese characters isearch submode.
+- ```M-s n``` to activate default Pinyin-isearch mode.
 - ```M-s r``` to activate standard search.
 
 or with M-x ```pinyin-isearch-forward/backward```
@@ -83,7 +84,3 @@ You can set this mode by default per file with:
 `M-x customize-group pinyin-isearch`
 
 Variable `pinyin-isearch-default-mode` used to set default mode for `C-s/r` isearch: pinyin only or Chinese characters only or some strict version.
-
-# Todo
-- Upperacase for pinyin.
-- Cangjie search
