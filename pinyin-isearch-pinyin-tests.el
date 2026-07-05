@@ -127,6 +127,9 @@
     (should (equal (pinyin-isearch-pinyin-regexp-function "hi") "$^"))
     (setq-local pinyin-isearch-strict t)
     (should (equal (pinyin-isearch-pinyin-regexp-function "hi") "$^"))
+    (setq-local pinyin-isearch-strict t)
+    (setq-local pinyin-isearch-full-fallback t)
+    (should (equal (pinyin-isearch-pinyin-regexp-function "hi") "$^"))
     )
 )
 

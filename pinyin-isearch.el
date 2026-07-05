@@ -110,9 +110,14 @@
   "Fuzzy Matching by pinyin."
   :group 'pinyin-isearch)
 
-;; Todo, check pinyin completion
 (defcustom pinyin-isearch-strict nil
   "Non-nil means prohibit adding to search all possible completion.
+
+Non-nil for chinese characters allow only full fallback to latin and we
+ looking for existing characters only.
+For pinyin search we enable search only if first syllable is real and
+ prohibit full-fallback.
+
 By default we are looking for all characters and pinyin syllables that
  start with typed by user first part of syllable."
   :local t

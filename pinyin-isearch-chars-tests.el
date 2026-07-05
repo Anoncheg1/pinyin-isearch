@@ -387,6 +387,15 @@
     (should (equal (pinyin-isearch-chars-regexp-function "nunu") "[女钕恧衄怒努奴弩驽胬孥][女钕恧衄怒努奴弩驽胬孥]"))
     (should (equal (pinyin-isearch-chars-regexp-function "nuai") "[女钕恧衄怒努奴弩驽胬孥][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]"))
     )
+  (with-temp-buffer
+    (setq pinyin-isearch-strict t)
+    (setq pinyin-isearch-chars-fallback nil)
+    (setq pinyin-isearch-chars--cached-query nil)
+    (setq pinyin-isearch-full-fallback t)
+    (should (equal (pinyin-isearch-chars-regexp-function "naig") "naig"))
+    (should (equal (pinyin-isearch-chars-regexp-function "i") "i"))
+    (should (equal (pinyin-isearch-chars-regexp-function "nai") "\\(nai\\|[乃奶奈耐氖艿鼐佴萘柰]\\|[嗯唔][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]\\)"))
+    )
 
     (with-temp-buffer
       (setq pinyin-isearch-strict nil)
