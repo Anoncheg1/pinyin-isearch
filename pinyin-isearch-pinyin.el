@@ -172,6 +172,7 @@ Argument STRING sisheng syllable."
   "Get position of the first syllable in query STRING.
 It also return all vowels for all possible sub-syllables.
 For \"zuom\" return (3 \"u\" \"o\").
+3 is count from 1 is position of th
 Syllables with same tone vowel is ignored and used shortest.
 Uses: function `pinyin-isearch-pinyin--get_vowel_from_sisheng'
 and global variable `pinyin-isearch-pinyin-syllable-table'."
@@ -198,6 +199,9 @@ and global variable `pinyin-isearch-pinyin-syllable-table'."
       (setq pos (1- pos)))
     ;; -- let:
     (cons ret vowels)))
+
+;; (pinyin-isearch-pinyin--get-position-first-syllable "qia") ;; =>(3 "i" "a")
+;; (pinyin-isearch-pinyin--get-position-first-syllable "yan") ;; =>(2 "a")
 
 
 (defun pinyin-isearch-pinyin--vowels-to-regex (vowels)
@@ -260,12 +264,16 @@ If NORMAL is non-nil, include the original vowel."
          (result ()))
     (dolist (c (split-string st "" t))
       (when result (push "\\s-*" result))
+      ;; add apostrophe for Zero Initial
+      ;; (when (member c '("a" "o" "e"))
+      ;;   (push "['’]?" result))
+      ;; add tones or char
       (push (or (cadr (assoc c vowel-table)) c) result))
     (apply #'concat (nreverse result))))
 
 ;; (pinyin-isearch-pinyin--brute-replace "hao") ;; => "h\\s-*[āáǎà]\\s-*[ōóǒò]"
 ;; (pinyin-isearch-pinyin--brute-replace "haoh" t) ;; => "h\\s-*[aāáǎà]\\s-*[oōóǒò]\\s-*h"
-
+;; (pinyin-isearch-pinyin--brute-replace "haoh" t)
 
 (defun pinyin-isearch-pinyin-regexp-sub (string)
   "Convert query STRING to regex for isearch, preserving original logic.
@@ -274,6 +282,7 @@ Uses functions:
 - `pinyin-isearch-pinyin--get-position-first-syllable',
 -`pinyin-isearch-pinyin--make-syllable-to-regex',
 -`pinyin-isearch-pinyin--brute-replace'."
+  ;; (print "www")
   (let* ((st (regexp-quote string))
          (len (length st))
          (first-syllable-stat (if (> len 1)
@@ -287,6 +296,7 @@ Uses functions:
                (others (when (< first-syllable-pos len)
                          (concat "\\s-*"
                                  (pinyin-isearch-pinyin--brute-replace (substring st first-syllable-pos) t)))))
+          ;; (print (list "wtf" others))
           (concat first-syllable others))
       ;; else - no first-syllable
       (if (or (not pinyin-isearch-full-fallback)
@@ -295,6 +305,7 @@ Uses functions:
           "$^"
         ;; else
         st))))
+
 
 ;; (pinyin-isearch-pinyin-regexp-sub "hao")
 ;; ;; => "h\\s-*[āáǎà]\\s-*[ōóǒò]"
@@ -324,8 +335,9 @@ Argument STRING is query."
   ;; check if match cached one
   (when (or (not (eq pinyin-isearch-pinyin--cached-strict pinyin-isearch-strict))
             (not (eq pinyin-isearch-pinyin--cached-full-fallback pinyin-isearch-full-fallback))
-            (not (string-equal string pinyin-isearch-pinyin--cached-query)))
-
+            (not (string-equal pinyin-isearch-pinyin--cached-query string)))
+    (setq pinyin-isearch-pinyin--cached-strict pinyin-isearch-strict)
+    (setq pinyin-isearch-pinyin--cached-full-fallback pinyin-isearch-full-fallback)
     (setq pinyin-isearch-pinyin--cached-query string)
     (setq pinyin-isearch-pinyin--cached-regex
           (pinyin-isearch-pinyin-regexp-sub string))) ; MAIN call
