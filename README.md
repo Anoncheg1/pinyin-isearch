@@ -30,6 +30,7 @@ pinyin-isearch.el
 - should not conflict with other isearch modes
 - fix isearch jumping without return.
 - fallback to search for normal latin text by default
+- support for apostraphe ('’) before second pinyin syllables startining with a, o or e.
 
 ## Features of Chinese characters search
 - search from the first character entered.

@@ -161,8 +161,7 @@ Requires `sisheng-regexp' and `sisheng-vowel-table' to be defined."
 Uses: constant `pinyin-isearch-pinyin-vowels'.
 Argument STRING sisheng syllable."
   (string-match sisheng-regexp string)
-  (let* (
-         (vowel-match (downcase (match-string 0 string)))
+  (let* ((vowel-match (downcase (match-string 0 string)))
          (vowel-list
           (cdr (assoc-string vowel-match pinyin-isearch-pinyin-vowels))))
     (car vowel-list)))
@@ -202,59 +201,73 @@ and global variable `pinyin-isearch-pinyin-syllable-table'."
 
 ;; (pinyin-isearch-pinyin--get-position-first-syllable "qia") ;; =>(3 "i" "a")
 ;; (pinyin-isearch-pinyin--get-position-first-syllable "yan") ;; =>(2 "a")
-
+;; (pinyin-isearch-pinyin--get-position-first-syllable "nue") ;; => (3 "u" "ue")
+;; (pinyin-isearch-pinyin--get-position-first-syllable "lue") ;; => (3 "u" "ue")
+;; (pinyin-isearch-pinyin--get-position-first-syllable "cuo") ;; ;; => (3 "u" "o")
 
 (defun pinyin-isearch-pinyin--vowels-to-regex (vowels)
   "Used for accurate apply regex to the first syllable of toneless pinyin.
-Convert (u o) to
-\"\\([ūúǔùǖǘǚǜ][oōóǒò]\\|[uūúǔùǖǘǚǜ][ōóǒò]\\)\"
-and (u) to \"[ūúǔùǖǘǚǜ]\".  Uses tables:
+Uses tables:
 `pinyin-isearch-pinyin-vowel-table',
 `pinyin-isearch-pinyin-vowel-table-normal'.
 If `pinyin-isearch-full-fallback' variable is true use
  `pinyin-isearch-pinyin-vowel-table-normal' to match pinyin without
  tones.
-Argument VOWELS list of normal vowels."
+Argument VOWELS list of normal vowels as a result of function
+ `pinyin-isearch-pinyin--get-position-first-syllable' without first
+ number."
   (let ((vowel-table (if (and (not pinyin-isearch-strict)
                               pinyin-isearch-full-fallback)
                          pinyin-isearch-pinyin-vowel-table-normal
                        ;; else
                        pinyin-isearch-pinyin-vowel-table)))
-    (if (eq (length vowels) 2)
-        (if  (not (member "ue" vowels))
-            (let* ((pin-vowels (mapcar (lambda (x)
-                                         (assoc-string x vowel-table)) vowels))
-                   (pin-vowels1 (car (cdr (car pin-vowels))))
-                   (pin-vowels2 (car (cdr (car (cdr pin-vowels))))))
-              (concat "\\(" pin-vowels1 "\\s-*" (car (cdr vowels))
-                      "\\|" (car vowels) pin-vowels2 "\\)"))
-          ;; ("u" "ue") case
-          ;; (print (cdr (assoc-string "ue" vowel-table)))
-          (let ((p1  (concat (car (cdr (assoc-string "u" vowel-table))) "\\s-*e")) ; [ūúǔùǖǘǚǜ]e
-                (p2 (car (cdr (assoc-string "ue" vowel-table))))  ; "ü[ēéěè]"
-                )
-            (concat "\\(" p1 "\\|" p2 "\\)") ; "\\([ūúǔùǖǘǚǜ]e\\|ü[ēéěè]\\)"
-            ))
-      ;; else if one vowel
-      (car (cdr (assoc-string (car vowels) vowel-table))))))
+    (if (= (length vowels) 1)
+            (car (cdr (assoc-string (car vowels) vowel-table)))
+      ;; else lenght > 1
+      (let* ((pin-vowels (mapcar (lambda (x)
+                                   (assoc-string x vowel-table)) vowels))
+             (pin-vowels1 (car (cdr (car pin-vowels))))
+             (pin-vowels2 (car (cdr (car (cdr pin-vowels)))))
+             (second-vowel (car (cdr vowels)))
+             (second-vowel-regex
+              (if (or (string-prefix-p "a" second-vowel t)
+                      (string-prefix-p "o" second-vowel t)
+                      (string-prefix-p "e" second-vowel t))
+                  (concat "['’]?" pin-vowels2) ;; inject this before second vowel
+                ;; else
+                (concat "\\s-*" second-vowel))))
+        (concat "\\(" pin-vowels1 second-vowel-regex
+                "\\|" (car vowels) pin-vowels2 "\\)")))))
 
+;; (let ((pinyin-isearch-full-fallback t))
+;;   (pinyin-isearch-pinyin--vowels-to-regex '("u" "o"))) ;; => "\\([uūúǔùǖǘǚǜ]['’]?[oōóǒò]\\|u[oōóǒò]\\)"
+;; (let ((pinyin-isearch-full-fallback t))
+;;   (pinyin-isearch-pinyin--vowels-to-regex '("i"))) ;; => "[iīíǐì]"
+
+;; (let ((pinyin-isearch-full-fallback nil))
+;;   (pinyin-isearch-pinyin--vowels-to-regex '("u" "ue"))) ;; => "\\([ūúǔùǖǘǚǜ]\\s-*ue\\|uü[ēéěè]\\)"
 
 
 (defun pinyin-isearch-pinyin--make-syllable-to-regex (syllable d-vowels)
   "Convert SYLLABLE \"zhuo\" to \"zh([]\|[])\".
 Applyed to the first syllable to create accurate regex.
 Uses function `pinyin-isearch-pinyin--vowels-to-regex'.
-Argument D-VOWELS result of function
- `pinyin-isearch-pinyin--get-position-first-syllable'."
-  (if (not (car d-vowels))
+we handle special case for syllable lue and nue.
+Argument D-VOWELS is list of vowels from
+ `pinyin-isearch-pinyin--get-position-first-syllable' result."
+  (if (not d-vowels)
       syllable
     ;; else
-    (let ((vowels-conc (if (member "ue" d-vowels) "ue"
-                         ;; else
-                         (apply #'concat (cdr d-vowels)))) ; "uo"
-          (replacement (pinyin-isearch-pinyin--vowels-to-regex (cdr d-vowels))))
-      (string-replace vowels-conc replacement syllable))))
+    (when (member "ue" d-vowels) ; there is no syllables with 3 vowels and "ue"
+      (setq d-vowels '("u" "e")))
+    (string-replace (apply #'concat d-vowels) ; what
+                    (pinyin-isearch-pinyin--vowels-to-regex  d-vowels) ; replacement
+                    syllable))) ; in
 
+
+;; (let ((pinyin-isearch-full-fallback nil))
+;;   (pinyin-isearch-pinyin--make-syllable-to-regex "nue" '("u" "ue")))
+;; (pinyin-isearch-pinyin--vowels-to-regex '("ue"))
 
 (defun pinyin-isearch-pinyin--brute-replace (st &optional normal)
   "Expand vowels in ST into regex form, separating by \\s-*.
@@ -265,8 +278,8 @@ If NORMAL is non-nil, include the original vowel."
     (dolist (c (split-string st "" t))
       (when result (push "\\s-*" result))
       ;; add apostrophe for Zero Initial
-      ;; (when (member c '("a" "o" "e"))
-      ;;   (push "['’]?" result))
+      (when (member c '("a" "o" "e"))
+        (push "['’]?" result))
       ;; add tones or char
       (push (or (cadr (assoc c vowel-table)) c) result))
     (apply #'concat (nreverse result))))
@@ -282,21 +295,18 @@ Uses functions:
 - `pinyin-isearch-pinyin--get-position-first-syllable',
 -`pinyin-isearch-pinyin--make-syllable-to-regex',
 -`pinyin-isearch-pinyin--brute-replace'."
-  ;; (print "www")
   (let* ((st (regexp-quote string))
          (len (length st))
-         (first-syllable-stat (if (> len 1)
-                                  (pinyin-isearch-pinyin--get-position-first-syllable st)
-                                '(nil)))
+         (first-syllable-stat (when (> len 1)
+                                  (pinyin-isearch-pinyin--get-position-first-syllable st)))
          (first-syllable-pos (car first-syllable-stat)))
     (if first-syllable-pos
         (let* ((first-syllable (substring string 0 first-syllable-pos))
                (first-syllable (pinyin-isearch-pinyin--make-syllable-to-regex
-                                first-syllable first-syllable-stat))
+                                first-syllable (cdr first-syllable-stat)))
                (others (when (< first-syllable-pos len)
                          (concat "\\s-*"
                                  (pinyin-isearch-pinyin--brute-replace (substring st first-syllable-pos) t)))))
-          ;; (print (list "wtf" others))
           (concat first-syllable others))
       ;; else - no first-syllable
       (if (or (not pinyin-isearch-full-fallback)
