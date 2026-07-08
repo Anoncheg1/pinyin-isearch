@@ -204,6 +204,40 @@ This have a trick by Emacs, isearch-search-and-update call
               ;; (should (= (point) 7))
               )))))
 
+(ert-deftest test-pinyin-isearch-main3-strict-aspostraphe ()
+  ""
+  (progn (setq pinyin-isearch-chars--cached-query nil)
+         (setq pinyin-isearch-chars-fallback t)
+         (setq pinyin-isearch-strict t)
+         (setq pinyin-isearch-full-fallback t)
+         (with-temp-buffer
+           (with-test-isearch-env
+            (let ((pinyin-isearch-strict t)
+                  (pinyin-isearch-chars-fallback t)
+                  (pinyin-isearch-full-fallback t))
+              (setq pinyin-isearch-chars--cached-query nil)
+
+              ;; Activate the minor mode
+              (pinyin-isearch-mode 1)
+              (insert "“zú’ò” 足哦, “Zuǒ” 左 zuo") ; we found nǐ hao with strict, because of simplification in pinyin algoritm
+
+
+              ;; 1. Both pinyin-isearch-both-regexp-function
+              (goto-char (point-min))
+              (pinyin-isearch-jump-and-stay-active "zuo")
+              (should (= (point) 6))
+
+              (pinyin-isearch-jump-and-stay-active "zuo")
+              (should (= (point) 10))
+              (pinyin-isearch-jump-and-stay-active "zuo")
+              (should (= (point) 16))
+              (pinyin-isearch-jump-and-stay-active "zuo")
+              (should (= (point) 19))
+
+              (pinyin-isearch-jump-and-stay-active "zuo")
+              (should (= (point) 19)))))))
+
+
 (ert-deftest test-pinyin-isearch-main3-strict-no-fallback ()
   "."
   (progn (setq pinyin-isearch-chars--cached-query nil)
