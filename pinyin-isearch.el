@@ -1,10 +1,10 @@
 ;;; pinyin-isearch.el --- Pinyin mode for isearch  -*- lexical-binding: t -*-
 
-;; Copyright (c) 2024 github.com/Anoncheg1,codeberg.org/Anoncheg
+;; Copyright (c) 2024 Anoncheg
 
-;; Author: github.com/Anoncheg1,codeberg.org/Anoncheg
-;; Maintainer: github.com/Anoncheg1,codeberg.org/Anoncheg
-;; Keywords: chinese, pinyin, matching, convenience
+;; Maintainer: Anoncheg <vitalij@gmx.com>
+;; Author: Anoncheg <vitalij@gmx.com>
+;; Keywords: chinese, isearch, matching, convenience
 ;; URL: https://github.com/Anoncheg1/pinyin-isearch
 ;; Version: 1.7.0
 ;; Package-Requires: ((emacs "28.1"))
