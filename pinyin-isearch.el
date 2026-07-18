@@ -205,8 +205,9 @@ Argument STRING is a query string, LAX is not used."
     (pinyin-isearch-both-regexp-function string lax)))
 
 (defun pinyin-isearch--set-isearch ()
-  "Return the appropriate regexp-generating function for isearch,
-according to `pinyin-isearch-default-mode`.
+  "For values of `pinyin-isearch-default-mode` return function.
+Return function used to generate regex for isearch.
+According to `pinyin-isearch-default-mode`.
 Used in `pinyin-isearch-forward` and `pinyin-isearch-backward`."
   (pcase pinyin-isearch-default-mode
     ('both              #'pinyin-isearch-both-regexp-function)
