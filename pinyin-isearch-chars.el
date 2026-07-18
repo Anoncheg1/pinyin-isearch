@@ -1,6 +1,6 @@
 ;;; pinyin-isearch-chars.el --- Chinese characters search for isearch -*- lexical-binding: t -*-
 
-;; Copyright (c) 2024 Anoncheg1
+;; Copyright (c) 2024-2026 Anoncheg1
 
 ;; Author: Anoncheg1
 ;; Keywords: chinese, isearch, matching, convenience
@@ -55,9 +55,11 @@
 
 ;;; Code:
 
+;; REQUIRE variable `pinyin-isearch-strict', `pinyin-isearch-full-fallback'
+
 (require 'pinyin-isearch-loaders) ; for pinyin-isearch-loaders--py-punct-rules
 
-(require 'cl-extra) ; for `cl-some'
+(require 'cl-lib) ; for `cl-some'
 
 (require 'subr-x) ; for 28.1 and `string-join'
 
@@ -106,7 +108,7 @@ If there is undecoded letters at the end after dissasembling."
   "Create table that allow quickly find syllable by it's first letters.
 Argument RULES argument of funcion `quail-define-rules'."
   (let ((ss nil))
-    (dolist ( r rules)
+    (dolist (r rules)
       (let ((rr (car r)))
         (dolist (l (number-sequence 1 (length rr)))
           (let* ((sub (substring (car r) 0 l))
@@ -114,7 +116,7 @@ Argument RULES argument of funcion `quail-define-rules'."
                  (newl))
             (when (not el) ;; el is nil
               (dolist ( r rules)
-                (if (string-prefix-p sub (car r))
+                (when (string-prefix-p sub (car r))
                     (push (car r) newl)))
               (setq ss (cons (list sub newl) ss)))))))
     ss))
@@ -136,9 +138,9 @@ Argument RULES argument of funcion `quail-define-rules'."
   "Interface to constant `pinyin-isearch-chars--first-syllable-letters'.
 For \"a\" we get (ao ang an ai a).
 Argument ST the begining letters of any syllable."
-  (let ((v (assoc-string st pinyin-isearch-chars--first-syllable-letters )))
+  (let ((v (assoc-string st pinyin-isearch-chars--first-syllable-letters)))
     (if v
-        (let (( res (copy-tree (car (cdr v)))))
+        (let ((res (copy-tree (car (cdr v)))))
           ;; remove nv and lv from result
           (cond ((equal st "n") (setq res (remove "nv" res)))
                 ((equal st "l") (setq res (remove "lv" res))))
@@ -224,8 +226,6 @@ Returns a list of list of syllable lists or
       (list (list (list (concat pinyin-isearch-chars--non-syllable-marker-string st)))))
      (t results))))
 
-
-
 (defun pinyin-isearch-chars--add-fallback (string lvar)
   "Add full string to desiassembled variants.
 If at the end of query there is unconvertable letters.  Global
@@ -236,7 +236,7 @@ Argument LVAR dissasembled variants of characters for query."
   ;; add full string for fallback to latin if we have unconvertable characters at the end (marked)
   (if (and pinyin-isearch-chars-fallback
            (not pinyin-isearch-strict)
-           (or (> (length lvar) 1) (> (length (car lvar)) 1)))
+           (or (length> lvar 1) (length> (car lvar) 1)))
       (let ((la (car (car (last (car (last lvar)))))))
         (if (eq (elt la 0) pinyin-isearch-chars--non-syllable-marker-number)
             ;; add full string (marked) to result list as an another variant.
@@ -253,7 +253,8 @@ Argument LVAR dissasembled variants of characters for query."
   (when (and (not (string-empty-p string))
              pinyin-isearch-full-fallback
              (not pinyin-isearch-strict))
-    (push (mapcar #'list (mapcar #'char-to-string (string-to-list string)))
+    ;; (push (mapcar #'list (mapcar #'char-to-string (string-to-list string)))
+    (push (mapcar #'list (mapcar #'char-to-string string))
           lvar))
     lvar)
 
@@ -281,18 +282,17 @@ Argument LVAR dissasembled variants of characters for query."
 ;;  '((("奥澳傲熬敖凹袄懊坳嗷拗鏖骜鳌翱岙廒遨獒聱媪螯鏊" "昂肮盎" )) "昂肮盎")) ; => ((("奥澳傲熬敖凹袄懊坳嗷拗鏖骜鳌翱岙廒遨獒聱媪螯鏊")))
 
 
-;; Faster variant:
-(defun pinyin-isearch-chars--is-here-p (orig-str sac)
-  "Check that we have any leaf in SAC equal ORIG-STR."
-  (cl-some (lambda (x) (when (string-equal x orig-str) t))
-            (flatten-tree sac)))
-
-;; ;; Slower variant:
-;; (require 'seq)
+;; ;; Faster variant:
 ;; (defun pinyin-isearch-chars--is-here-p (orig-str sac)
 ;;   "Check that we have any leaf in SAC equal ORIG-STR."
-;;   (seq-some (lambda (x) (string-equal x orig-str))
-;;             (flatten-tree sac)))
+;;   (cl-some (lambda (x) (string-equal x orig-str)) (flatten-tree sac)))
+
+;; ;; ;; Slower variant:
+;; ;; (require 'seq)
+;; ;; (defun pinyin-isearch-chars--is-here-p (orig-str sac)
+;; ;;   "Check that we have any leaf in SAC equal ORIG-STR."
+;; ;;   (seq-some (lambda (x) (string-equal x orig-str))
+;; ;;             (flatten-tree sac)))
 
 
 (defun pinyin-isearch-chars--convert-to-hieroglyphs (list-of-variants)
@@ -333,17 +333,17 @@ Example:
   (let ((marker pinyin-isearch-chars--non-syllable-marker-number))
     (mapconcat
      (lambda (inner)
-       (let* ((marked (delq nil (mapcar (lambda (s)
-                                          (if (and (> (length s) 0) (eq (elt s 0) marker))
-                                              (substring s 1)
-                                            nil))
-                                        inner)))
-              (unmarked (delq nil (mapcar (lambda (s)
-                                            (if (or (not (> (length s) 0))
-                                                    (not (eq (elt s 0) marker)))
-                                                s
-                                              nil))
-                                          inner))))
+       (let* ((marked
+               (mapcan (lambda (s)
+                         (and s (eq (elt s 0) marker)
+                              (list (substring s 1))))
+                       inner))
+              (unmarked
+               (mapcan (lambda (s)
+                         (and (or (not s)
+                                  (not (eq (elt s 0) marker)))
+                              (list s)))
+                       inner)))
          (cond
           ;; All marked: concat, no brackets
           ((and (> (length marked) 0)
@@ -410,8 +410,6 @@ including the original pinyin if `pinyin-isearch-full-fallback' is true.
   "Non-nil means values saved for `pinyin-isearch-chars-regexp-function'.")
 (defvar-local pinyin-isearch-chars--cached-full-fallback-flag nil
   "Non-nil means values saved for `pinyin-isearch-chars-regexp-function'.")
-
-
 
 (defun pinyin-isearch-chars-regexp-function (string &optional _lax)
   "Replacement for function `isearch-regexp-function'.

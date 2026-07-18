@@ -35,10 +35,10 @@
 
 (pinyin-isearch-pinyin-load) ; activate pinyin-isearch-pinyin
 
-(ert-deftest test-pinyin-isearch-pinyin--get_vowel_from_sisheng ()
+(ert-deftest test-pinyin-isearch-pinyin--get-vowel-from-sisheng ()
   (with-temp-buffer
-    (should (equal (pinyin-isearch-pinyin--get_vowel_from_sisheng "zuō") "o"))
-    (should (equal (pinyin-isearch-pinyin--get_vowel_from_sisheng "nüē") "ue"))
+    (should (equal (pinyin-isearch-pinyin--get-vowel-from-sisheng "zuō") "o"))
+    (should (equal (pinyin-isearch-pinyin--get-vowel-from-sisheng "nüē") "ue"))
     )
 )
 

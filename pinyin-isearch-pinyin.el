@@ -1,6 +1,6 @@
 ;;; pinyin-isearch-pinyin.el --- Chinese pinyin search for isearch  -*- lexical-binding: t -*-
 
-;; Copyright (c) 2024 Anoncheg1
+;; Copyright (c) 2024-2026 Anoncheg1
 
 ;; Author: Anoncheg1
 ;; Keywords: chinese, isearch, matching, convenience
@@ -26,7 +26,6 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
 
 ;; Allow to search with Chinese pinyin diacritical tone marks for
 ;;  pinyin with diacritical tone marks with or without abolity to
@@ -55,12 +54,12 @@
 ;;
 ;; 2) For input: `pinyin-isearch-pinyin--get-position-first-syllable'
 ;; which uses our syllable-table to find \"zhuō\" and
-;; `pinyin-isearch-pinyin--get_vowel_from_sisheng' which uses
+;; `pinyin-isearch-pinyin--get-vowel-from-sisheng' which uses
 ;; `pinyin-isearch-pinyin-vowels' to get "ue" from "üē".
 
 ;;; Code:
 
-;; REQUIRE variable `pinyin-isearch-strict'
+;; REQUIRE variable `pinyin-isearch-strict', `pinyin-isearch-full-fallback'
 
 (require 'pinyin-isearch-loaders)
 
@@ -92,7 +91,7 @@
     ;; ("v" "[ūúǔùǖǘǚǜ]")
     ("ue" "ü[ēéěè]")
     ;; ("ve" "ü[ēéěè]")
-))
+    ))
 
 (defconst pinyin-isearch-pinyin-vowel-table-normal
   '(("a" "[aāáǎà]")
@@ -102,7 +101,7 @@
     ("u" "[uūúǔùǖǘǚǜ]")
     ("ue" "[uü][eēéěè]")
     ;; ("ve" "[uü][eēéěè]")
-))
+    ))
 
 (defconst pinyin-isearch-pinyin-vowels
   '(("ā" "a")
@@ -112,7 +111,7 @@
     ("ū" "u")
     ("ǖ" "u")
     ("üē" "ue"))
-    "Used to convert sisheng pinyin to toneless pinyin.")
+  "Used to convert sisheng pinyin to toneless pinyin.")
 
 
 (defun pinyin-isearch-pinyin--sisheng-to-normal (syllable)
@@ -132,7 +131,7 @@ Requires `sisheng-regexp' and `sisheng-vowel-table' to be defined."
       (let* ((matched-vowel (downcase (match-string 0 syllable)))
              ;; Lookup normalized vowel in table
              (vowel-list (cdr (assoc-string matched-vowel sisheng-vowel-table)))
-             (base-vowel (when vowel-list (nth 0 vowel-list))))
+             (base-vowel (and vowel-list (nth 0 vowel-list))))
         ;; Special handling for 'v' and 've' which represent 'ü' and 'üe'
         (cond
          ((equal base-vowel "v") (setq base-vowel "u"))
@@ -155,16 +154,13 @@ Requires `sisheng-regexp' and `sisheng-vowel-table' to be defined."
                     (cons (pinyin-isearch-pinyin--sisheng-to-normal arg) arg))
                   sisheng-syllable-table))))
 
-
-(defun pinyin-isearch-pinyin--get_vowel_from_sisheng (string)
-       "For input \"zuō\" get \"o\".
+
+(defun pinyin-isearch-pinyin--get-vowel-from-sisheng (string)
+  "For input \"zuō\" get \"o\".
 Uses: constant `pinyin-isearch-pinyin-vowels'.
 Argument STRING sisheng syllable."
-  (string-match sisheng-regexp string)
-  (let* ((vowel-match (downcase (match-string 0 string)))
-         (vowel-list
-          (cdr (assoc-string vowel-match pinyin-isearch-pinyin-vowels))))
-    (car vowel-list)))
+  (when (string-match sisheng-regexp string)
+    (car (cdr (assoc-string (match-string 0 string) pinyin-isearch-pinyin-vowels t)))))
 
 
 (defun pinyin-isearch-pinyin--get-position-first-syllable (string)
@@ -173,7 +169,7 @@ It also return all vowels for all possible sub-syllables.
 For \"zuom\" return (3 \"u\" \"o\").
 3 is count from 1 is position of th
 Syllables with same tone vowel is ignored and used shortest.
-Uses: function `pinyin-isearch-pinyin--get_vowel_from_sisheng'
+Uses: function `pinyin-isearch-pinyin--get-vowel-from-sisheng'
 and global variable `pinyin-isearch-pinyin-syllable-table'."
   (let ((first-chars)
         (pos (length string))
@@ -187,9 +183,9 @@ and global variable `pinyin-isearch-pinyin-syllable-table'."
       (setq syl (cdr (assoc first-chars pinyin-isearch-pinyin-syllable-table)))
       ;; if syllable found, add vowel with tone to vowels
       (if syl
-          (let ((new-vow (pinyin-isearch-pinyin--get_vowel_from_sisheng syl)))
+          (let ((new-vow (pinyin-isearch-pinyin--get-vowel-from-sisheng syl)))
             (if (not (member new-vow vowels))
-                (setq vowels (cons (pinyin-isearch-pinyin--get_vowel_from_sisheng syl) vowels))
+                (setq vowels (cons (pinyin-isearch-pinyin--get-vowel-from-sisheng syl) vowels))
               ;; else ignore previous long syllable with same vowel
               (setq ret nil))))
       ;; save position of the first longest syllable
@@ -221,18 +217,17 @@ Argument VOWELS list of normal vowels as a result of function
                          pinyin-isearch-pinyin-vowel-table-normal
                        ;; else
                        pinyin-isearch-pinyin-vowel-table)))
-    (if (= (length vowels) 1)
-            (car (cdr (assoc-string (car vowels) vowel-table)))
+    (if (length= vowels 1)
+            (cadr (assoc-string (car vowels) vowel-table))
       ;; else lenght > 1
       (let* ((pin-vowels (mapcar (lambda (x)
-                                   (assoc-string x vowel-table)) vowels))
+                                   (assoc-string x vowel-table))
+                                 vowels))
              (pin-vowels1 (car (cdr (car pin-vowels))))
              (pin-vowels2 (car (cdr (car (cdr pin-vowels)))))
              (second-vowel (car (cdr vowels)))
              (second-vowel-regex
-              (if (or (string-prefix-p "a" second-vowel t)
-                      (string-prefix-p "o" second-vowel t)
-                      (string-prefix-p "e" second-vowel t))
+              (if (string-match-p "\\`[AEOaeo]" second-vowel)
                   (concat "['’]?" pin-vowels2) ;; inject this before second vowel
                 ;; else
                 (concat "\\s-*" second-vowel))))
@@ -298,7 +293,7 @@ Uses functions:
   (let* ((st (regexp-quote string))
          (len (length st))
          (first-syllable-stat (when (> len 1)
-                                  (pinyin-isearch-pinyin--get-position-first-syllable st)))
+                                (pinyin-isearch-pinyin--get-position-first-syllable st)))
          (first-syllable-pos (car first-syllable-stat)))
     (if first-syllable-pos
         (let* ((first-syllable (substring string 0 first-syllable-pos))
@@ -312,7 +307,7 @@ Uses functions:
       (if (or (not pinyin-isearch-full-fallback)
               pinyin-isearch-strict
               (string-empty-p string))
-          "$^"
+          "$^" ;; regexp-unmatchable
         ;; else
         st))))
 

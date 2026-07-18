@@ -1,6 +1,6 @@
 ;;; pinyin-isearch-loaders.el --- Loaders of pinyin and Chinese characters from guail  -*- lexical-binding: t -*-
 
-;; Copyright (c) 2024 Anoncheg1
+;; Copyright (c) 2024-2026 Anoncheg1
 
 ;; Author: Anoncheg1
 ;; Keywords: chinese, pinyin, matching, convenience
@@ -60,7 +60,6 @@ Argument ARGS not used."
 Argument ARGS not used."
   nil)
 
-
 (defun pinyin-isearch-loaders--quail-extractor (quail-file)
   "Used to set variable `pinyin-isearch-loaders--punct-rules'.
 Argument QUAIL-FILE \"quail/PY.el\" for example."
@@ -76,10 +75,11 @@ Argument QUAIL-FILE \"quail/PY.el\" for example."
 
 (defun pinyin-isearch-loaders--punct-quail-filter (rules)
   "Load RULES for single letters of punctuations."
-  (seq-filter (lambda (x) (= (length (car x)) 1)) rules))
+  ;; (seq-filter (lambda (x) (= (length (car x)) 1)) rules))
+  (seq-filter (lambda (x) (length= (car x) 1)) rules))
 
 
-;; ---------- load quail/PY.el for chinese hierogliphs ---------
+;; ---------- load quail/PY.el for chinese hieroglyphs ---------
 
 (defun pinyin-isearch-loaders--py-rules-loader ()
   "Load quail rules and add lv and nv to lu and nu.
