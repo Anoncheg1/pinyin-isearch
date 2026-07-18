@@ -307,8 +307,8 @@
                     (pinyin-isearch-chars--maptree ;; 2) convert-to-hieroglyphs - for nil return nil, or '((("嗯唔")))
                      #'pinyin-isearch-chars--pinyin-to-hieroglyphs
                      (pinyin-isearch-chars--recursion "i") ;; 1) split - may return nil
-                     )) "$^"))
-    (should (equal (pinyin-isearch-chars-regexp-function "i") "$^"))
+                     )) regexp-unmatchable))
+    (should (equal (pinyin-isearch-chars-regexp-function "i") regexp-unmatchable))
     )
 
   (with-temp-buffer
@@ -349,11 +349,11 @@
                     (pinyin-isearch-chars--maptree ;; 2) convert-to-hieroglyphs - for nil return nil, or '((("嗯唔")))
                      #'pinyin-isearch-chars--pinyin-to-hieroglyphs
                      (pinyin-isearch-chars--recursion "i") ;; 1) split - may return nil
-                     )) "$^"))
-    (should (equal (pinyin-isearch-chars-regexp-function "i") "$^"))
+                     )) regexp-unmatchable))
+    (should (equal (pinyin-isearch-chars-regexp-function "i") regexp-unmatchable))
 
-    (should (equal (pinyin-isearch-chars-regexp-function "nuii") "$^"))
-    (should (equal (pinyin-isearch-chars-regexp-function "task") "$^"))
+    (should (equal (pinyin-isearch-chars-regexp-function "nuii") regexp-unmatchable))
+    (should (equal (pinyin-isearch-chars-regexp-function "task") regexp-unmatchable))
     (should (equal (pinyin-isearch-chars-regexp-function "nunu") "[女钕恧衄怒努奴弩驽胬孥][诺挪懦糯喏搦傩锘虐疟暖女钕恧衄怒努奴弩驽胬孥]"))
     (should (equal (pinyin-isearch-chars-regexp-function "nig") "[你呢尼泥逆倪匿拟腻妮霓昵溺旎睨鲵坭猊怩伲祢慝铌][国过果锅郭裹帼蝈聒馘掴埚虢呙崞猓椁蜾滚棍鲧绲磙辊衮规归贵鬼桂跪柜轨瑰诡刽龟硅闺皈傀癸圭晷簋妫鲑匦庋宄炔刿桧炅鳜广光逛犷咣胱桄关观管官馆惯冠贯罐灌棺莞倌纶掼盥涫鳏鹳怪乖拐掴挂瓜刮寡呱褂卦剐鸹栝胍诖故古顾股鼓姑骨固孤谷估雇辜咕沽箍菇汩轱锢蛊梏鸪毂鹄臌瞽罟钴觚鹘菰蛄嘏诂崮酤牿牯痼鲴够购构狗沟勾苟钩觏篝垢佝岣诟鞲笱枸遘媾缑彀工公共供功攻宫贡恭巩躬龚弓拱肱汞蚣珙觥更耿耕颈庚羹梗哽赓鲠埂绠根跟亘艮哏茛给个革各歌格哥戈隔葛割阁胳搁疙咯鸽嗝骼颌屹搿膈镉纥袼仡鬲塥圪哿舸铬硌虼高告稿搞糕膏皋羔睾槁藁缟篙镐诰槔杲郜锆刚港钢岗纲缸扛杠冈肛罡戆筻感干敢赶甘肝杆尴赣橄竿秆擀坩苷柑泔矸澉疳酐淦绀旰改该概盖丐钙赅溉垓陔戤咖尬嘎噶轧伽旮钆尕尜]"))
 
@@ -361,15 +361,15 @@
     (should (equal (pinyin-isearch-chars-regexp-function "a>") "[阿啊呵腌嗄锕吖][＞〉》≯≥]"))
     (should (equal (pinyin-isearch-chars-regexp-function "nai") "\\([乃奶奈耐氖艿鼐佴萘柰]\\|[嗯唔][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]\\)"))
     (should (equal (pinyin-isearch-chars-regexp-function "n") "[诺挪懦糯喏搦傩锘虐疟暖女钕恧衄怒努奴弩驽胬孥耨农弄浓侬哝脓牛纽扭妞钮拗忸狃宁凝拧泞咛狞柠佞聍苎甯您恁捏涅聂孽蹑嗫啮镊镍乜陧颞臬蘖鸟尿袅嬲茑脲娘酿年念廿粘碾捻蔫撵拈黏鲶鲇辇埝你呢尼泥逆倪匿拟腻妮霓昵溺旎睨鲵坭猊怩伲祢慝铌嗯唔能嫩恁内馁呢讷脑闹恼挠瑙淖呶猱铙孬硇蛲垴囊囔馕攮曩难南男楠喃囡囝腩蝻赧乃奶奈耐氖艿鼐佴萘柰那拿呢哪纳娜呐捺钠镎肭衲嗯唔]"))
-    (should (equal (pinyin-isearch-chars-regexp-function "ggg") "$^"))
-    (should (equal (pinyin-isearch-chars-regexp-function "vi") "$^"))
+    (should (equal (pinyin-isearch-chars-regexp-function "ggg") regexp-unmatchable))
+    (should (equal (pinyin-isearch-chars-regexp-function "vi") regexp-unmatchable))
     (should (equal (pinyin-isearch-chars-regexp-function ".") "[．\\.。・¨…∵∴°⊙]"))
     (should (equal (pinyin-isearch-chars-regexp-function "nu") "[诺挪懦糯喏搦傩锘虐疟暖女钕恧衄怒努奴弩驽胬孥]"))
     (should (equal (pinyin-isearch-chars-regexp-function "lu") "[落罗络洛逻裸骆萝螺锣箩摞烙捋珞骡猡镙椤倮蠃荦瘰泺漯脶硌雒论轮伦沦仑抡囵纶略掠锊乱卵峦挛孪栾銮娈滦鸾脔律旅绿率虑履屡侣缕驴吕榈滤捋铝褛闾膂氯稆路陆录卢露鲁炉鹿碌庐芦噜颅禄辘卤虏麓泸赂漉戮簏轳鹭掳潞鲈撸栌垆胪蓼渌鸬逯璐辂橹镥舻氇]"))
-    (should (equal (pinyin-isearch-chars-regexp-function "nui") "$^")) ; "\\([嗯唔]ui\\|[女钕恧衄怒努奴弩驽胬孥]i\\)"
+    (should (equal (pinyin-isearch-chars-regexp-function "nui") regexp-unmatchable)) ; "\\([嗯唔]ui\\|[女钕恧衄怒努奴弩驽胬孥]i\\)"
     ;; check for change of `pinyin-isearch-strict':
     ;; ! sk at the end, because there is no characters starting with sk !
-    (should (equal (pinyin-isearch-chars-regexp-function "task") "$^"))
+    (should (equal (pinyin-isearch-chars-regexp-function "task") regexp-unmatchable))
     )
 
   (with-temp-buffer
@@ -377,13 +377,13 @@
     (setq pinyin-isearch-chars-fallback nil)
     (setq pinyin-isearch-chars--cached-query nil)
     (setq pinyin-isearch-full-fallback nil)
-    (should (equal (pinyin-isearch-chars-regexp-function "nuii") "$^"))
-    (should (equal (pinyin-isearch-chars-regexp-function "task") "$^"))
-    (should (equal (pinyin-isearch-chars-regexp-function "gg") "$^"))
+    (should (equal (pinyin-isearch-chars-regexp-function "nuii") regexp-unmatchable))
+    (should (equal (pinyin-isearch-chars-regexp-function "task") regexp-unmatchable))
+    (should (equal (pinyin-isearch-chars-regexp-function "gg") regexp-unmatchable))
     (should (equal (pinyin-isearch-chars-regexp-function ".") "[．。・¨…∵∴°⊙]"))
     (should (equal (pinyin-isearch-chars-regexp-function "nu") "[女钕恧衄怒努奴弩驽胬孥]"))
     (should (equal (pinyin-isearch-chars-regexp-function "lu") "[律旅绿率虑履屡侣缕驴吕榈滤捋铝褛闾膂氯稆路陆录卢露鲁炉鹿碌庐芦噜颅禄辘卤虏麓泸赂漉戮簏轳鹭掳潞鲈撸栌垆胪蓼渌鸬逯璐辂橹镥舻氇]"))
-    (should (equal (pinyin-isearch-chars-regexp-function "nui") "$^"))
+    (should (equal (pinyin-isearch-chars-regexp-function "nui") regexp-unmatchable))
     (should (equal (pinyin-isearch-chars-regexp-function "nunu") "[女钕恧衄怒努奴弩驽胬孥][女钕恧衄怒努奴弩驽胬孥]"))
     (should (equal (pinyin-isearch-chars-regexp-function "nuai") "[女钕恧衄怒努奴弩驽胬孥][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]"))
     )
@@ -422,11 +422,11 @@
 (ert-deftest test-pinyin-isearch-chars-strict-regexp-function ()
   (with-temp-buffer
     (let ((pinyin-isearch-strict nil))
-      (should (equal (pinyin-isearch-chars-strict-regexp-function "gg") "$^"))
+      (should (equal (pinyin-isearch-chars-strict-regexp-function "gg") regexp-unmatchable))
       (should (equal (pinyin-isearch-chars-strict-regexp-function ".") "[．。・¨…∵∴°⊙]"))
       (should (equal (pinyin-isearch-chars-strict-regexp-function "nu") "[女钕恧衄怒努奴弩驽胬孥]"))
       (should (equal (pinyin-isearch-chars-strict-regexp-function "lu") "[律旅绿率虑履屡侣缕驴吕榈滤捋铝褛闾膂氯稆路陆录卢露鲁炉鹿碌庐芦噜颅禄辘卤虏麓泸赂漉戮簏轳鹭掳潞鲈撸栌垆胪蓼渌鸬逯璐辂橹镥舻氇]"))
-      (should (equal (pinyin-isearch-chars-strict-regexp-function "nui") "$^"))
+      (should (equal (pinyin-isearch-chars-strict-regexp-function "nui") regexp-unmatchable))
       (should (equal (pinyin-isearch-chars-strict-regexp-function "nuai") "[女钕恧衄怒努奴弩驽胬孥][爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹]"))
       )))
 

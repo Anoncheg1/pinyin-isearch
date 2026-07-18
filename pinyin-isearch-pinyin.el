@@ -307,7 +307,7 @@ Uses functions:
       (if (or (not pinyin-isearch-full-fallback)
               pinyin-isearch-strict
               (string-empty-p string))
-          "$^" ;; regexp-unmatchable
+          regexp-unmatchable ;; regexp-unmatchable
         ;; else
         st))))
 

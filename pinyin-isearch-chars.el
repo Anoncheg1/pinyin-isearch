@@ -389,7 +389,7 @@ including the original pinyin if `pinyin-isearch-full-fallback' is true.
                (if pinyin-isearch-full-fallback
                     (list orig-str)
                  ;; else
-                 (list "$^"))  ;; Impossible match if no variants remain
+                 (list regexp-unmatchable))  ;; Impossible match if no variants remain
              ;; else process
              (mapcar #'pinyin-isearch-chars--regex-concat-hieroglyphs filtered-sac))))
       ;; Step 5: Format final regex alternation
@@ -445,7 +445,7 @@ Optional argument LAX (not used) used for isearch special cases."
             (pinyin-isearch-chars--recursion string)))) ;; 1) split - may return nil
     (when (or (not pinyin-isearch-chars--cached-regex)
               (string-empty-p pinyin-isearch-chars--cached-regex))
-      (setq pinyin-isearch-chars--cached-regex "$^")))
+      (setq pinyin-isearch-chars--cached-regex regexp-unmatchable)))
   pinyin-isearch-chars--cached-regex)
 
 (defun pinyin-isearch-chars-strict-regexp-function (string &optional lax)

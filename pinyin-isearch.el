@@ -190,8 +190,8 @@ Optional argument LAX for isearch special cases."
          (hsr (let ((pinyin-isearch-full-fallback nil))
                 (pinyin-isearch-chars-regexp-function string))))
     (cond
-     ((equal hsr "$^") psr)
-     ((equal psr "$^") hsr)
+     ((equal hsr regexp-unmatchable) psr)
+     ((equal psr regexp-unmatchable) hsr)
      ((equal psr hsr) psr)
      (t
       (concat "\\(" psr "\\|" hsr "\\)")))))
