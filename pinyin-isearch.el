@@ -220,29 +220,38 @@ Used in `pinyin-isearch-forwar' and `pinyin-isearch-backward'."
     ('pinyin		#'pinyin-isearch-pinyin-regexp-function)))
 
 
-(defun pinyin-isearch--pinyin-fix-jumping-advice ()
-  "Advice to fix isearch behavior.  Force search from a starting point.
-By default."
-  (if (and isearch-mode pinyin-isearch-fix-jumping-flag
-           ; check that our isearch regex is active
-           (memq isearch-regexp-function
-                    '(pinyin-isearch-pinyin-regexp-function
-                      pinyin-isearch-chars-regexp-function
-                      pinyin-isearch-chars-strict-regexp-function
-                      pinyin-isearch-both-regexp-function
-                      pinyin-isearch-both-strict-regexp-function))
-           ;; (or
-           ;;  (eq isearch-regexp-function #'pinyin-isearch-pinyin-regexp-function)
-           ;;  (eq isearch-regexp-function #'pinyin-isearch-chars-regexp-function)
-           ;;  (eq isearch-regexp-function #'pinyin-isearch-chars-strict-regexp-function)
-           ;;  (eq isearch-regexp-function #'pinyin-isearch-both-regexp-function)
-           ;;  (eq isearch-regexp-function #'pinyin-isearch-both-strict-regexp-function))
-           )
-      (let ((key (this-single-command-keys)))
-        (when (and isearch-success
-                   (eq #'isearch-printing-char (lookup-key isearch-mode-map key nil)))
-          (goto-char isearch-opoint)
-          (setq isearch-adjusted t)))))
+
+(defun pinyin-isearch--reset-before-printing-char (&rest _args)
+  "Reset Isearch start point before inserting a printing character.
+Prevents 'jumping' past the original start when typing characters
+during a pinyin Isearch session.
+In other words, force search from original position.
+In other words, when in incremental search result appear at back after
+ moving forward we return backward to first one."
+  ;; (print (list "pinyin-isearch--reset-before-printing-char N1"
+  ;;              pinyin-isearch-fix-jumping-flag
+  ;;              (memq isearch-regexp-function
+  ;;                  '(pinyin-isearch-pinyin-regexp-function
+  ;;                    pinyin-isearch-chars-regexp-function
+  ;;                    pinyin-isearch-chars-strict-regexp-function
+  ;;                    pinyin-isearch-both-regexp-function
+  ;;                    pinyin-isearch-both-strict-regexp-function))))
+  ;;            ;; (markerp isearch-opoint)
+  ;;            (>= isearch-opoint (point-min))
+  ;;            (<= isearch-opoint (point-max))))
+  (when (and pinyin-isearch-fix-jumping-flag
+             (memq isearch-regexp-function
+                   '(pinyin-isearch-pinyin-regexp-function
+                     pinyin-isearch-chars-regexp-function
+                     pinyin-isearch-chars-strict-regexp-function
+                     pinyin-isearch-both-regexp-function
+                     pinyin-isearch-both-strict-regexp-function)))
+             ;; (markerp isearch-opoint)
+             ;; (>= isearch-opoint (point-min))
+             ;; (<= isearch-opoint (point-max)))
+    ;; (print "pinyin-isearch--reset-before-printing-char N2")
+    (goto-char isearch-opoint)
+    (setq isearch-adjusted t)))
 
 (defun pinyin-isearch-load ()
   "Load and activate modules and hooks used by all."
@@ -260,7 +269,9 @@ If called with a universal argument, falls back to standard
  function `isearch-forward'.
 Optional argument REGEXP-P see original function `isearch-forward'.
 Optional argument NO-RECURSIVE-EDIT see original function
- `isearch-forward'."
+ `isearch-forward'.
+TODO: Issue with isearch: in incremental search if first characters was
+ not found isearch continue to tell \"Failing\"."
   (interactive "P\np")
   (if current-prefix-arg
       ;; If C-u was pressed, run standard isearch
@@ -351,9 +362,9 @@ normal search.
       (progn
         (pinyin-isearch-load)
         ;; used in all modes
-        (add-hook 'pre-command-hook #'pinyin-isearch--pinyin-fix-jumping-advice nil t))
+        (advice-add 'isearch-printing-char :before #'pinyin-isearch--reset-before-printing-char))
     ;; else
-    (remove-hook 'pre-command-hook #'pinyin-isearch--pinyin-fix-jumping-advice t)))
+    (advice-remove 'isearch-printing-char #'pinyin-isearch--reset-before-printing-char)))
 
 ;;;; -=-= provide
 (provide 'pinyin-isearch)

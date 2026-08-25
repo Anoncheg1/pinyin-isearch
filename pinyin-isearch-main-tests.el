@@ -239,7 +239,7 @@ This have a trick by Emacs, isearch-search-and-update call
               (should (= (point) 19)))))))
 
 (ert-deftest test-pinyin-isearch-main3-strict-aspostraphe2 ()
-  ""
+  "."
   (progn (setq pinyin-isearch-chars--cached-query nil)
          (setq pinyin-isearch-chars-fallback t)
          (setq pinyin-isearch-strict t)
@@ -493,44 +493,45 @@ This have a trick by Emacs, isearch-search-and-update call
       ;; Cleanup: Deactivate the mode
       (pinyin-isearch-mode -1))))
 
-;; (ert-deftest test-pinyin-isearch-fix ()
-;;   "Test that C -s M -s f1 displays a help window listing the pinyin functions.
-;; This have a trick by Emacs, isearch-search-and-update call
-;;  `pinyin-isearch-both-regexp-function' first in temp buffer and them
-;;  several times in current, that is why we set variables here in current buffer (for visually testing)."
-;;   (progn
-;;     (setq pinyin-isearch-chars--cached-query nil)
-;;     (setq pinyin-isearch-strict nil)
-;;     (setq pinyin-isearch-chars-fallback t)
-;;     (setq pinyin-isearch-full-fallback t)
-;;     (setq pinyin-isearch-fix-jumping-flag t)
-;;     (with-temp-buffer
-;;       (with-test-isearch-env
-;;        (let ((pinyin-isearch-strict nil)
-;;              (pinyin-isearch-chars-fallback t)
-;;              (pinyin-isearch-full-fallback t)
-;;              (pinyin-isearch-fix-jumping-flag t))
-;;          (setq pinyin-isearch-chars--cached-query nil)
-;;          (setq pinyin-isearch-fix-jumping-flag t)
-;;      (setq pinyin-isearch-chars--cached-query t)
-;;      ;; (insert "foo bar foobar baz")
-;;      (insert "shǒu . 手 .")
-;;      (goto-char (point-min))
-;;      ;; (org-mode)
-;;      (isearch-mode t nil nil t #'pinyin-isearch-both-regexp-function)
-;;      ;; (isearch-mode t) ; without this res
-;;      ;; (pinyin-isearch-mode t)
-;;      ;; Type first batch
-;;      (dolist (ch (string-to-list "shou"))
-;;        (isearch-process-search-char ch))
-;;      (let ((pos1 (point)))
-;;        (print pos1)))))) ; this work
-;;   ;; Type second batch
-;;   (dolist (ch (string-to-list "ou"))
-;;     (isearch-process-search-char ch))
-;;   (let ((pos2 (point)))
-;;     ;; (isearch-exit)
-;;     (cons pos1 pos2))))))
+(defun run-pinyin-isearch-fix-test(jumping-flag)
+    (progn
+    (advice-add 'isearch-process-search-char :before #'pinyin-isearch--reset-before-printing-char)
+    ;; (setq pinyin-isearch-chars--cached-query nil)
+    ;; (setq pinyin-isearch-strict nil)
+    ;; (setq pinyin-isearch-chars-fallback t)
+    ;; (setq pinyin-isearch-full-fallback t)
+    ;; (setq pinyin-isearch-fix-jumping-flag t)
+    (with-temp-buffer
+      (with-test-isearch-env
+       (let ((pinyin-isearch-chars--cached-query nil)
+             (pinyin-isearch-fix-jumping-flag jumping-flag))
+     (insert "shǒu . 手 .")
+     (goto-char (point-min))
+     (isearch-mode t nil nil t #'pinyin-isearch-both-regexp-function)
+
+     ;; Type first batch
+     (dolist (ch (string-to-list "sh"))
+       ;; (goto-char isearch-opoint)
+       ;; (setq isearch-adjusted t)
+       (isearch-process-search-char ch))
+     (let ((pos1 (point)))
+       ;; (print pos1)
+        ;; Type second batch
+       (dolist (ch (string-to-list "ou"))
+         (isearch-process-search-char ch))
+       (let ((pos2 (point)))
+         ;; (isearch-exit)
+         (advice-remove 'isearch-process-search-char #'pinyin-isearch--reset-before-printing-char)
+         (cons pos1 pos2))))))))
+
+(ert-deftest test-pinyin-isearch-fix ()
+  "Test that C -s M -s f1 displays a help window listing the pinyin functions.
+This have a trick by Emacs, isearch-search-and-update call
+ `pinyin-isearch-both-regexp-function' first in temp buffer and them
+ several times in current, that is why we set variables here in current buffer (for visually testing)."
+  (should (equal (run-pinyin-isearch-fix-test t) '(3 . 5)))
+  (should (equal (run-pinyin-isearch-fix-test nil) '(3 . 9))))
+
 
 
 
