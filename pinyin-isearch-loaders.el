@@ -41,41 +41,48 @@
 (defvar pinyin-isearch-loaders--rules nil "Used in advice.")
 
 (defun pinyin-isearch-loaders--get-location-of-input-method (leim-name)
-  "Get elisp file location.
-Argument LEIM-NAME input-method name."
-  (car (nthcdr 5 (assoc leim-name input-method-alist))))
+  "Return Quail package file location for input method LEIM-NAME.
+Signals a single error if LEIM-NAME is not found, or if the entry
+is not a valid Quail method with a package name."
+  (let ((entry (assoc leim-name input-method-alist)))
+    (unless (and entry
+                 (>= (length entry) 6)
+                 (eq (nth 2 entry) 'quail-use-package))
+      (error "Cannot determine Quail file for `%s'" leim-name))
+    (nth 5 entry)))
+
 
 (defun pinyin-isearch-loaders--quail-define-rules-advice (&rest rules)
   "Replace `quail-define-rules' to catch passed arguments.
 Optional argument ARGS catched RULES argument."
   `(setq pinyin-isearch-loaders--rules ',rules))
 
-(defun pinyin-isearch-loaders--quail-define-package-advice (&rest _args)
-  "Replace `quail-define-package' to disable it.
-Argument ARGS not used."
-  nil)
-
-(defun pinyin-isearch-loaders--quail-defrule-advice (&rest _args)
-  "Replace `quail-defrule' to disable it.
-Argument ARGS not used."
-  nil)
 
 (defun pinyin-isearch-loaders--quail-extractor (quail-file)
   "Used to set variable `pinyin-isearch-loaders--punct-rules'.
 Argument QUAIL-FILE \"quail/PY.el\" for example."
-  (advice-add 'quail-define-rules :override #'pinyin-isearch-loaders--quail-define-rules-advice)
-  (advice-add 'quail-define-package :override #'pinyin-isearch-loaders--quail-define-package-advice)
-  (advice-add 'quail-defrule :override #'pinyin-isearch-loaders--quail-defrule-advice)
-  (load (concat (pinyin-isearch-loaders--get-location-of-input-method quail-file) ".el"))
-  (advice-remove 'quail-define-rules #'pinyin-isearch-loaders--quail-define-rules-advice)
-  (advice-remove 'quail-define-package #'pinyin-isearch-loaders--quail-define-package-advice)
-  (advice-remove 'quail-defrule #'pinyin-isearch-loaders--quail-defrule-advice)
-  ;; return
-  pinyin-isearch-loaders--rules)
+
+  ;; Advices here used for speed and memory optimization.
+  ;; IIRC some other package faced a similar problem, we should `M-x
+  ;; report-emacs-bug' and ask for an easier way to access this data (maybe
+  ;; it can be reconstructed from the input-method table, but either way
+  ;; Emacs should provide that).
+  (unwind-protect ;; Remove the advices even in case of an error!
+      (let (pinyin-isearch-loaders--rules)
+        (advice-add 'quail-define-rules :override
+                    #'pinyin-isearch-loaders--quail-define-rules-advice)
+        ;; (advice-add 'quail-define-package :override #'ignore) ; used for speed optimization
+        ;; (advice-add 'quail-defrule :override #'ignore)
+        (load (concat (pinyin-isearch-loaders--get-location-of-input-method quail-file) ".el"))
+        ;; return
+        pinyin-isearch-loaders--rules)
+    (advice-remove 'quail-define-rules #'pinyin-isearch-loaders--quail-define-rules-advice)
+    ;; (advice-remove 'quail-define-package #'ignore)
+    ;; (advice-remove 'quail-defrule #'ignore)
+    ))
 
 (defun pinyin-isearch-loaders--punct-quail-filter (rules)
   "Load RULES for single letters of punctuations."
-  ;; (seq-filter (lambda (x) (= (length (car x)) 1)) rules))
   (seq-filter (lambda (x) (length= (car x) 1)) rules))
 
 
@@ -100,19 +107,14 @@ Because ǚ and other u tones is very same and with same letter."
 
 ;; ---------- load pinyin from "quail/sisheng"  --------
 
-;; `sisheng-regexp', `sisheng-vowel-table', `sisheng-syllable-table'.
-(defun pinyin-isearch-loaders--quail-make-sisheng-rules-advice (_syllable)
-  "Suppress function `quail-make-sisheng-rules'.
-From quail/sisheng.el, for speed.
-Argument SYLLABLE not used."
-  nil)
-
 (defun pinyin-isearch-loaders-load-chinese-sisheng ()
   "We don't use result, we need only loaded variables `sisheng-*'."
   (when (not (boundp 'sisheng-vowel-table))
-    (advice-add 'quail-make-sisheng-rules :override #'pinyin-isearch-loaders--quail-make-sisheng-rules-advice)
+    ;; for speed: `sisheng-regexp', `sisheng-vowel-table', `sisheng-syllable-table'.
+    ;; (advice-add 'quail-make-sisheng-rules :override #'ignore)
     (pinyin-isearch-loaders--quail-extractor "chinese-sisheng")
-    (advice-remove 'quail-make-sisheng-rules #'pinyin-isearch-loaders--quail-make-sisheng-rules-advice)))
+    ;; (advice-remove 'quail-make-sisheng-rules #'ignore)
+    ))
 
 (provide 'pinyin-isearch-loaders)
 ;;; pinyin-isearch-loaders.el ends here

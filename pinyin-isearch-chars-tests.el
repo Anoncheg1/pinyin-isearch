@@ -109,6 +109,7 @@
       (setq pinyin-isearch-strict nil)
       (setq pinyin-isearch-chars-fallback t)
       (setq pinyin-isearch-chars--cached-query nil)
+      (should (equal (pinyin-isearch-chars--recursion "nug") '((("nu") ("guo" "gun" "gui" "guang" "guan" "guai" "gua" "gu" "gou" "gong" "geng" "gen" "gei" "ge" "gao" "gang" "gan" "gai" "ga")) (("nu") ("g")) (("n") ("ug")))))
       (should (equal (pinyin-isearch-chars--recursion "") nil))
       (should (equal (pinyin-isearch-chars--recursion "i") '((("\34i")))))
       (should (equal (pinyin-isearch-chars--recursion nil) nil))
@@ -126,6 +127,7 @@
       (should (equal (pinyin-isearch-chars--recursion "zuhna") '((("zu") ("\34hna"))) ))
       (should (equal (pinyin-isearch-chars--recursion "zu.na") '((("zu") (".") ("\34na")) (("zu") (".") ("nao" "nang" "nan" "nai" "na")) (("zu") (".") ("n") ("ao" "ang" "an" "ai" "a")) (("zu") (".") ("n") ("\34a")) (("zu") ("\34.na"))) ))
       (should (equal (pinyin-isearch-chars--recursion "nai") '((("nai")) (("na") ("\34i")) (("n") ("a") ("\34i")) (("n") ("ai")) (("n") ("\34ai"))) ))
+      (should (equal (pinyin-isearch-chars--recursion "ia") '((("ia")))))
       )
 
     (with-temp-buffer
@@ -152,7 +154,7 @@
       (setq pinyin-isearch-chars-fallback nil)
       (should (equal (pinyin-isearch-chars--recursion "nunu") '((("nu") ("nu")))))
       (should (equal (pinyin-isearch-chars--recursion "cccc") nil))
-      (should (equal (pinyin-isearch-chars--recursion "a>.") '((("a") (">") ("."))))))
+      (should (equal (pinyin-isearch-chars--recursion "a>.") '((("a") (">") (".")))))) ; a is a character, > and . is not
 
     (with-temp-buffer
       ;; STRICT: fallback enabled

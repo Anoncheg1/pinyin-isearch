@@ -67,8 +67,10 @@
 
 (require 'subr-x) ; for 28.1 and `string-empty-p'
 
+
 (declare-function pinyin-isearch-loaders-load-chinese-sisheng "pinyin-isearch-loaders") ; load sisheng variables
 
+;;;; -=-= vars
 (defvar pinyin-isearch-strict) ; "Located in `pinyin-isearch'."
 
 (defvar pinyin-isearch-full-fallback) ; "Located in `pinyin-isearch.el'."
@@ -113,7 +115,7 @@
     ("üē" "ue"))
   "Used to convert sisheng pinyin to toneless pinyin.")
 
-
+;;;; -=-= fns
 (defun pinyin-isearch-pinyin--sisheng-to-normal (syllable)
   "Fix tones in syllable with `sisheng-regexp' and `sisheng-vowel-table'.
 Used to create list `pinyin-isearch-pinyin-syllable-table' from original
@@ -348,6 +350,6 @@ Argument STRING is query."
           (pinyin-isearch-pinyin-regexp-sub string))) ; MAIN call
 
   pinyin-isearch-pinyin--cached-regex)
-
+;;;; -=-= provide
 (provide 'pinyin-isearch-pinyin)
 ;;; pinyin-isearch-pinyin.el ends here

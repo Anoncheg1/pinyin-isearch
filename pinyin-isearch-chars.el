@@ -63,26 +63,26 @@
 
 (require 'subr-x) ; for 28.1 and `string-join'
 
+;; We repeat definition here because we may use this file
+;; without pinyin-isearch.el for tests only.
 (defgroup pinyin-isearch nil
   "Pinyin-isearch customization."
   :group 'pinyin-isearch)
 
+;;;; -=-= vars
 (defvar pinyin-isearch-strict) ; (require 'pinyin-isearch)
 
 (defvar pinyin-isearch-full-fallback) : ; (require 'pinyin-isearch)
 
+
 (defcustom pinyin-isearch-chars-fallback t
-  "Non-nil means add pinyin that was not matched.
-full query string as a regex variant.
-But only if pinyin cant be interpreted as any characters (before even
- search).
-If there is undecoded letters at the end after dissasembling."
-  :local t
+  "Non-nil means search for latin also for character after first."
+  :local t ; because pinyin-isearch-mode with :global nil.
   :type 'boolean
   :group 'pinyin-isearch)
 
 
-;; ---------- loaded punct and concatenate: py + punct --------
+;;;; -=-= vars: loaded punct and concatenate: py + punct
 (defvar pinyin-isearch-chars--py-rules nil
   "Rules in form: ((\"a\" \"阿啊呵腌嗄锕吖\") (\"ai\" \"爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹\")...")
 
@@ -103,7 +103,7 @@ If there is undecoded letters at the end after dissasembling."
 (defconst pinyin-isearch-chars--non-syllable-marker-string "\34") ; or "\x1c"
 
 
-;; ---------- prepare syllable table ---------
+;;;; -=-= fns: prepare syllable table
 (defun pinyin-isearch-chars--rules-to-first-syllable-letters (rules)
   "Create table that allow quickly find syllable by it's first letters.
 Argument RULES argument of funcion `quail-define-rules'."
@@ -133,7 +133,7 @@ Argument RULES argument of funcion `quail-define-rules'."
     (setq pinyin-isearch-chars--first-syllable-letters
           (pinyin-isearch-chars--rules-to-first-syllable-letters pinyin-isearch-chars--py-punct-rules))))
 
-;; ----------- tools -----------
+;;;; -=-= fns: tools
 (defun pinyin-isearch-chars--get-syllables-by-prefix (st)
   "Interface to constant `pinyin-isearch-chars--first-syllable-letters'.
 For \"a\" we get (ao ang an ai a).
@@ -459,6 +459,6 @@ cases."
         (pinyin-isearch-full-fallback nil))
     (pinyin-isearch-chars-regexp-function string lax)))
 
-
+;;;; -=-= provide
 (provide 'pinyin-isearch-chars)
 ;;; pinyin-isearch-chars.el ends here
