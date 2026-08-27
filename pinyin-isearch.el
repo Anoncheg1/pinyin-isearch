@@ -220,10 +220,9 @@ Used in `pinyin-isearch-forwar' and `pinyin-isearch-backward'."
     ('pinyin		#'pinyin-isearch-pinyin-regexp-function)))
 
 
-
 (defun pinyin-isearch--reset-before-printing-char (&rest _args)
   "Reset Isearch start point before inserting a printing character.
-Prevents 'jumping' past the original start when typing characters
+Prevents jumping past the original start when typing characters
 during a pinyin Isearch session.
 In other words, force search from original position.
 In other words, when in incremental search result appear at back after
@@ -236,9 +235,6 @@ In other words, when in incremental search result appear at back after
   ;;                    pinyin-isearch-chars-strict-regexp-function
   ;;                    pinyin-isearch-both-regexp-function
   ;;                    pinyin-isearch-both-strict-regexp-function))))
-  ;;            ;; (markerp isearch-opoint)
-  ;;            (>= isearch-opoint (point-min))
-  ;;            (<= isearch-opoint (point-max))))
   (when (and pinyin-isearch-fix-jumping-flag
              (memq isearch-regexp-function
                    '(pinyin-isearch-pinyin-regexp-function
@@ -246,9 +242,6 @@ In other words, when in incremental search result appear at back after
                      pinyin-isearch-chars-strict-regexp-function
                      pinyin-isearch-both-regexp-function
                      pinyin-isearch-both-strict-regexp-function)))
-             ;; (markerp isearch-opoint)
-             ;; (>= isearch-opoint (point-min))
-             ;; (<= isearch-opoint (point-max)))
     ;; (print "pinyin-isearch--reset-before-printing-char N2")
     (goto-char isearch-opoint)
     (setq isearch-adjusted t)))
