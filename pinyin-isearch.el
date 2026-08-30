@@ -318,9 +318,22 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
 ;; Build the M-s keymap for the minor mode
 (defvar pinyin-isearch-m-s-map
   (let ((map (make-sparse-keymap)))
+    ;; Explicitly bind the newly created pinyin toggles to YOUR map
+    ;; This guarantees they show up when a user hits C-s M-s F1
+    ;; (before 30.2)
+    (define-key map (kbd "n") #'isearch-toggle-both)
+    (define-key map (kbd "p") #'isearch-toggle-pinyin)
+    (define-key map (kbd "h") #'isearch-toggle-characters)
+    (define-key map (kbd "s") #'isearch-toggle-strict-both) ; additional
+    (define-key map (kbd "u") #'isearch-toggle-strict-characters) ; additional
+
+    ;; In short, This line add native isearch key to help window.
+    ;; Inherit from the standard isearch-mode M-s prefix map
+    ;; Will show: standard options (like M-s _ for symbol search).
     (set-keymap-parent map (lookup-key isearch-mode-map (kbd "M-s")))
     map)
   "Keymap for M-s prefix in `pinyin-isearch-mode'.")
+
 
 ;;;; -=-= The minor mode definition
 ;;;###autoload
@@ -360,10 +373,19 @@ which can be customized to set the default behavior."
       (progn
         ;; Load any additional configuration
         (pinyin-isearch-load)
-        ;; used in all modes
-        (advice-add 'isearch-printing-char :before #'pinyin-isearch--reset-before-printing-char))
+        ;; Used in all modes:
+        (advice-add 'isearch-printing-char :before #'pinyin-isearch--reset-before-printing-char)
+        ;; Help system for Emacs 30.2:
+        (when (and (boundp 'isearch--display-help-action)
+                   (fboundp #'isearch-help-for-help-internal))
+          (require 'pinyin-isearch-help nil t)
+          (when (fboundp 'pinyin-isearch-help-enable)
+            (pinyin-isearch-help-enable))))
     ;; else - Clean up when disabling the mode
-    (advice-remove 'isearch-printing-char #'pinyin-isearch--reset-before-printing-char)))
+    (advice-remove 'isearch-printing-char #'pinyin-isearch--reset-before-printing-char)
+    ;; Disable Help system for Emacs 30.2:
+    (when (fboundp 'pinyin-isearch-help-disable)
+      (pinyin-isearch-help-disable))))
 
 ;;;; -=-= provide
 (provide 'pinyin-isearch)
