@@ -220,6 +220,7 @@ Used in `pinyin-isearch-forwar' and `pinyin-isearch-backward'."
     ('pinyin		#'pinyin-isearch-pinyin-regexp-function)))
 
 
+
 (defun pinyin-isearch--reset-before-printing-char (&rest _args)
   "Reset Isearch start point before inserting a printing character.
 Prevents jumping past the original start when typing characters
@@ -287,65 +288,69 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
     (pinyin-isearch-load) ; lazy loading, for usage without minor mode
     (isearch-mode nil regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch))))
 
-;; Generate the toggles globally (Emacs automatically binds them to M-s p, M-s h, M-s s)
-;; Toggne off/on normal mode.
+;; Use the macro to define the toggle (off/on) command and key binding
+;; Add toggles globally (binds them to M-s p, M-s p, M-s h, M-s s)
 ;; TODO: use "s" key to enable strict mode
 ;; for current pinuin/characrters/both modes if active.
-(isearch-define-mode-toggle "both" "n" pinyin-isearch-both-regexp-function
-  "Turning on default search for pinyin and characters.")
-(isearch-define-mode-toggle "pinyin" "p" pinyin-isearch-pinyin-regexp-function
-  "Turning on pinyin search (P).")
-(isearch-define-mode-toggle "characters" "h" pinyin-isearch-chars-regexp-function
-  "Turning on characters search (H).")
-(isearch-define-mode-toggle "strict-both" "s" pinyin-isearch-both-strict-regexp-function
-  "Turning on strict pinyin and characters search (S).")
-(isearch-define-mode-toggle "strict-characters" "u" pinyin-isearch-chars-strict-regexp-function
-  "Turning on strict characters search (HS).")
 
-(put #'pinyin-isearch-both-regexp-function #'isearch-message-prefix "Pinyin ")
-(put #'pinyin-isearch-pinyin-regexp-function #'isearch-message-prefix "PinyinP ")
-(put #'pinyin-isearch-chars-regexp-function #'isearch-message-prefix "PinyinH ")
-(put #'pinyin-isearch-both-strict-regexp-function #'isearch-message-prefix "PinyinS ")
-(put #'pinyin-isearch-chars-strict-regexp-function #'isearch-message-prefix "PinyinHS ")
+(isearch-define-mode-toggle "pinyin-both" "n" pinyin-isearch-both-regexp-function
+  "Toggle Pinyin+characters search.")
 
+(isearch-define-mode-toggle "pinyin-only" "p" pinyin-isearch-pinyin-regexp-function
+  "Toggle Pinyin-only search.")
+
+(isearch-define-mode-toggle "characters-only" "h" pinyin-isearch-chars-regexp-function
+  "Toggle characters-only search.")
+
+(isearch-define-mode-toggle "pinyin-strict-both" "s" pinyin-isearch-both-strict-regexp-function
+  "Toggle strict Pinyin+characters search.")
+
+(isearch-define-mode-toggle "pinyin-strict-characters" "u" pinyin-isearch-chars-strict-regexp-function
+  "Toggle strict characters search.")
+
+(put #'pinyin-isearch-both-regexp-function #'isearch-message-prefix "Pinyin+both ")
+(put #'pinyin-isearch-pinyin-regexp-function #'isearch-message-prefix "Pinyin-only ")
+(put #'pinyin-isearch-chars-regexp-function #'isearch-message-prefix "Characters-only ")
+(put #'pinyin-isearch-both-strict-regexp-function #'isearch-message-prefix "Strict both ")
+(put #'pinyin-isearch-chars-strict-regexp-function #'isearch-message-prefix "Strict characters ")
+
+
+;; Build the M-s keymap for the minor mode
 (defvar pinyin-isearch-m-s-map
   (let ((map (make-sparse-keymap)))
-    ;; Explicitly bind the newly created pinyin toggles to YOUR map
-    ;; This guarantees they show up when a user hits C-s M-s F1
-    (define-key map (kbd "n") #'isearch-toggle-both)
-    (define-key map (kbd "p") #'isearch-toggle-pinyin)
-    (define-key map (kbd "h") #'isearch-toggle-characters)
-    (define-key map (kbd "s") #'isearch-toggle-strict-both) ; additional
-    (define-key map (kbd "u") #'isearch-toggle-strict-characters) ; additional
-
-    ;; In short, This line add native isearch key to help window.
-    ;; Inherit from the standard isearch-mode M-s prefix map
-    ;; Will show: standard options (like M-s _ for symbol search).
     (set-keymap-parent map (lookup-key isearch-mode-map (kbd "M-s")))
     map)
-  "Keymap for \\[search-map] bindings inside `pinyin-isearch-mode'.")
+  "Keymap for M-s prefix in `pinyin-isearch-mode'.")
 
-
+;;;; -=-= The minor mode definition
 ;;;###autoload
 (define-minor-mode pinyin-isearch-mode
-  "Replace key bindings for functions `isearch-forward' and `isearch-backward'.
+  "Replace isearch key bindings to support Pinyin searching.
+Focus on functions `isearch-forward' and `isearch-backward'.
 Allow with query {pinyin} to find {pīnyīn}.  \\C-\\u \\C-\\s used for
 normal search.
-- M -s p `isearch-toggle-pinyin' to activate pinyin isearch submode.
-- M -s h `isearch-toggle-characters' to activate Chinese characters
- isearch submode.
-- M -s s `isearch-toggle-strict-both' to activate Chinese and pinying
- characters isearch submode.
-- M -s u `isearch-toggle-strict-characters' to activate strict Chinese
- characters isearch submode.
-- M -s n to activate default pinying-isearch mode.
-- M -s r to activate standard search."
+
+Key bindings in isearch mode:
+- M-s n : Toggle Pinyin+characters search
+- M-s p : Toggle Pinyin-only search
+- M-s h : Toggle characters-only search
+- M-s s : Toggle strict Pinyin+characters search
+- M-s u : Toggle strict characters-only search
+- M-s r : Return to standard (non-Pinyin) search
+
+Use C-s and C-r for forward/backward search.
+
+The search mode is controlled by `pinyin-isearch-default-mode',
+which can be customized to set the default behavior."
   :lighter " p-isearch"
   :global nil
   :group 'pinyin-isearch
   :keymap (let ((map (make-sparse-keymap)))
+            ;; Bind the main search commands
             (define-key map (kbd "C-s") #'pinyin-isearch-forward)
             (define-key map (kbd "C-r") #'pinyin-isearch-backward)
+
+            ;; Bind the M-s prefix map
             (define-key map (kbd "M-s") pinyin-isearch-m-s-map)
             map)
   ;; (when pinyin-isearch-mode
@@ -353,10 +358,11 @@ normal search.
   ;; Manage the hooks cleanly
   (if pinyin-isearch-mode
       (progn
+        ;; Load any additional configuration
         (pinyin-isearch-load)
         ;; used in all modes
         (advice-add 'isearch-printing-char :before #'pinyin-isearch--reset-before-printing-char))
-    ;; else
+    ;; else - Clean up when disabling the mode
     (advice-remove 'isearch-printing-char #'pinyin-isearch--reset-before-printing-char)))
 
 ;;;; -=-= provide
