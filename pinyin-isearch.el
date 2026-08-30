@@ -375,7 +375,7 @@ which can be customized to set the default behavior."
         (pinyin-isearch-load)
         ;; Used in all modes:
         (advice-add 'isearch-printing-char :before #'pinyin-isearch--reset-before-printing-char)
-        ;; Help system for Emacs 30.2:
+        ;; Enable exntended Help system:
         (when (and (boundp 'isearch--display-help-action)
                    (fboundp #'isearch-help-for-help-internal))
           (require 'pinyin-isearch-help nil t)
@@ -383,7 +383,7 @@ which can be customized to set the default behavior."
             (pinyin-isearch-help-enable))))
     ;; else - Clean up when disabling the mode
     (advice-remove 'isearch-printing-char #'pinyin-isearch--reset-before-printing-char)
-    ;; Disable Help system for Emacs 30.2:
+    ;; Disable Extended Help system
     (when (fboundp 'pinyin-isearch-help-disable)
       (pinyin-isearch-help-disable))))
 
