@@ -336,7 +336,7 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
     ;; Will show: standard options (like M-s _ for symbol search).
     (set-keymap-parent map (lookup-key isearch-mode-map (kbd "M-s")))
     map)
-  "Keymap for \"M-s\" prefix in `pinyin-isearch-mode'.")
+  "Keymap for M - s key prefix in `pinyin-isearch-mode'.")
 
 
 ;;;; -=-= The minor mode definition
@@ -347,7 +347,7 @@ Focus on functions `isearch-forward' and `isearch-backward'.
 Allow with query {pinyin} to find {pīnyīn}.  \\C-\\u \\C-\\s used for
 normal search.
 
-Subcommands (after M-s):
+Subcommands (after M - s key):
 - n - Toggle Pinyin+characters search
 - p - Toggle Pinyin-only search
 - h - Toggle characters-only search
