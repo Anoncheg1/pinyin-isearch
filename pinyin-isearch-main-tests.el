@@ -484,11 +484,11 @@ This have a trick by Emacs, isearch-search-and-update call
             ;; (print (buffer-substring-no-properties (point-min) (point-max)))
 
             (goto-char (point-min))
-            (should (search-forward "isearch-toggle-pinyin" nil t))
+            (should (search-forward "isearch-toggle-pinyin-both" nil t))
             (goto-char (point-min))
-            (should (search-forward "isearch-toggle-characters" nil t))
+            (should (search-forward "isearch-toggle-pinyin-only" nil t))
             (goto-char (point-min))
-            (should (search-forward "isearch-toggle-strict" nil t))))
+            (should (search-forward "isearch-toggle-characters-only" nil t))))
 
       ;; Cleanup: Deactivate the mode
       (pinyin-isearch-mode -1))))

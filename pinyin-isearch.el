@@ -293,6 +293,11 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
 ;; TODO: use "s" key to enable strict mode
 ;; for current pinuin/characrters/both modes if active.
 
+;; Arguments: mode key function &optional docstring &rest body
+;; Create:
+;; 1) isearch-toggle-MODE
+;; 2) A key binding in `isearch-mode-map` to `M-s KEY`
+;; 3) for FUNCTION set the `isearch-message-prefix` property and update `search-default-mode` custom type
 (isearch-define-mode-toggle "pinyin-both" "n" pinyin-isearch-both-regexp-function
   "Toggle Pinyin+characters search.")
 
@@ -320,11 +325,11 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
   (let ((map (make-sparse-keymap)))
     ;; Explicitly bind the newly created pinyin toggles to YOUR map
     ;; This guarantees they show up when a user hits C-s M-s F1
-    (define-key map (kbd "n") #'pinyin-isearch-both-regexp-function)
-    (define-key map (kbd "p") #'pinyin-isearch-pinyin-regexp-function)
-    (define-key map (kbd "h") #'pinyin-isearch-chars-regexp-function)
-    (define-key map (kbd "s") #'pinyin-isearch-both-strict-regexp-function) ; additional
-    (define-key map (kbd "u") #'pinyin-isearch-chars-strict-regexp-function) ; additional
+    (define-key map (kbd "n") #'isearch-toggle-pinyin-both)		; pinyin-both
+    (define-key map (kbd "p") #'isearch-toggle-pinyin-only)		; pinyin-only
+    (define-key map (kbd "h") #'isearch-toggle-characters-only)	; characters-only
+    (define-key map (kbd "s") #'isearch-toggle-pinyin-strict-both)	; additional - pinyin-strict-both
+    (define-key map (kbd "u") #'isearch-toggle-pinyin-strict-characters) ; additional - pinyin-strict-characters
 
     ;; In short, This line add native isearch key to help window.
     ;; Inherit from the standard isearch-mode M-s prefix map
