@@ -320,12 +320,11 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
   (let ((map (make-sparse-keymap)))
     ;; Explicitly bind the newly created pinyin toggles to YOUR map
     ;; This guarantees they show up when a user hits C-s M-s F1
-    ;; (before 30.2)
-    (define-key map (kbd "n") #'isearch-toggle-both)
-    (define-key map (kbd "p") #'isearch-toggle-pinyin)
-    (define-key map (kbd "h") #'isearch-toggle-characters)
-    (define-key map (kbd "s") #'isearch-toggle-strict-both) ; additional
-    (define-key map (kbd "u") #'isearch-toggle-strict-characters) ; additional
+    (define-key map (kbd "n") #'pinyin-isearch-both-regexp-function)
+    (define-key map (kbd "p") #'pinyin-isearch-pinyin-regexp-function)
+    (define-key map (kbd "h") #'pinyin-isearch-chars-regexp-function)
+    (define-key map (kbd "s") #'pinyin-isearch-both-strict-regexp-function) ; additional
+    (define-key map (kbd "u") #'pinyin-isearch-chars-strict-regexp-function) ; additional
 
     ;; In short, This line add native isearch key to help window.
     ;; Inherit from the standard isearch-mode M-s prefix map
@@ -375,7 +374,7 @@ which can be customized to set the default behavior."
         (pinyin-isearch-load)
         ;; Used in all modes:
         (advice-add 'isearch-printing-char :before #'pinyin-isearch--reset-before-printing-char)
-        ;; Enable exntended Help system:
+        ;; Enable exntended Help system (C-s F1 F1)
         (when (and (boundp 'isearch--display-help-action)
                    (fboundp #'isearch-help-for-help-internal))
           (require 'pinyin-isearch-help nil t)

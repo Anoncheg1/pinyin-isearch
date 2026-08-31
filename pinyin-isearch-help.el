@@ -2,6 +2,8 @@
 
 ;;; Commentary:
 
+;; For C-s F1 F1
+
 ;; We show help screen with when isearch with pinyin-isearch is active.
 ;; We show original help of isearch and inherit keys.
 
@@ -31,7 +33,7 @@
     (define-key map "p" #'pinyin-isearch-help-describe-mode)
     map)
   "Extended help map for `pinyin-isearch-mode'.
-Inherits from `isearch-help-map' and adds the 'p' binding.")
+Inherits from `isearch-help-map' and add one key binding.")
 
 ;; ============================================
 ;; 1. Show all pinyin keys and documentation in help screen
@@ -80,8 +82,8 @@ Argument ORIG-FUN and ARGS is `isearch-help-for-help'."
 
 (defun pinyin-isearch-help-enable ()
   "Enable pinyin-isearch help extension.
-This adds a 'p' option to the isearch help screen when
-`pinyin-isearch-mode' is active."
+To the isearch help screen when `pinyin-isearch-mode' is active, that is
+ checked in `pinyin-isearch-help-advice'."
   (interactive)
   (when (and (boundp 'isearch--display-help-action)
              (boundp 'isearch-help-map))
