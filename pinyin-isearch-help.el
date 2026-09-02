@@ -41,24 +41,6 @@
 
 (eval-when-compile (require 'help-macro))
 
-;; ============================================
-;; 1. Extended help map (inherits from isearch-help-map)
-;; ============================================
-
-(defun pinyin-isearch-help-describe-mode ()
-  "Display documentation of Pinyin-Isearch mode."
-  (interactive)
-  (let ((display-buffer-overriding-action isearch--display-help-action))
-    (describe-function #'pinyin-isearch-mode))
-  (when isearch-mode (isearch-update)))
-
-(defvar pinyin-isearch-help-map
-  (let ((map (make-sparse-keymap)))
-    (set-keymap-parent map isearch-help-map)
-    (define-key map "p" #'pinyin-isearch-help-describe-mode)
-    map)
-  "Extended help map for `pinyin-isearch-mode'.
-Inherits from `isearch-help-map' and add one key binding.")
 
 ;; ============================================
 ;; 1. Show all pinyin keys and documentation in help screen
@@ -84,12 +66,11 @@ Inherits from `isearch-help-map' and add one key binding.")
    "  b   Show standard Isearch key bindings\n"
    "  k   Show documentation for a specific key\n"
    "  m   Show Isearch mode documentation\n"
-   "  p   Show this pinyin-isearch help\n"
    "  q   Exit help")
-  pinyin-isearch-help-map)
+  isearch-help-map)
 
 ;; ============================================
-;; 4. Help advice
+;; 2. Help advice
 ;; ============================================
 
 (defun pinyin-isearch-help-advice (orig-fun &rest args)
@@ -99,10 +80,11 @@ Argument ORIG-FUN and ARGS is `isearch-help-for-help'."
       (let ((display-buffer-overriding-action isearch--display-help-action))
         (pinyin-isearch-help-for-help-internal)
         (isearch-update))
+    ;; else
     (apply orig-fun args)))
 
 ;; ============================================
-;; 4. Enable
+;; 3. Enable
 ;; ============================================
 
 (defun pinyin-isearch-help-enable ()
@@ -117,17 +99,6 @@ To the isearch help screen when `pinyin-isearch-mode' is active, that is
     (message "Pinyin-isearch help enabled")
     t))
 
-;; ============================================
-;; 5. Disable
-;; ============================================
-
-(defun pinyin-isearch-help-disable ()
-  "Disable pinyin-isearch help extension."
-  (interactive)
-  (advice-remove 'isearch-help-for-help #'pinyin-isearch-help-advice))
-
-
-(provide 'pinyin-isearch-help)
 
 (provide 'pinyin-isearch-help)
 
