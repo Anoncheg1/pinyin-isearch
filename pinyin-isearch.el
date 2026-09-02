@@ -382,7 +382,7 @@ which can be customized to set the default behavior."
         ;; Enable exntended Help system (C-s F1 F1)
         (when (and (boundp 'isearch--display-help-action)
                    (fboundp #'isearch-help-for-help-internal))
-          (require 'pinyin-isearch-help nil t)
+          (require 'pinyin-isearch-help nil)
           (when (fboundp 'pinyin-isearch-help-enable)
             (pinyin-isearch-help-enable))))
     ;; else - Clean up when disabling the mode
