@@ -458,7 +458,7 @@ This have a trick by Emacs, isearch-search-and-update call
               (should (= (point) 40)))))))
 
 
-(ert-deftest test-pinyin-isearch-help-menu ()
+(ert-deftest test-pinyin-isearch-help-menu1 ()
   "Test that C -s M -s f1 displays a help window listing the pinyin functions."
   (with-temp-buffer
     ;; 1. Activate the minor mode
@@ -492,6 +492,40 @@ This have a trick by Emacs, isearch-search-and-update call
 
       ;; Cleanup: Deactivate the mode
       (pinyin-isearch-mode -1))))
+
+(defun test-isearch-help-for-help-capture-buffer ()
+  (let ((captured-content nil)
+        (fake-key (kbd "q"))
+        (orig-read-key-sequence (symbol-function 'read-key-sequence)))
+    ;; Preload the fake key.
+    (setq unread-command-events (list fake-key))
+    ;; Temporarily override read-key-sequence with a capturing wrapper.
+    (cl-letf (((symbol-function 'read-key-sequence)
+               (lambda (&rest args)
+                 (let ((buf (get-buffer " *Metahelp*")))
+                   (when buf
+                     (with-current-buffer buf
+                       (setq captured-content (buffer-substring-no-properties (point-min) (point-max))))))
+                 (apply orig-read-key-sequence args)))
+              ((symbol-function 'move-to-window-line)
+               (lambda (&rest args)
+                 nil)))
+      (isearch-help-for-help))
+    ;; Now captured-content has the buffer content.
+    (should (stringp captured-content))
+    captured-content))
+
+(ert-deftest test-pinyin-isearch-help-menu2 ()
+  "Test that C -s M -s f1 displays a help window listing the pinyin functions."
+  (with-temp-buffer
+    ;; 1. Activate the minor mode
+    (pinyin-isearch-mode 1)
+    ;; 2. Simulate user pressing C-s <f1> <f1>
+
+    (let ((help-content (test-isearch-help-for-help-capture-buffer)))
+      (should (and (boundp 'isearch--display-help-action)
+                   (fboundp #'isearch-help-for-help-internal)))
+      (should (string-match-p "Pinyin-Isearch Help" help-content)))))
 
 (defun run-pinyin-isearch-fix-test(jumping-flag)
     (progn
