@@ -367,7 +367,7 @@ which can be customized to set the default behavior."
             (define-key map (kbd "C-s") #'pinyin-isearch-forward)
             (define-key map (kbd "C-r") #'pinyin-isearch-backward)
 
-            ;; Bind the M-s prefix map
+            ;; Bind the M-s prefix map ;; FIXME: This binding should be activated only during Isearch.
             (define-key map (kbd "M-s") pinyin-isearch-m-s-map)
             map)
   ;; (when pinyin-isearch-mode
@@ -400,7 +400,7 @@ which can be customized to set the default behavior."
 ;; Silence byte-compiler warnings for external symbols
 (defvar isearch-help-map)
 (defvar isearch--display-help-action)
-;; (defvar isearch-regexp-function)
+(defvar pinyin-isearch-help-for-help-internal)
 ;; (defvar isearch-mode)
 ;; (defvar pinyin-isearch-mode)
 
@@ -435,7 +435,8 @@ which can be customized to set the default behavior."
 Argument ORIG-FUN and ARGS is `isearch-help-for-help'."
     (if (and (boundp 'pinyin-isearch-mode) pinyin-isearch-mode)
         (let ((display-buffer-overriding-action isearch--display-help-action))
-          (pinyin-isearch-help-for-help-internal)
+          (when (fboundp 'pinyin-isearch-help-for-help-internal)
+            (pinyin-isearch-help-for-help-internal))
           (isearch-update))
       ;; else
       (apply orig-fun args))))
