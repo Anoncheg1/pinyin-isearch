@@ -382,15 +382,67 @@ which can be customized to set the default behavior."
         ;; Enable exntended Help system (C-s F1 F1)
         (when (and (boundp 'isearch--display-help-action)
                    (fboundp #'isearch-help-for-help-internal))
-          (require 'pinyin-isearch-help nil nil)
-          (when (fboundp 'pinyin-isearch-help-enable)
-            (pinyin-isearch-help-enable))))
+          (when (fboundp 'pinyin-isearch-help-advice)
+            (unless (advice-member-p #'pinyin-isearch-help-advice 'isearch-help-for-help)
+              (advice-add 'isearch-help-for-help :around #'pinyin-isearch-help-advice)))))
     ;; else - Clean up when disabling the mode
     (advice-remove 'isearch-printing-char #'pinyin-isearch--reset-before-printing-char)
     ;; Disable Extended Help system
     ;; (when (fboundp 'pinyin-isearch-help-disable)
     ;;   (pinyin-isearch-help-disable))
     ))
+
+;;; -=-= Help C-s M-s <f1> <f1>
+;; We show help screen with when isearch with pinyin-isearch is active.
+;; We show original help of isearch and inherit keys.
+
+(eval-when-compile (require 'help-macro nil t))
+;; Silence byte-compiler warnings for external symbols
+(defvar isearch-help-map)
+(defvar isearch--display-help-action)
+;; (defvar isearch-regexp-function)
+;; (defvar isearch-mode)
+;; (defvar pinyin-isearch-mode)
+
+;; Only define help if required infrastructure exists
+(when (and (fboundp 'make-help-screen)
+           (boundp 'isearch-help-map))
+
+  (make-help-screen pinyin-isearch-help-for-help-internal
+    (purecopy "Show pinyin-isearch help with key bindings and current status.")
+    (concat
+     "=== Pinyin-Isearch Help ===\n\n"
+     "Key bindings under M-s prefix:\n"
+     "  M-s n   Toggle Pinyin+characters search\n"
+     "  M-s p   Toggle Pinyin-only search\n"
+     "  M-s h   Toggle characters-only search\n"
+     "  M-s s   Toggle strict Pinyin+characters search\n"
+     "  M-s u   Toggle strict characters-only search\n"
+     "  M-s r   Return to standard (non-Pinyin) search\n\n"
+     "Current search mode: "
+     (if (and (boundp 'isearch-regexp-function) isearch-regexp-function)
+         (symbol-name isearch-regexp-function)
+       "standard")
+     "\n\nHelp options (press key):\n"
+     "  b   Show standard Isearch key bindings\n"
+     "  k   Show documentation for a specific key\n"
+     "  m   Show Isearch mode documentation\n"
+     "  q   Exit help")
+    isearch-help-map)
+
+  (defun pinyin-isearch-help-advice (orig-fun &rest args)
+    "Show extended help when `pinyin-isearch-mode' is active.
+Argument ORIG-FUN and ARGS is `isearch-help-for-help'."
+    (if (and (boundp 'pinyin-isearch-mode) pinyin-isearch-mode)
+        (let ((display-buffer-overriding-action isearch--display-help-action))
+          (pinyin-isearch-help-for-help-internal)
+          (isearch-update))
+      ;; else
+      (apply orig-fun args))))
+
+  ;; Auto-enable if mode is already active (useful for eval-buffer)
+  ;; (when (and (boundp 'pinyin-isearch-mode) pinyin-isearch-mode)
+    ;; (pinyin-isearch-help-enable)))
 
 ;;;; -=-= provide
 (provide 'pinyin-isearch)

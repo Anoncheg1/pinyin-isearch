@@ -525,6 +525,7 @@ This have a trick by Emacs, isearch-search-and-update call
     (let ((help-content (test-isearch-help-for-help-capture-buffer)))
       (should (and (boundp 'isearch--display-help-action)
                    (fboundp #'isearch-help-for-help-internal)))
+      ;; (print "ok")
       (should (string-match-p "Pinyin-Isearch Help" help-content)))))
 
 (defun run-pinyin-isearch-fix-test(jumping-flag)
