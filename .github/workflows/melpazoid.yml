@@ -78,7 +78,10 @@ jobs:
           cat output.log | grep ': error: ' | grep -q -v "error: This key sequence is reserved"
           if [ $? -eq 0 ] ; then
             echo "Error detected, failing workflow" ; exit 1
+          else
+            :
           fi
+
 
       - name: Set up Python 3.12 for melpazoid
         uses: actions/setup-python@v5
