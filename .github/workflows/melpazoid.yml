@@ -79,7 +79,7 @@ jobs:
           if [ $? -eq 0 ] ; then
             echo "Error detected, failing workflow" ; exit 1
           else
-            :
+            echo "normal"
           fi
 
 
