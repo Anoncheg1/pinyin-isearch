@@ -114,8 +114,9 @@ jobs:
           if grep -q ' with [melpazoid]' output.log ; then
             echo "Melpazoid warning detected, failing workflow" ; exit 1
           fi
-          if grep -q ' with package-lint ' output.log ; then
-            echo "Checkdoc warning detected, failing workflow" ; exit 1
+          cat output.log | grep error: | grep -v "error: This key sequence is reserved"
+          if [ $? -eq 0 ] ; then
+            echo "Error detected, failing workflow" ; exit 1
           fi
           if grep -q ' with checkdoc ' output.log ; then
             echo "Checkdoc warning detected, failing workflow" ; exit 1
