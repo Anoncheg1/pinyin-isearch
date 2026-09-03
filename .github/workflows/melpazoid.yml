@@ -103,12 +103,10 @@ jobs:
           EXIST_OK: true
         run: |
           echo $GITHUB_REF
-          set +e  # Disable immediate exit on error
-          make -C ~/melpazoid 2>&1 | tee output.log || true
+          make -C ~/melpazoid 2>&1 | tee output.log
           MAKE_EXIT=$?
-          set -e  # Re-enable (optional)
 
-          # [ $make_exit -ne 0 ] && { echo "Make command failed, failing workflow"; exit 1; }
+          # [ $MAKE_EXIT -ne 0 ] && { echo "Make command failed, failing workflow"; exit 1; }
 
           # Strip ANSI codes for clean analysis
           sed -i 's/\x1b\[[0-9;]*m//g' output.log
@@ -119,10 +117,8 @@ jobs:
           if grep ' error: ' output.log | grep -v "This key sequence is reserved" | grep -q . ; then
             echo "Error detected, failing workflow" ; exit 1
           fi
-          if grep ' with [melpazoid]' output.log | grep -q . ; then
-            echo "Melpazoid warning detected, failing workflow" ; exit 1
-          fi
-           if grep ' with melpazoid' output.log | grep -q . ; then
+          if grep -E ' with .?melpazoid' output.log | grep -q . ; then
+            grep -E ' with .?melpazoid' output.log
             echo "Melpazoid warning detected, failing workflow" ; exit 1
           fi
           if grep ' with checkdoc ' output.log | grep -q . ; then
