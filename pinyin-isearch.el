@@ -97,7 +97,7 @@
 ;; is a strict grammatical requirement used to prevent ambiguity.
 ;; Apostrophe use is rare, generally at word boundaries or within
 ;; compounds.  to prevent misreading when a syllable starting
-;; with a, e, or o follows another syllable directly. - chech that it is solved.
+;; with a, e, or o follows another syllable directly.  - chech that it is solved.
 ;; - Upperacase for pinyin.
 ;; - Cangjie search
 ;; - method for  getting pinyin for chinese characters.
@@ -111,6 +111,7 @@
 ;;;; -=-= imports
 (require 'pinyin-isearch-pinyin)
 (require 'pinyin-isearch-chars)
+
 (require 'isearch)
 
 (declare-function pinyin-isearch-pinyin-regexp-function "pinyin-isearch-pinyin" (string &optional lax))
@@ -255,38 +256,30 @@ In other words, when in incremental search result appear at back after
     (pinyin-isearch-pinyin-load))) ; activate pinyin-isearch-pinyin
 
 
-;;;; -=-= interface with isearch and interactives
-;;;###autoload
-(defun pinyin-isearch-forward (&optional regexp-p no-recursive-edit)
-  "Do incremental search forward.
-If called with a universal argument, falls back to standard
- function `isearch-forward'.
-Optional argument REGEXP-P see original function `isearch-forward'.
-Optional argument NO-RECURSIVE-EDIT see original function
- `isearch-forward'.
-TODO: Issue with isearch: in incremental search if first characters was
- not found isearch continue to tell \"Failing\"."
-  (interactive "P\np")
-  (if current-prefix-arg
-      ;; If C-u was pressed, run standard isearch
-      (isearch-forward regexp-p no-recursive-edit)
-    ;; Otherwise, run your custom pinyin isearch
-    (pinyin-isearch-load) ; lazy loading
-    (isearch-mode t regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch))))
+;;;; -=-= keymap
 
-;;;###autoload
-(defun pinyin-isearch-backward (&optional regexp-p no-recursive-edit)
-  "Do incremental search backward.
-If called with a universal argument, falls back to standard
- function `isearch-backward'.
-Optional argument REGEXP-P see original function `isearch-backward'.
-Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
-  (interactive "P\np")
-  (if current-prefix-arg
-      (isearch-backward regexp-p no-recursive-edit)
-    ;; else
-    (pinyin-isearch-load) ; lazy loading, for usage without minor mode
-    (isearch-mode nil regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch))))
+(defun pinyin-isearch-describe-bindings ()
+  "Show bindings in the current (M - s) prefix map."
+  (interactive)
+  (describe-keymap 'pinyin-isearch-m-s-map)
+  (isearch-abort))
+
+
+(defvar pinyin-isearch-m-s-standard-map (lookup-key isearch-mode-map (kbd "M-s"))
+  "`isearch-mode-map' (M - s) keys.")
+
+(defvar pinyin-isearch-m-s-map
+  (let ((map (make-sparse-keymap)))
+    ;; Inherit all standard M-s bindings (including your toggles)
+    (set-keymap-parent map pinyin-isearch-m-s-standard-map)
+    ;; Add F1/C-h help
+    (define-key map (kbd "<f1>") #'pinyin-isearch-describe-bindings)
+    (define-key map (kbd "C-h") #'pinyin-isearch-describe-bindings)
+    (define-key map (kbd "<help>") #'pinyin-isearch-describe-bindings)
+    map)
+  "Keys for (M - s) keys prefix.
+Pressed during `pinyin-isearch-forward' or `pinyin-isearch-backward'.")
+
 
 ;; Use the macro to define the toggle (off/on) command and key binding
 ;; Add toggles globally (binds them to M-s p, M-s p, M-s h, M-s s)
@@ -319,24 +312,49 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
 (put #'pinyin-isearch-both-strict-regexp-function #'isearch-message-prefix "Strict both ")
 (put #'pinyin-isearch-chars-strict-regexp-function #'isearch-message-prefix "Strict characters ")
 
+(defun pinyin-isearch-setup-keymap ()
+  "Extend (M - s prefix) map."
+  (define-key isearch-mode-map (kbd "M-s") pinyin-isearch-m-s-map))
 
-;; Build the M-s keymap for the minor mode
-(defvar pinyin-isearch-m-s-map
-  (let ((map (make-sparse-keymap)))
-    ;; Explicitly bind the newly created pinyin toggles to YOUR map
-    ;; This guarantees they show up when a user hits C-s M-s F1
-    (define-key map (kbd "n") #'isearch-toggle-pinyin-both)		; pinyin-both
-    (define-key map (kbd "p") #'isearch-toggle-pinyin-only)		; pinyin-only
-    (define-key map (kbd "h") #'isearch-toggle-characters-only)	; characters-only
-    (define-key map (kbd "s") #'isearch-toggle-pinyin-strict-both)	; additional - pinyin-strict-both
-    (define-key map (kbd "u") #'isearch-toggle-pinyin-strict-characters) ; additional - pinyin-strict-characters
+(defun pinyin-isearch-cleanup-keymap ()
+  "Restore standard (M - s prefix) map when pinyin isearch ends."
+    (define-key isearch-mode-map (kbd "M-s") pinyin-isearch-m-s-standard-map))
 
-    ;; In short, This line add native isearch key to help window.
-    ;; Inherit from the standard isearch-mode M-s prefix map
-    ;; Will show: standard options (like M-s _ for symbol search).
-    (set-keymap-parent map (lookup-key isearch-mode-map (kbd "M-s")))
-    map)
-  "Keymap for M - s key prefix in `pinyin-isearch-mode'.")
+
+;;;; -=-= interface with isearch and interactives
+
+;;;###autoload
+(defun pinyin-isearch-forward (&optional regexp-p no-recursive-edit)
+  "Do incremental search forward.
+If called with a universal argument, falls back to standard
+ function `isearch-forward'.
+Optional argument REGEXP-P see original function `isearch-forward'.
+Optional argument NO-RECURSIVE-EDIT see original function
+ `isearch-forward'.
+TODO: Issue with isearch: in incremental search if first characters was
+ not found isearch continue to tell \"Failing\"."
+  (interactive "P\np")
+  (if current-prefix-arg
+      ;; If C-u was pressed, run standard isearch
+      (isearch-forward regexp-p no-recursive-edit)
+    ;; else
+    ;; Otherwise, run your custom pinyin isearch
+    (pinyin-isearch-load) ; lazy loading
+    (isearch-mode t regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch))))
+
+;;;###autoload
+(defun pinyin-isearch-backward (&optional regexp-p no-recursive-edit)
+  "Do incremental search backward.
+If called with a universal argument, falls back to standard
+ function `isearch-backward'.
+Optional argument REGEXP-P see original function `isearch-backward'.
+Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
+  (interactive "P\np")
+  (if current-prefix-arg
+      (isearch-backward regexp-p no-recursive-edit)
+    ;; else
+    (pinyin-isearch-load) ; lazy loading, for usage without minor mode
+    (isearch-mode nil regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch))))
 
 
 ;;;; -=-= The minor mode definition
@@ -347,7 +365,7 @@ Focus on functions `isearch-forward' and `isearch-backward'.
 Allow with query {pinyin} to find {pīnyīn}.  \\C-\\u \\C-\\s used for
 normal search.
 
-Subcommands (after M - s key):
+Subcommands (after M - s key prefix):
 - n - Toggle Pinyin+characters search
 - p - Toggle Pinyin-only search
 - h - Toggle characters-only search
@@ -366,18 +384,16 @@ which can be customized to set the default behavior."
             ;; Bind the main search commands
             (define-key map (kbd "C-s") #'pinyin-isearch-forward)
             (define-key map (kbd "C-r") #'pinyin-isearch-backward)
-
-            ;; Bind the M-s prefix map ;; FIXME: This binding should be activated only during Isearch.
-            (define-key map (kbd "M-s") pinyin-isearch-m-s-map)
             map)
-  ;; (when pinyin-isearch-mode
-  ;;     (pinyin-isearch-load)))
   ;; Manage the hooks cleanly
   (if pinyin-isearch-mode
       (progn
         ;; Load any additional configuration
         (pinyin-isearch-load)
-        ;; Used in all modes:
+        ;; M-s keys
+        (add-hook 'isearch-mode-hook #'pinyin-isearch-setup-keymap t t)
+        (add-hook 'isearch-mode-end-hook #'pinyin-isearch-cleanup-keymap t t)
+        ;; Prevents jumping
         (advice-add 'isearch-printing-char :before #'pinyin-isearch--reset-before-printing-char)
         ;; Enable exntended Help system (C-s F1 F1)
         (when (and (boundp 'isearch--display-help-action)
@@ -386,11 +402,11 @@ which can be customized to set the default behavior."
             (unless (advice-member-p #'pinyin-isearch-help-advice 'isearch-help-for-help)
               (advice-add 'isearch-help-for-help :around #'pinyin-isearch-help-advice)))))
     ;; else - Clean up when disabling the mode
-    (advice-remove 'isearch-printing-char #'pinyin-isearch--reset-before-printing-char)
-    ;; Disable Extended Help system
-    ;; (when (fboundp 'pinyin-isearch-help-disable)
-    ;;   (pinyin-isearch-help-disable))
-    ))
+    ;; M-s keys
+    (remove-hook 'isearch-mode-hook #'pinyin-isearch-setup-keymap t)
+    (remove-hook 'isearch-mode-end-hook #'pinyin-isearch-cleanup-keymap t)
+    ;; Prevents jumping
+    (advice-remove 'isearch-printing-char #'pinyin-isearch--reset-before-printing-char)))
 
 ;;; -=-= Help C-s M-s <f1> <f1>
 ;; We show help screen with when isearch with pinyin-isearch is active.
