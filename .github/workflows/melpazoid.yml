@@ -117,3 +117,4 @@ jobs:
           if grep -q ' with checkdoc ' output.log ; then
             echo "Checkdoc warning detected, failing workflow" ; exit 1
           fi
+          echo "normal"
