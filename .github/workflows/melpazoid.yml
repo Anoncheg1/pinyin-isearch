@@ -103,12 +103,10 @@ jobs:
           EXIST_OK: true
         run: |
           echo $GITHUB_REF
-          set +e  # Disable immediate exit on error
           make -C ~/melpazoid 2>&1 | tee output.log || true
           MAKE_EXIT=$?
-          set -e  # Re-enable (optional)
 
-          # [ $make_exit -ne 0 ] && { echo "Make command failed, failing workflow"; exit 1; }
+          # [ $MAKE_EXIT -ne 0 ] && { echo "Make command failed, failing workflow"; exit 1; }
 
           # Strip ANSI codes for clean analysis
           sed -i 's/\x1b\[[0-9;]*m//g' output.log
