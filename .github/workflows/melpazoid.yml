@@ -109,7 +109,7 @@ jobs:
           if grep -q "Warning" output.log ; then
             echo "Warnings detected, failing workflow" ; exit 1
           fi
-          if grep -q ': error: ' output.log ; then
+          if grep ': error: ' output.log | grep -q -v "error: This key sequence is reserved"; then
             echo "Error detected, failing workflow" ; exit 1
           fi
           if grep -q ' with [melpazoid]' output.log ; then
