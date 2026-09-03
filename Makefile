@@ -67,9 +67,10 @@ checkdoc: $(PACKAGE_LINT_MARKER)
 #  was downloaded in the previous step, and uses it to analyze your
 #  package files for errors or formatting issues.
 
+#  "|| true" here - to allways success, we find error by grep in github action.
 lint: $(PACKAGE_LINT_MARKER)
 	@echo "\nMakefine 3) Run package-lint...\n"
-	$(EASK) --verbose 5 --strict --allow-error lint package 2>&1
+	$(EASK) --verbose 5 --strict --allow-error lint package 2>&1 || true
 
 # clean:
 # 	$(EASK) clean all
