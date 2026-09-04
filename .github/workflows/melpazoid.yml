@@ -114,9 +114,11 @@ jobs:
           if grep "Warning" output.log | grep -q . ; then
             echo "Warnings detected, failing workflow" ; exit 1
           fi
+          # Suppress for F1 in M-s key prefix.
           if grep ' error: ' output.log | grep -v "This key sequence is reserved" | grep -q . ; then
             echo "Error detected, failing workflow" ; exit 1
           fi
+
           if grep -E ' with .?melpazoid' output.log | grep -q . ; then
             grep -E ' with .?melpazoid' output.log
             echo "Melpazoid warning detected, failing workflow" ; exit 1

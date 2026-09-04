@@ -262,7 +262,8 @@ In other words, when in incremental search result appear at back after
   "Show bindings in the current (M - s) prefix map."
   (interactive)
   (describe-keymap 'pinyin-isearch-m-s-map)
-  (isearch-abort))
+  (when isearch-mode
+    (isearch-abort)))
 
 
 (defvar pinyin-isearch-m-s-standard-map (lookup-key isearch-mode-map (kbd "M-s"))

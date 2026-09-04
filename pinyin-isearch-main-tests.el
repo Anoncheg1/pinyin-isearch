@@ -460,39 +460,39 @@ This have a trick by Emacs, isearch-search-and-update call
 
 
 (ert-deftest test-pinyin-isearch-help-menu1 ()
-  "Test that C -s M -s f1 displays a help window listing the pinyin functions."
+  "Test that pinyin isearch help text lists the expected functions."
   (with-temp-buffer
-    ;; 1. Activate the minor mode
     (pinyin-isearch-mode 1)
-    ;; Ensure we clean up the minor mode after the test
+    (pinyin-isearch-setup-keymap) ;; (isearch-mode 1)
     (unwind-protect
-        (let ((help-buffer-name "*Help*"))
-          ;; Kill any existing help buffer to avoid false positives
-          (when (get-buffer help-buffer-name)
-            (kill-buffer help-buffer-name))
+        (let* ((prefix-map (lookup-key isearch-mode-map (kbd "M-s")))
+               (resolved-map (if (keymapp prefix-map) prefix-map (indirect-function prefix-map)))
+               (cmd (and (keymapp resolved-map)
+                         (lookup-key resolved-map (kbd "<f1>")))))
+                  ;;     (setq unread-command-events
+                  ;; (append
+                  ;;  (listify-key-sequence (kbd "M-s"))
+                  ;;  (listify-key-sequence (kbd "<f1>"))
+                  ;;  unread-command-events)))
 
-          ;; 2. Simulate user pressing C-s M-s <f1>
-          ;; We execute this as a macro. 'isearch' reads from the command loop,
-          ;; so we pass the keys and then 'RET' to exit isearch mode so the test can finish.
-          ;; (execute-kbd-macro (kbd "C-s M-s <f1> RET"))
-          (describe-keymap 'pinyin-isearch-m-s-map)
+          ;; Directly execute the command or fallback to the help function
+          (save-window-excursion
+            (call-interactively cmd)
 
-          ;; 3. Verify that the *Help* buffer was created
-          (should (get-buffer help-buffer-name))
+            ;; Check content in *Help* buffer
+            (with-current-buffer (get-buffer "*Help*")
+              ;; (print (buffer-string))
+              (goto-char (point-min))
+              (should (search-forward "isearch-toggle-pinyin-both" nil t))
+              (goto-char (point-min))
+              (should (search-forward "isearch-toggle-pinyin-only" nil t))
+              (goto-char (point-min))
+              (should (search-forward "isearch-toggle-characters-only" nil t))
+              )))
 
-          ;; 4. Verify the contents of the Help buffer include our bound functions
-          (with-current-buffer help-buffer-name
-            ;; (print (buffer-substring-no-properties (point-min) (point-max)))
+          (pinyin-isearch-mode -1))))
 
-            (goto-char (point-min))
-            (should (search-forward "isearch-toggle-pinyin-both" nil t))
-            (goto-char (point-min))
-            (should (search-forward "isearch-toggle-pinyin-only" nil t))
-            (goto-char (point-min))
-            (should (search-forward "isearch-toggle-characters-only" nil t))))
 
-      ;; Cleanup: Deactivate the mode
-      (pinyin-isearch-mode -1))))
 
 (defun test-isearch-help-for-help-capture-buffer ()
   (let ((captured-content nil)
@@ -567,8 +567,6 @@ This have a trick by Emacs, isearch-search-and-update call
  several times in current, that is why we set variables here in current buffer (for visually testing)."
   (should (equal (run-pinyin-isearch-fix-test t) '(3 . 5)))
   (should (equal (run-pinyin-isearch-fix-test nil) '(3 . 9))))
-
-
 
 
 (provide 'pinyin-isearch-main-tests)
