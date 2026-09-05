@@ -98,7 +98,6 @@ This have a trick by Emacs, isearch-search-and-update call
                   (pinyin-isearch-chars-fallback t)
                   (pinyin-isearch-full-fallback t))
 
-
               ;; those two lines required to prevet error: move-to-window-line(0):  (error "move-to-window-line called from unrelated buffer")
               ;; (with-selected-window (selected-window)
               ;;   (set-window-buffer nil (current-buffer)))
@@ -223,7 +222,6 @@ This have a trick by Emacs, isearch-search-and-update call
               (pinyin-isearch-mode 1)
               (insert "“zú’ò” 足哦, “Zuǒ” 左 zuo") ; we found nǐ hao with strict, because of simplification in pinyin algoritm
 
-
               ;; 1. Both pinyin-isearch-both-regexp-function
               (goto-char (point-min))
               (pinyin-isearch-jump-and-stay-active "zuo")
@@ -281,14 +279,12 @@ This have a trick by Emacs, isearch-search-and-update call
                   (pinyin-isearch-chars-fallback nil)
                   (pinyin-isearch-full-fallback nil))
 
-
               ;; those two lines required to prevet error: move-to-window-line(0):  (error "move-to-window-line called from unrelated buffer")
               ;; (with-selected-window (selected-window)
               ;;   (set-window-buffer nil (current-buffer)))
               ;; Activate the minor mode
               (pinyin-isearch-mode 1)
               (insert "blabla 你好 (nǐ hǎo) 你好 (nǐ hao) 你hao 你g nihao") ; we dont search "你hao" for isearch speed optimization
-
 
               ;; 1. Both pinyin-isearch-both-regexp-function
               (goto-char (point-min))
@@ -307,8 +303,6 @@ This have a trick by Emacs, isearch-search-and-update call
               (pinyin-isearch-jump-and-stay-active "nihao")
               (should (= (point) 30))
 
-
-
               (goto-char (point-min))
               (pinyin-isearch-jump-and-stay-active "nig")
               (should (= (point) 1)) ; not found
@@ -317,7 +311,6 @@ This have a trick by Emacs, isearch-search-and-update call
               (pinyin-isearch-jump-and-stay-active "blabla") ; should match 你hao also!
               (should (= (point) 1))
               )))))
-
 
 
 (ert-deftest test-pinyin-isearch-main-no-fullfalback-separately ()
@@ -392,7 +385,6 @@ This have a trick by Emacs, isearch-search-and-update call
               (goto-char (point-min))
               (pinyin-isearch-jump-and-stay-active "blabla" #'pinyin-isearch-chars-regexp-function)
               (should (= (point) 1)) ; not found
-
               )))))
 
 
@@ -458,47 +450,60 @@ This have a trick by Emacs, isearch-search-and-update call
               (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
               (should (= (point) 40)))))))
 
+;;; -=-= help-menu 1
 
 (ert-deftest test-pinyin-isearch-help-menu1 ()
   "Test that pinyin isearch help text lists the expected functions."
   (with-temp-buffer
-    (pinyin-isearch-mode 1)
-    (pinyin-isearch-setup-keymap) ;; (isearch-mode 1)
     (unwind-protect
-        (let* ((prefix-map (lookup-key isearch-mode-map (kbd "M-s")))
-               (resolved-map (if (keymapp prefix-map) prefix-map (indirect-function prefix-map)))
-               (cmd (and (keymapp resolved-map)
-                         (lookup-key resolved-map (kbd "<f1>")))))
-                  ;;     (setq unread-command-events
-                  ;; (append
-                  ;;  (listify-key-sequence (kbd "M-s"))
-                  ;;  (listify-key-sequence (kbd "<f1>"))
-                  ;;  unread-command-events)))
+    ;; suppress ert error: "move-to-window-line called from unrelated buffer"
+    (cl-letf (((symbol-function 'move-to-window-line)
+                   (lambda (&rest args)
+                     t)))
+    (pinyin-isearch-mode 1)
 
-          ;; Directly execute the command or fallback to the help function
-          (save-window-excursion
-            (call-interactively cmd)
+    ;; Activate C-s search
 
-            ;; Check content in *Help* buffer
-            (with-current-buffer (get-buffer "*Help*")
-              ;; (print (buffer-string))
-              (goto-char (point-min))
-              (should (search-forward "isearch-toggle-pinyin-both" nil t))
-              (goto-char (point-min))
-              (should (search-forward "isearch-toggle-pinyin-only" nil t))
-              (goto-char (point-min))
-              (should (search-forward "isearch-toggle-characters-only" nil t))
-              )))
+    ;; actiave search
+    ;; (setq unread-command-events ; not working
+    ;;             (append
+    ;;              (listify-key-sequence (kbd "C-s"))))
+    (isearch-mode 1) ;; (pinyin-isearch-setup-keymap)
 
-          (pinyin-isearch-mode -1))))
+    (let* ((prefix-map (lookup-key isearch-mode-map (kbd "M-s")))
+           (resolved-map (if (keymapp prefix-map) prefix-map (indirect-function prefix-map)))
+           (cmd (and (keymapp resolved-map)
+                     (lookup-key resolved-map (kbd "<f1>")))))
+      ;;     (setq unread-command-events
+      ;; (append
+      ;;  (listify-key-sequence (kbd "M-s"))
+      ;;  (listify-key-sequence (kbd "<f1>"))
+      ;;  unread-command-events)))
+
+      ;; Directly execute the command or fallback to the help function
+      (save-window-excursion
+        (call-interactively cmd)
+        ;; Check content in *Help* buffer
+        (with-current-buffer (get-buffer "*Help*")
+          ;; (print (buffer-string))
+          (goto-char (point-min))
+          (should (search-forward "isearch-toggle-pinyin-both" nil t))
+          (goto-char (point-min))
+          (should (search-forward "isearch-toggle-pinyin-only" nil t))
+          (goto-char (point-min))
+          (should (search-forward "isearch-toggle-characters-only" nil t))
+          ))))
+
+    (pinyin-isearch-mode -1))))
 
 
 
+;;; -=-= help-menu 2
 (defun test-isearch-help-for-help-capture-buffer ()
   (let ((captured-content nil)
         (fake-key (kbd "q"))
         (orig-read-key-sequence (symbol-function 'read-key-sequence)))
-    ;; Preload the fake key.
+    ;; Preload the fake key. Or we will freeze there.
     (setq unread-command-events (list fake-key))
     ;; Temporarily override read-key-sequence with a capturing wrapper.
     (cl-letf (((symbol-function 'read-key-sequence)
@@ -508,6 +513,7 @@ This have a trick by Emacs, isearch-search-and-update call
                      (with-current-buffer buf
                        (setq captured-content (buffer-substring-no-properties (point-min) (point-max))))))
                  (apply orig-read-key-sequence args)))
+              ;; suppress ert error: "move-to-window-line called from unrelated buffer"
               ((symbol-function 'move-to-window-line)
                (lambda (&rest args)
                  nil)))
@@ -515,6 +521,7 @@ This have a trick by Emacs, isearch-search-and-update call
     ;; Now captured-content has the buffer content.
     (should (stringp captured-content))
     captured-content))
+
 
 (ert-deftest test-pinyin-isearch-help-menu2 ()
   "Test that C -s M -s f1 displays a help window listing the pinyin functions."
@@ -529,6 +536,34 @@ This have a trick by Emacs, isearch-search-and-update call
       ;; (print "ok")
       (should (string-match-p "Pinyin-Isearch Help" help-content)))))
 
+(ert-deftest test-pinyin-isearch-help-menu22 ()
+  "Test that C -s M -s f1 displays a help window listing the pinyin functions."
+  (with-temp-buffer
+    ;; 1. Activate the minor mode
+    (pinyin-isearch-mode 1)
+    ;; 2. Simulate user pressing C-s <f1> <f1>
+    ;; suppress ert error: "move-to-window-line called from unrelated buffer"
+    (cl-letf (((symbol-function 'move-to-window-line)
+                  (lambda (&rest args) t)))
+
+      ;; actiave search
+      (setq unread-command-events
+                  (append
+                   (listify-key-sequence (kbd "C-s"))))
+      ;; press f1
+          (setq unread-command-events
+                  (append
+                   (listify-key-sequence (kbd "C-s"))
+                   (listify-key-sequence (kbd "<f1>"))
+                   (listify-key-sequence (kbd "<f1>"))
+                   unread-command-events))
+          ;; get content of help
+          (let ((buf (get-buffer " *Metahelp*")))
+            (when-let ((buf (get-buffer " *Metahelp*")))
+              (with-current-buffer buf
+                (should (should (search-forward "Pinyin-Isearch Help" nil t)))
+          ))))))
+;;; -=-= jumping fix test
 (defun run-pinyin-isearch-fix-test(jumping-flag)
     (progn
     (advice-add 'isearch-process-search-char :before #'pinyin-isearch--reset-before-printing-char)
