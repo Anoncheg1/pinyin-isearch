@@ -566,7 +566,7 @@ This have a trick by Emacs, isearch-search-and-update call
 ;;;; -=-= jumping fix test
 (defun run-pinyin-isearch-fix-test(jumping-flag)
     (progn
-    (advice-add 'isearch-process-search-char :before #'pinyin-isearch--reset-before-printing-char)
+    (advice-add 'isearch-process-search-char :before #'pinyin-isearch--reset-before-printing-char-advice)
     ;; (setq pinyin-isearch-chars--cached-query nil)
     ;; (setq pinyin-isearch-strict nil)
     ;; (setq pinyin-isearch-chars-fallback t)
@@ -592,7 +592,7 @@ This have a trick by Emacs, isearch-search-and-update call
          (isearch-process-search-char ch))
        (let ((pos2 (point)))
          ;; (isearch-exit)
-         (advice-remove 'isearch-process-search-char #'pinyin-isearch--reset-before-printing-char)
+         (advice-remove 'isearch-process-search-char #'pinyin-isearch--reset-before-printing-char-advice)
          (cons pos1 pos2))))))))
 
 (ert-deftest test-pinyin-isearch-fix ()

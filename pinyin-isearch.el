@@ -230,7 +230,7 @@ In other words, when in incremental search result appear at back after
  moving forward we return backward to first one."
   (when (and pinyin-isearch-fix-jumping-flag
              ;; we check that `isearch-mode' uses our function.
-             (string-prefix-p "pinyin-isearch-" (symbol-name func)))
+             (string-prefix-p "pinyin-isearch-" (symbol-name isearch-regexp-function)))
     (goto-char isearch-opoint)
     (setq isearch-adjusted t)))
 
@@ -327,7 +327,6 @@ TODO: Issue with isearch: in incremental search if first characters was
     ;; else
     ;; Otherwise, run your custom pinyin isearch
     (pinyin-isearch-load) ; lazy loading
-    (
     (isearch-mode t regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch))))
 
 ;;;###autoload
