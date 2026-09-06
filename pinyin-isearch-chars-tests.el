@@ -48,7 +48,7 @@
 ;;   (pinyin-isearch-chars-regexp-function "nin"))
 ;;   (pinyin-isearch-chars-strict-regexp-function "nin")) ; 您
 
-;; -=-= ---- Tests
+;;;; -=-= Tests
 
 (ert-deftest test-pinyin-isearch-chars--rules-to-first-syllable-letters ()
   (with-temp-buffer
@@ -273,7 +273,7 @@
       )))))
 
 
-;; -=-= maptree
+;;;; -=-= maptree
 
 (ert-deftest test-pinyin-isearch-chars--maptree ()
   (should (equal (pinyin-isearch-chars--maptree
@@ -297,7 +297,7 @@
            '((("奥澳傲熬敖凹袄懊坳嗷拗鏖骜鳌翱岙廒遨獒聱媪螯鏊" "昂肮盎" "安案按暗岸俺谙黯鞍氨庵桉鹌胺铵揞犴埯" "爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹" "阿啊呵腌嗄锕吖")))))
   )
 
-;; -=-= MAIN final - test: chars-regexp-function
+;;;; -=-= MAIN final - test: chars-regexp-function
 
 (ert-deftest test-pinyin-isearch-chars-regexp-function ()
   (with-temp-buffer
