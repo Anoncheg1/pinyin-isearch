@@ -126,15 +126,20 @@
 
 ;;;; -=-= vars
 (defcustom pinyin-isearch-strict nil
-  "Non-nil means prohibit adding to search all possible completion.
+  "Non-nil means use strict matching mode.
 
-Non-nil for chinese characters allow only full fallback to latin and we
- looking for existing characters only.
-For pinyin search we enable search only if first syllable is real and
- prohibit full-fallback.
+Strict mode behavior:
+- For Chinese characters: Only search for exact character matches
+- For Pinyin: Only search if first syllable matches exactly
+- Fallback to Latin letters is disabled
 
 By default we are looking for all characters and pinyin syllables that
- start with typed by user first part of syllable."
+ start with typed by user first part of syllable. Non-nil means prohibit
+ adding to search all possible completion.
+
+This is a global strictness control. Individual modes may override this.
+See `pinyin-isearch-strict-both' and `pinyin-isearch-strict-characters'
+for mode-specific strictness."
   :local t ; because pinyin-isearch-mode with :global nil.
   :group 'pinyin-isearch
   :type 'boolean)
@@ -175,17 +180,12 @@ Disable for native isearch behavior."
   :group 'pinyin-isearch
   :type 'boolean)
 
-(defvar-local pinyin-isearch--original-search-default-mode search-default-mode
-  "Used in `pinyin-isearch--set-isearch' to save previous state.")
-
-(defvar-local pinyin-isearch--original-isearch-regexp-function isearch-regexp-function
-  "Used in `pinyin-isearch--set-isearch' to save previous state.")
-
 ;;;; -=-= fns
 
 (defun pinyin-isearch-both-regexp-function (string &optional _lax)
-  "Concat pinyin and Chinese chars regex as alternation for isearch.
-Default isearch function.
+  "Concat pinyin and Chinese chars regex as alternation.
+If `pinyin-isearch-strict' is non-nil, strict mode applies.
+Mode-specific strict settings override global setting.
 Replacement for function `isearch-regexp-function'.
 Argument STRING is a query string.
 Optional argument LAX for isearch special cases."
@@ -207,19 +207,18 @@ Argument STRING is a query string, LAX is not used."
         (pinyin-isearch-full-fallback nil))
     (pinyin-isearch-both-regexp-function string lax)))
 
-(defun pinyin-isearch--set-isearch ()
-  "For values of `pinyin-isearch-default-mode' return function.
-Return function used to generate regex for isearch.
-According to `pinyin-isearch-default-mode'.
-Used in `pinyin-isearch-forwar' and `pinyin-isearch-backward'."
+(defun pinyin-isearch--get-regexp-function ()
+  "Return regexp function based on `pinyin-isearch-default-mode'.
+Those functions generate regex for isearch that used in wrapping
+ functions `pinyin-isearch-forwar' and `pinyin-isearch-backward'."
   (pcase pinyin-isearch-default-mode
     ('both		#'pinyin-isearch-both-regexp-function)
     ('strict-both	#'pinyin-isearch-both-strict-regexp-function)
     ('strict-characters #'pinyin-isearch-chars-strict-regexp-function)
-
-    ((or 'characters 't) #'pinyin-isearch-chars-regexp-function)
-    ('pinyin		#'pinyin-isearch-pinyin-regexp-function)))
-
+    ('characters	#'pinyin-isearch-chars-regexp-function)
+    ('pinyin		#'pinyin-isearch-pinyin-regexp-function)
+    (_ (user-error "Invalid pinyin-isearch-default-mode: %S"
+                   pinyin-isearch-default-mode))))
 
 (defun pinyin-isearch--reset-before-printing-char-advice (&rest _args)
   "Reset Isearch start point before inserting a printing character.
@@ -327,7 +326,7 @@ TODO: Issue with isearch: in incremental search if first characters was
     ;; else
     ;; Otherwise, run your custom pinyin isearch
     (pinyin-isearch-load) ; lazy loading
-    (isearch-mode t regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch))))
+    (isearch-mode t regexp-p nil (not no-recursive-edit) (pinyin-isearch--get-regexp-function))))
 
 ;;;###autoload
 (defun pinyin-isearch-backward (&optional regexp-p no-recursive-edit)
@@ -341,7 +340,7 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
       (isearch-backward regexp-p no-recursive-edit)
     ;; else
     (pinyin-isearch-load) ; lazy loading, for usage without minor mode
-    (isearch-mode nil regexp-p nil (not no-recursive-edit) (pinyin-isearch--set-isearch))))
+    (isearch-mode nil regexp-p nil (not no-recursive-edit) (pinyin-isearch--get-regexp-function))))
 
 
 ;;;; -=-= The minor mode definition

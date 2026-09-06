@@ -68,7 +68,7 @@
 Optional argument REGEXP-FN specifies the matching function to use.
 Defaults to `pinyin-isearch-chars-strict-regexp-function' if omitted."
   (interactive "sSearch Pinyin: ")
-  (let ((fun (pinyin-isearch--set-isearch)))
+  (let ((fun (pinyin-isearch--get-regexp-function)))
     ;; (print (list "fun" fun))
   (let ((inhibit-message t))
 
