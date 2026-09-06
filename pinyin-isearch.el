@@ -221,7 +221,6 @@ Used in `pinyin-isearch-forwar' and `pinyin-isearch-backward'."
     ('pinyin		#'pinyin-isearch-pinyin-regexp-function)))
 
 
-
 (defun pinyin-isearch--reset-before-printing-char (&rest _args)
   "Reset Isearch start point before inserting a printing character.
 Prevents jumping past the original start when typing characters
@@ -400,8 +399,7 @@ which can be customized to set the default behavior."
         (when (and (boundp 'isearch--display-help-action)
                    (fboundp #'isearch-help-for-help-internal))
           (when (fboundp 'pinyin-isearch-help-advice)
-            (unless (advice-member-p #'pinyin-isearch-help-advice 'isearch-help-for-help)
-              (advice-add 'isearch-help-for-help :around #'pinyin-isearch-help-advice)))))
+            (advice-add 'isearch-help-for-help :around #'pinyin-isearch-help-advice))))
     ;; else - Clean up when disabling the mode
     ;; M-s keys
     (remove-hook 'isearch-mode-hook #'pinyin-isearch-setup-keymap t)
