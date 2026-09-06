@@ -221,29 +221,16 @@ Used in `pinyin-isearch-forwar' and `pinyin-isearch-backward'."
     ('pinyin		#'pinyin-isearch-pinyin-regexp-function)))
 
 
-(defun pinyin-isearch--reset-before-printing-char (&rest _args)
+(defun pinyin-isearch--reset-before-printing-char-advice (&rest _args)
   "Reset Isearch start point before inserting a printing character.
 Prevents jumping past the original start when typing characters
 during a pinyin Isearch session.
 In other words, force search from original position.
 In other words, when in incremental search result appear at back after
  moving forward we return backward to first one."
-  ;; (print (list "pinyin-isearch--reset-before-printing-char N1"
-  ;;              pinyin-isearch-fix-jumping-flag
-  ;;              (memq isearch-regexp-function
-  ;;                  '(pinyin-isearch-pinyin-regexp-function
-  ;;                    pinyin-isearch-chars-regexp-function
-  ;;                    pinyin-isearch-chars-strict-regexp-function
-  ;;                    pinyin-isearch-both-regexp-function
-  ;;                    pinyin-isearch-both-strict-regexp-function))))
   (when (and pinyin-isearch-fix-jumping-flag
-             (memq isearch-regexp-function
-                   '(pinyin-isearch-pinyin-regexp-function
-                     pinyin-isearch-chars-regexp-function
-                     pinyin-isearch-chars-strict-regexp-function
-                     pinyin-isearch-both-regexp-function
-                     pinyin-isearch-both-strict-regexp-function)))
-    ;; (print "pinyin-isearch--reset-before-printing-char N2")
+             ;; we check that `isearch-mode' uses our function.
+             (string-prefix-p "pinyin-isearch-" (symbol-name isearch-regexp-function)))
     (goto-char isearch-opoint)
     (setq isearch-adjusted t)))
 
@@ -394,20 +381,21 @@ which can be customized to set the default behavior."
         (add-hook 'isearch-mode-hook #'pinyin-isearch-setup-keymap t t)
         (add-hook 'isearch-mode-end-hook #'pinyin-isearch-cleanup-keymap t t)
         ;; Prevents jumping
-        (advice-add 'isearch-printing-char :before #'pinyin-isearch--reset-before-printing-char)
+        (advice-add 'isearch-printing-char :before #'pinyin-isearch--reset-before-printing-char-advice)
         ;; Enable exntended Help system (C-s F1 F1)
-        (when (and (boundp 'isearch--display-help-action)
-                   (fboundp #'isearch-help-for-help-internal))
-          (when (fboundp 'pinyin-isearch-help-advice)
-            (advice-add 'isearch-help-for-help :around #'pinyin-isearch-help-advice))))
+        (when (fboundp 'pinyin-isearch-help-advice)
+          (advice-add 'isearch-help-for-help :around #'pinyin-isearch-help-advice)))
     ;; else - Clean up when disabling the mode
     ;; M-s keys
     (remove-hook 'isearch-mode-hook #'pinyin-isearch-setup-keymap t)
     (remove-hook 'isearch-mode-end-hook #'pinyin-isearch-cleanup-keymap t)
     ;; Prevents jumping
-    (advice-remove 'isearch-printing-char #'pinyin-isearch--reset-before-printing-char)))
+    (advice-remove 'isearch-printing-char #'pinyin-isearch--reset-before-printing-char-advice)
+    ;; help
+    (when (fboundp 'pinyin-isearch-help-advice)
+          (advice-remove 'isearch-help-for-help #'pinyin-isearch-help-advice))))
 
-;;; -=-= Help C-s M-s <f1> <f1>
+;;;; -=-= Help C-s M-s <f1> <f1>
 ;; We show help screen with when isearch with pinyin-isearch is active.
 ;; We show original help of isearch and inherit keys.
 
@@ -421,7 +409,9 @@ which can be customized to set the default behavior."
 
 ;; Only define help if required infrastructure exists
 (when (and (fboundp 'make-help-screen)
-           (boundp 'isearch-help-map))
+           (boundp 'isearch--display-help-action)
+           (boundp 'isearch-help-map)
+           (fboundp #'isearch-help-for-help-internal))
 
   (make-help-screen pinyin-isearch-help-for-help-internal
     (purecopy "Show pinyin-isearch help with key bindings and current status.")
@@ -455,10 +445,6 @@ Argument ORIG-FUN and ARGS is `isearch-help-for-help'."
           (isearch-update))
       ;; else
       (apply orig-fun args))))
-
-  ;; Auto-enable if mode is already active (useful for eval-buffer)
-  ;; (when (and (boundp 'pinyin-isearch-mode) pinyin-isearch-mode)
-    ;; (pinyin-isearch-help-enable)))
 
 ;;;; -=-= provide
 (provide 'pinyin-isearch)

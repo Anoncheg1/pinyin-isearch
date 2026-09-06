@@ -37,7 +37,7 @@
 (pinyin-isearch-load)
 ;; (setq pinyin-isearch-strict nil)
 ;; (setq pinyin-isearch-full-fallback nil)
-;; -=-= help functons
+;;;; -=-= help functons
 ;; used for testing
 (defmacro with-test-isearch-env (&rest body)
   "Set up a robust mock environment for testing `isearch` in headless/batch mode."
@@ -81,7 +81,7 @@ Defaults to `pinyin-isearch-chars-strict-regexp-function' if omitted."
       ;; Execute the search within the active state
       (isearch-search-and-update)))))
 
-;; -=-= tests
+;;;; -=-= tests
 (ert-deftest test-pinyin-isearch-main1 ()
   "Test that C -s M -s f1 displays a help window listing the pinyin functions.
 This have a trick by Emacs, isearch-search-and-update call
@@ -450,7 +450,7 @@ This have a trick by Emacs, isearch-search-and-update call
               (pinyin-isearch-jump-and-stay-active "nih" #'pinyin-isearch-chars-regexp-function)
               (should (= (point) 40)))))))
 
-;;; -=-= help-menu 1
+;;;; -=-= help-menu 1
 
 (ert-deftest test-pinyin-isearch-help-menu1 ()
   "Test that pinyin isearch help text lists the expected functions."
@@ -498,7 +498,7 @@ This have a trick by Emacs, isearch-search-and-update call
 
 
 
-;;; -=-= help-menu 2
+;;;; -=-= help-menu 2
 (defun test-isearch-help-for-help-capture-buffer ()
   (let ((captured-content nil)
         (fake-key (kbd "q"))
@@ -563,10 +563,10 @@ This have a trick by Emacs, isearch-search-and-update call
               (with-current-buffer buf
                 (should (should (search-forward "Pinyin-Isearch Help" nil t)))
           ))))))
-;;; -=-= jumping fix test
+;;;; -=-= jumping fix test
 (defun run-pinyin-isearch-fix-test(jumping-flag)
     (progn
-    (advice-add 'isearch-process-search-char :before #'pinyin-isearch--reset-before-printing-char)
+    (advice-add 'isearch-process-search-char :before #'pinyin-isearch--reset-before-printing-char-advice)
     ;; (setq pinyin-isearch-chars--cached-query nil)
     ;; (setq pinyin-isearch-strict nil)
     ;; (setq pinyin-isearch-chars-fallback t)
@@ -592,7 +592,7 @@ This have a trick by Emacs, isearch-search-and-update call
          (isearch-process-search-char ch))
        (let ((pos2 (point)))
          ;; (isearch-exit)
-         (advice-remove 'isearch-process-search-char #'pinyin-isearch--reset-before-printing-char)
+         (advice-remove 'isearch-process-search-char #'pinyin-isearch--reset-before-printing-char-advice)
          (cons pos1 pos2))))))))
 
 (ert-deftest test-pinyin-isearch-fix ()
