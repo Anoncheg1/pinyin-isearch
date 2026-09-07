@@ -385,15 +385,16 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
 ;; Silence byte-compiler warnings for external symbols
 (defvar isearch-help-map)
 (defvar isearch--display-help-action)
+(defvar make-help-screen)
+
 (defvar pinyin-isearch-help-for-help-internal)
-;; (defvar isearch-mode)
-;; (defvar pinyin-isearch-mode)
+(defvar pinyin-isearch-help-advice)
 
 ;; Only define help if required infrastructure exists
-(when (and (fboundp #'make-help-screen)
+(when (and (fboundp 'make-help-screen) ; or defvar stub
            (boundp 'isearch--display-help-action)
            (boundp 'isearch-help-map)
-           (fboundp #'isearch-help-for-help-internal))
+           (fboundp #'isearch-help-for-help-internal)) ; isearch.el
 
   (make-help-screen pinyin-isearch-help-for-help-internal
     (purecopy "Show pinyin-isearch help with key bindings and current status.")
@@ -421,14 +422,14 @@ Optional argument NO-RECURSIVE-EDIT see original function `isearch-backward'."
 Argument ORIG-FUN and ARGS is `isearch-help-for-help'."
     (if (and (boundp 'pinyin-isearch-mode) pinyin-isearch-mode)
         (let ((display-buffer-overriding-action isearch--display-help-action))
-          (when (fboundp #'pinyin-isearch-help-for-help-internal)
+          (when (fboundp 'pinyin-isearch-help-for-help-internal) ; or defvar stub
             (pinyin-isearch-help-for-help-internal))
           (isearch-update))
       ;; else
       (apply orig-fun args))))
 
 
-;;;; -=-= The minor mode definition
+;;;; -=-= MINOR MODE DEFINITION
 ;;;###autoload
 (define-minor-mode pinyin-isearch-mode
   "Replace isearch key bindings to support Pinyin searching.
@@ -466,7 +467,7 @@ which can be customized to set the default behavior."
         ;; Prevents jumping
         (advice-add 'isearch-printing-char :before #'pinyin-isearch--reset-before-printing-char-advice)
         ;; Enable exntended Help system (C-s F1 F1)
-        (when (fboundp #'pinyin-isearch-help-advice)
+        (when (fboundp 'pinyin-isearch-help-advice) ; or defvar stub
           (advice-add 'isearch-help-for-help :around #'pinyin-isearch-help-advice)))
     ;; else - Clean up when disabling the mode
     ;; M-s keys
@@ -475,7 +476,7 @@ which can be customized to set the default behavior."
     ;; Prevents jumping
     (advice-remove 'isearch-printing-char #'pinyin-isearch--reset-before-printing-char-advice)
     ;; help
-    (when (fboundp #'pinyin-isearch-help-advice)
+    (when (fboundp 'pinyin-isearch-help-advice) ; or defvar stub
           (advice-remove 'isearch-help-for-help #'pinyin-isearch-help-advice))))
 
 ;;;; -=-= provide
