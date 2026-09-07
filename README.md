@@ -75,10 +75,9 @@ Emacs 28.1 -> 30.2
 After ```C-s/r``` in isearch mode:
 - ```M-s h``` to activate Chinese characters seearch only submode.
 - ```M-s p``` to activate pinyin search only  submode.
-- ```M-s s``` to activate strict pinyin and Chinese characters submode.
-- ```M-s u``` to activate strict Chinese characters isearch submode.
-- ```M-s n``` to activate default Pinyin-isearch mode.
-- ```M-s r``` to activate standard search.
+- ```M-s s``` toggle strict search.
+- ```M-s b``` to activate pinyin and Chinese , default Pinyin-isearch mode.
+- ```M-s <f1>``` open help reference.
 
 or with M-x ```pinyin-isearch-forward/backward```
 
