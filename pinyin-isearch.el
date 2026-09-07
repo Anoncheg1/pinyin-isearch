@@ -291,12 +291,10 @@ If currently active, disable and restore previous behavior."
             '(pinyin-isearch-chars-strict-regexp-function
               pinyin-isearch-both-strict-regexp-function))
       ;; === DISABLE STRICT MODE ===
-      (progn
-        (if (eq isearch-regexp-function #'pinyin-isearch-chars-strict-regexp-function)
-            (setq isearch-regexp-function #'pinyin-isearch-chars-regexp-function)
-          ;; else - `pinyin-isearch-both-strict-regexp-function'
-          (setq isearch-regexp-function #'pinyin-isearch-both-regexp-function))
-        (isearch-update))
+      (if (eq isearch-regexp-function #'pinyin-isearch-chars-strict-regexp-function)
+          (setq isearch-regexp-function #'pinyin-isearch-chars-regexp-function)
+        ;; else - `pinyin-isearch-both-strict-regexp-function'
+        (setq isearch-regexp-function #'pinyin-isearch-both-regexp-function))
     ;; === ENABLE STRICT MODE === else
     (when (memq isearch-regexp-function ; active?
                 '(pinyin-isearch-chars-regexp-function
@@ -304,8 +302,9 @@ If currently active, disable and restore previous behavior."
       (if (eq isearch-regexp-function #'pinyin-isearch-chars-regexp-function)
           (setq isearch-regexp-function #'pinyin-isearch-chars-strict-regexp-function)
         ;; else - `pinyin-isearch-both-regexp-function'
-        (setq isearch-regexp-function #'pinyin-isearch-both-strict-regexp-function))
-      (isearch-update))))
+        (setq isearch-regexp-function #'pinyin-isearch-both-strict-regexp-function))))
+  ;; no error for simplicity
+  (isearch-update))
 
 ;;;; -=-= describe-bindings and extending M-s map
 
