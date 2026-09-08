@@ -100,6 +100,11 @@
 ;; needs to go to the original start `isearch-opoint`, not to a previous
 ;; match. Using `isearch-fallback` would complicate the code without
 ;; solving the actual problem.
+;; `isearch-fallback` is for regex liberalization** - using it for
+;; position reset would be misusing it.
+;; It is called at isearch-printing-char before search, we dont know
+;; at this point how regex will chage, doing it two times or caching is
+;; complicated.
 
 ;;;; Todo:
 
