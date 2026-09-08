@@ -93,6 +93,14 @@
 ;; - USDT (Tether) address: TVoXfYMkVYLnQZV3mGZ6GvmumuBfGsZzsN
 ;; - TON (Telegram) address: UQC8rjJFCHQkfdp7KmCkTZCb5dGzLFYe2TzsiZpfsnyTFt9D
 
+;;;; Why `isearch-fallback' wasn't used
+;; The built-in `isearch-fallback` function is designed for regex
+;; liberalization (adding `?`, `*`, `+` characters) and walks the
+;; command history to find previous match positions. Our position reset
+;; needs to go to the original start `isearch-opoint`, not to a previous
+;; match. Using `isearch-fallback` would complicate the code without
+;; solving the actual problem.
+
 ;;;; Todo:
 
 ;; - ('’) in (Fāng'àn) apostrophe, syllable delimiter (隔音符号),
@@ -173,10 +181,13 @@ both of them.  Used for mode `pinyin-isearch-mode', and functions
                  (const :tag "Search in pinyin only" pinyin)))
 
 (defcustom pinyin-isearch-fix-jumping-flag t
-  "Non-nil means fix isearch behavior.
-When typing new character the new search begins from last
-success found occurance, not from when you begin whole search.
-This fix force isearch to begin from the starting point.
+  "Non-nil means fix isearch jumping behavior.
+When typing new character during incremental search, isearch normally
+continues from the current match position. This fix resets the search
+to the original starting point.
+
+This prevents matches from being skipped when pinyin variants generate
+different regex patterns. Disable for native isearch behavior.
 Disable for native isearch behavior."
   :local t ; because pinyin-isearch-mode with :global nil.
   :group 'pinyin-isearch
@@ -230,8 +241,10 @@ In other words, force search from original position.
 In other words, when in incremental search result appear at back after
  moving forward we return backward to first one."
   (when (and pinyin-isearch-fix-jumping-flag
+             (bound-and-true-p isearch-mode)
              ;; we check that `isearch-mode' uses our function.
-             (string-prefix-p "pinyin-isearch-" (symbol-name isearch-regexp-function)))
+             (string-prefix-p "pinyin-isearch-" (symbol-name isearch-regexp-function))
+             (not (eq isearch-opoint (point)))) ; Only if we've moved
     (goto-char isearch-opoint)
     (setq isearch-adjusted t)))
 
