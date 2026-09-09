@@ -120,6 +120,8 @@
 ;; - use "M-s s" key to enable strict mode
 ;;  for current pinuin/characrters/both modes if active
 
+;; [the sync-failure file](https://elpa.gnu.org/nongnu/pinyin-isearch-sync-failure.txt).
+
 ;;; Code:
 
 ;; 感人名言：1）把自己项目文件的 require 放前面，库的放后面。2）大概只有圣人才会付钱。
