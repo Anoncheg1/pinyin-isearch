@@ -2,6 +2,7 @@
 [![MELPA](https://melpa.org/packages/pinyin-isearch-badge.svg)](http://melpa.org/#/pinyin-isearch)
 ![build](https://github.com/Anoncheg1/pinyin-isearch/workflows/melpazoid-release/badge.svg)
 [![MELPA Stable](https://stable.melpa.org/packages/pinyin-isearch-badge.svg)](https://stable.melpa.org/#/pinyin-isearch)
+[![NonGNU ELPA](https://elpa.nongnu.org/nongnu/pinyin-isearch.svg)](https://elpa.nongnu.org/nongnu/pinyin-isearch.html)
 
 # pinyin-isearch - 用于在拼音和汉字中进行无音调拼音搜索的 Emacs 包。
 
